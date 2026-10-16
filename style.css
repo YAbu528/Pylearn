@@ -374,3 +374,154 @@ body.light footer{background:#eef0f5}
   .project-lab-head{flex-direction:column}
   .project-lab-head .ghost{width:100%}
 }
+
+/* PyLearn mobile layout repair */
+@media screen and (max-width: 900px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+
+  .hero > div,
+  .code-card {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .learn,
+  .dashboard-main,
+  .playground,
+  .challenge {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .learn aside {
+    position: static;
+  }
+
+  .editor-panel {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+}
+
+@media screen and (max-width: 650px) {
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  main {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .topbar {
+    width: 100%;
+    min-width: 0;
+    gap: 10px;
+  }
+
+  .logo {
+    min-width: 0;
+    gap: 7px;
+    font-size: 19px;
+    white-space: nowrap;
+  }
+
+  .top-actions {
+    margin-left: auto;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 42px 5% 38px;
+  }
+
+  .hero h1 {
+    font-size: clamp(42px, 12vw, 48px);
+  }
+
+  .hero p {
+    font-size: 16px;
+  }
+
+  .code-card {
+    min-width: 0;
+  }
+
+  .code-card pre {
+    min-height: 0;
+    padding: 20px 16px;
+    font-size: 13px;
+    overflow-x: auto;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .section,
+  .learn {
+    padding-left: 5%;
+    padding-right: 5%;
+  }
+
+  .dashboard-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .metric-card {
+    min-width: 0;
+    padding: 13px 10px;
+    gap: 8px;
+  }
+
+  .lesson-panel {
+    min-width: 0;
+    padding: 18px;
+  }
+
+  .cards,
+  .playground-extra,
+  .project-lab-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .heading,
+  .dash-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .projects,
+  .badges,
+  .deep-learning,
+  .roadmap-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .editor-panel,
+  .output-panel {
+    min-width: 0;
+  }
+
+  .editor-panel textarea,
+  .output-panel pre {
+    height: 260px;
+    min-width: 0;
+  }
+
+  footer {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 22px 16px;
+    padding: 32px 5%;
+  }
+}
+
