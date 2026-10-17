@@ -824,7 +824,29 @@ function handleChallengeResult(result){
   }
 }
 
-$("theme").onclick=()=>{document.body.classList.toggle("light");$("theme").textContent=document.body.classList.contains("light")?"🌙":"☀️";localStorage.setItem("pylearn_theme",document.body.classList.contains("light")?"light":"dark")};
+
+
+function updateLogoTheme() {
+  const isLight = document.body.classList.contains("light");
+  const logoPath = isLight
+    ? "assets/pylearn-logo-light.png"
+    : "assets/pylearn-logo-dark.png";
+
+  document.querySelectorAll(".logo img").forEach(img => {
+    img.src = logoPath;
+  });
+}
+
+$("theme").onclick = () => {
+  document.body.classList.toggle("light");
+
+  const isLight = document.body.classList.contains("light");
+  $("theme").textContent = isLight ? "🌙" : "☀️";
+
+  localStorage.setItem("pylearn_theme", isLight ? "light" : "dark");
+  updateLogoTheme();
+};
+
 $("menu").onclick=()=>$("mainNav").classList.toggle("open");
 
 $("lessonSearch")?.addEventListener("input",searchLessons);
@@ -834,7 +856,16 @@ $("lessonNotes")?.addEventListener("input",()=>{
   window.__noteTimer=setTimeout(()=>saveCurrentNote(false),500);
 });
 $("editor").addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){e.preventDefault();runPython()}});
-if(localStorage.getItem("pylearn_theme")==="light"){document.body.classList.add("light");$("theme").textContent="🌙"}
+
+
+if (localStorage.getItem("pylearn_theme") === "light") {
+  document.body.classList.add("light");
+  $("theme").textContent = "🌙";
+}
+
+updateLogoTheme();
+
+
 // Do not start/increase a streak just because the app was opened.
 // updateStreak() is called only after a real learning action succeeds.
 renderLesson(); renderLessons(); renderStudyTools(); searchLessons();
