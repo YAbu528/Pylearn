@@ -554,7 +554,10 @@ async function syncLearningData() {
     for(let i=0;i<lessons.length;i++){
       const id=String(i), remote=remoteBookmarks.get(i), deleted=Number(deletedBookmarks[id]) > 0;
       if(deleted || bookmarks.includes(i) || remote){
-        bookmarkWrites.push({user_id:userId,lesson_id:id,deleted_at:deleted?new Date(deletedBookmarks[id]).toISOString():null});
+        const deletedAt = deleted
+          ? new Date(deletedBookmarks[id]).toISOString()
+          : (bookmarks.includes(i) ? null : (remote?.deleted_at || null));
+        bookmarkWrites.push({user_id:userId,lesson_id:id,deleted_at:deletedAt});
       }
     }
     if(bookmarkWrites.length){
