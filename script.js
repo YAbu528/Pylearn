@@ -386,7 +386,7 @@ function renderAuthSession(user) {
   if (user) {
     $("signedInEmail").textContent = user.email || "Signed-in account";
     $("authHeading").textContent = "Welcome to PyLearn.";
-    $("authDescription").textContent = "Your account is connected. Cloud progress synchronization is the next step.";
+    $("authDescription").textContent = "Your account is connected. Your learning progress can sync across devices.";
     setAuthMessage("You're signed in successfully.", "success");
   } else {
     showAuthForm("signin");
@@ -535,9 +535,9 @@ async function syncLearningData() {
 
     const deletedBookmarks=readMap(BOOKMARK_DELETIONS_KEY);
     const remoteBookmarks=new Map((bookmarksRes.data||[]).map(row=>[Number(row.lesson_id),row]));
-    const activeRemote=new Set((bookmarksRes.data||[]).filter(row=>!row.deleted_at).map(row=>Number(row.lesson_id)));
+    const activeRemote=new Set((bookmarksRes.data||[]).filter(row=>!row.deleted_at).map(row=>Number(row.lesson_id)));\n    const remoteDeleted=new Set((bookmarksRes.data||[]).filter(row=>row.deleted_at).map(row=>Number(row.lesson_id)));
     const localBookmarks=new Set(bookmarks);
-    for(const i of activeRemote) if(!deletedBookmarks[String(i)]) localBookmarks.add(i);
+    for(const i of activeRemote) if(!deletedBookmarks[String(i)]) localBookmarks.add(i);\n    for(const i of remoteDeleted) localBookmarks.delete(i);
     for(const key of Object.keys(deletedBookmarks)) if(deletedBookmarks[key]) localBookmarks.delete(Number(key));
     bookmarks=[...localBookmarks].filter(i=>Number.isInteger(i)&&i>=0&&i<lessons.length).sort((a,b)=>a-b);
     const bookmarkWrites=[];
