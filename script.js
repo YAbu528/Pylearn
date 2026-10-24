@@ -538,7 +538,7 @@ async function syncLearningData() {
     const activeRemote=new Set((bookmarksRes.data||[]).filter(row=>!row.deleted_at).map(row=>Number(row.lesson_id)));\n    const remoteDeleted=new Set((bookmarksRes.data||[]).filter(row=>row.deleted_at).map(row=>Number(row.lesson_id)));
     const localBookmarks=new Set(bookmarks);
     for(const i of activeRemote) if(!deletedBookmarks[String(i)]) localBookmarks.add(i);\n    for(const i of remoteDeleted) { if(Number(deletedBookmarks[String(i)]) < 0) localBookmarks.add(i); else localBookmarks.delete(i); }
-    for(const key of Object.keys(deletedBookmarks)) if(deletedBookmarks[key]) localBookmarks.delete(Number(key));
+    for(const key of Object.keys(deletedBookmarks)) if(Number(deletedBookmarks[key]) > 0) localBookmarks.delete(Number(key));
     bookmarks=[...localBookmarks].filter(i=>Number.isInteger(i)&&i>=0&&i<lessons.length).sort((a,b)=>a-b);
     const bookmarkWrites=[];
     for(let i=0;i<lessons.length;i++){
