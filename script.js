@@ -443,20 +443,134 @@ async function initializeAuth() {
   const { data: { session }, error } = await supabaseClient.auth.getSession();
   if (error) setAuthMessage(error.message, "error");
   renderAuthSession(session?.user || null);
+  if (session?.user) {
+    currentCloudUser = session.user;
+    setTimeout(() => syncLearningData(), 0);
+  }
   supabaseClient.auth.onAuthStateChange((_event, sessionNow) => {
-    renderAuthSession(sessionNow?.user || null);
+    currentCloudUser = sessionNow?.user || null;
+    renderAuthSession(currentCloudUser);
+    if (currentCloudUser) setTimeout(() => syncLearningData(), 0);
   });
 }
 
 
-function save(){localStorage.setItem("pylearn_state",JSON.stringify(state));localStorage.setItem("pylearn_current",String(current))}
+let currentCloudUser = null;
+let cloudSyncRunning = false;
+let cloudSyncQueued = false;
+let cloudSyncTimer = null;
+const NOTE_META_KEY = "pylearn_note_sync_meta";
+const BOOKMARK_DELETIONS_KEY = "pylearn_bookmark_deletions";
+const readMap = key => readLocalJSON(key, {});
+function queueCloudSync() {
+  if (!currentCloudUser || !supabaseClient) return;
+  clearTimeout(cloudSyncTimer);
+  cloudSyncTimer = setTimeout(() => syncLearningData(), 900);
+}
+async function syncLearningData() {
+  if (!currentCloudUser || !supabaseClient) return;
+  if (cloudSyncRunning) { cloudSyncQueued = true; return; }
+  cloudSyncRunning = true;
+  const userId = currentCloudUser.id;
+  try {
+    const [progressRes, notesRes, bookmarksRes] = await Promise.all([
+      supabaseClient.from("lesson_progress").select("lesson_id,completed,quiz_best_score,challenge_completed").eq("user_id", userId),
+      supabaseClient.from("user_notes").select("lesson_id,content,updated_at,deleted_at").eq("user_id", userId),
+      supabaseClient.from("user_bookmarks").select("lesson_id,deleted_at").eq("user_id", userId)
+    ]);
+    for (const r of [progressRes, notesRes, bookmarksRes]) if (r.error) throw r.error;
+    if (!currentCloudUser || currentCloudUser.id !== userId) return;
+
+    const remoteProgress = progressRes.data || [];
+    const progressById = new Map(remoteProgress.map(row => [Number(row.lesson_id), row]));
+    const mergedDone = new Set(state.done);
+    const mergedQuiz = new Set(state.quiz);
+    const mergedChallenges = new Set(state.challenges);
+    remoteProgress.forEach(row => {
+      const id = Number(row.lesson_id);
+      if (!Number.isInteger(id) || id < 0 || id >= lessons.length) return;
+      if (row.completed) mergedDone.add(id);
+      if (Number(row.quiz_best_score || 0) >= 100) mergedQuiz.add(id);
+      if (row.challenge_completed) mergedChallenges.add(id);
+    });
+    state.done = [...mergedDone].sort((a,b)=>a-b);
+    state.quiz = [...mergedQuiz].sort((a,b)=>a-b);
+    state.challenges = [...mergedChallenges].sort((a,b)=>a-b);
+
+    const progressUpserts = lessons.map((_, i) => ({
+      user_id: userId,
+      lesson_id: String(i),
+      completed: state.done.includes(i) || !!progressById.get(i)?.completed,
+      quiz_best_score: state.quiz.includes(i) || Number(progressById.get(i)?.quiz_best_score || 0) >= 100 ? 100 : (progressById.get(i)?.quiz_best_score ?? null),
+      challenge_completed: state.challenges.includes(i) || !!progressById.get(i)?.challenge_completed
+    }));
+    const progressWrite = await supabaseClient.from("lesson_progress").upsert(progressUpserts, {onConflict:"user_id,lesson_id"});
+    if (progressWrite.error) throw progressWrite.error;
+
+    const noteMeta = readMap(NOTE_META_KEY);
+    const remoteNotes = new Map((notesRes.data || []).map(row => [String(row.lesson_id), row]));
+    const noteWrites = [];
+    for (let i=0;i<lessons.length;i++) {
+      const id=String(i), localValue=notes[id] || "", remote=remoteNotes.get(id);
+      const meta=noteMeta[id] || {};
+      const localChangedAt=Number(meta.updatedAt || 0);
+      const remoteChangedAt=remote ? new Date(remote.updated_at).getTime() : 0;
+      if (remote && remoteChangedAt > localChangedAt) {
+        if (remote.deleted_at) delete notes[id]; else notes[id]=remote.content || "";
+        noteMeta[id]={updatedAt:remoteChangedAt,deleted:!!remote.deleted_at};
+      } else if (localValue || meta.deleted) {
+        noteWrites.push({
+          user_id:userId, lesson_id:id, content:localValue,
+          deleted_at:meta.deleted ? new Date(localChangedAt || Date.now()).toISOString() : null,
+          updated_at:new Date(localChangedAt || Date.now()).toISOString()
+        });
+      }
+    }
+    if (noteWrites.length) {
+      const noteWrite=await supabaseClient.from("user_notes").upsert(noteWrites,{onConflict:"user_id,lesson_id"});
+      if(noteWrite.error) throw noteWrite.error;
+    }
+    localStorage.setItem("pylearn_notes",JSON.stringify(notes));
+    localStorage.setItem(NOTE_META_KEY,JSON.stringify(noteMeta));
+
+    const deletedBookmarks=readMap(BOOKMARK_DELETIONS_KEY);
+    const remoteBookmarks=new Map((bookmarksRes.data||[]).map(row=>[Number(row.lesson_id),row]));
+    const activeRemote=new Set((bookmarksRes.data||[]).filter(row=>!row.deleted_at).map(row=>Number(row.lesson_id)));
+    const localBookmarks=new Set(bookmarks);
+    for(const i of activeRemote) if(!deletedBookmarks[String(i)]) localBookmarks.add(i);
+    for(const key of Object.keys(deletedBookmarks)) if(deletedBookmarks[key]) localBookmarks.delete(Number(key));
+    bookmarks=[...localBookmarks].filter(i=>Number.isInteger(i)&&i>=0&&i<lessons.length).sort((a,b)=>a-b);
+    const bookmarkWrites=[];
+    for(let i=0;i<lessons.length;i++){
+      const id=String(i), remote=remoteBookmarks.get(i), deleted=!!deletedBookmarks[id];
+      if(deleted || bookmarks.includes(i) || remote){
+        bookmarkWrites.push({user_id:userId,lesson_id:id,deleted_at:deleted?new Date(deletedBookmarks[id]).toISOString():null});
+      }
+    }
+    if(bookmarkWrites.length){
+      const bookmarkWrite=await supabaseClient.from("user_bookmarks").upsert(bookmarkWrites,{onConflict:"user_id,lesson_id"});
+      if(bookmarkWrite.error) throw bookmarkWrite.error;
+    }
+    save(); saveBookmarks(); renderLesson(); renderLessons(); renderStudyTools();
+    setAuthMessage("Your lessons, notes, and bookmarks are synced.", "success");
+  } catch (error) {
+    console.error("PyLearn cloud sync failed:", error);
+    setAuthMessage("Cloud sync couldn't finish: " + (error.message || "Please check your connection and try again."), "error");
+  } finally {
+    cloudSyncRunning=false;
+    if(cloudSyncQueued){cloudSyncQueued=false;queueCloudSync();}
+  }
+}
+function save(){localStorage.setItem("pylearn_state",JSON.stringify(state));localStorage.setItem("pylearn_current",String(current));queueCloudSync()}
 function go(id){$(id)?.scrollIntoView({behavior:"smooth",block:"start"}); if(id==="playground" && !pythonReady && !pythonLoading) initPython();}
-function saveBookmarks(){localStorage.setItem("pylearn_bookmarks",JSON.stringify(bookmarks))}
-function saveNotes(){localStorage.setItem("pylearn_notes",JSON.stringify(notes))}
+function saveBookmarks(){localStorage.setItem("pylearn_bookmarks",JSON.stringify(bookmarks));queueCloudSync()}
+function saveNotes(){localStorage.setItem("pylearn_notes",JSON.stringify(notes));queueCloudSync()}
 function toggleBookmark(){
   const i=bookmarks.indexOf(current);
-  if(i===-1){bookmarks.push(current);toast("🔖 Lesson bookmarked");}
-  else{bookmarks.splice(i,1);toast("Bookmark removed");}
+  const deletions=readMap(BOOKMARK_DELETIONS_KEY);
+  if(i===-1){bookmarks.push(current);delete deletions[String(current)];toast("🔖 Lesson bookmarked");}
+  else{bookmarks.splice(i,1);deletions[String(current)]=Date.now();toast("Bookmark removed");}
+  localStorage.setItem(BOOKMARK_DELETIONS_KEY,JSON.stringify(deletions));
   saveBookmarks(); renderStudyTools(); renderLessonBookmark();
 }
 function renderLessonBookmark(){
@@ -468,12 +582,15 @@ function renderLessonBookmark(){
 function saveCurrentNote(show=true){
   const box=$("lessonNotes"); if(!box) return;
   const value=box.value.trim();
+  const meta=readMap(NOTE_META_KEY);
   if(value) notes[String(current)]=value; else delete notes[String(current)];
+  meta[String(current)]={updatedAt:Date.now(),deleted:!value};
+  localStorage.setItem(NOTE_META_KEY,JSON.stringify(meta));
   saveNotes();
   if(show){$("noteStatus").textContent=value?"Saved locally":"No note yet"; toast(value?"📝 Note saved":"Note cleared");}
   renderStudyTools();
 }
-function clearCurrentNote(){const box=$("lessonNotes"); if(box){box.value="";} delete notes[String(current)]; saveNotes(); $("noteStatus").textContent="No note yet"; renderStudyTools(); toast("Note cleared");}
+function clearCurrentNote(){const box=$("lessonNotes"); if(box){box.value="";} delete notes[String(current)]; const meta=readMap(NOTE_META_KEY); meta[String(current)]={updatedAt:Date.now(),deleted:true}; localStorage.setItem(NOTE_META_KEY,JSON.stringify(meta)); saveNotes(); $("noteStatus").textContent="No note yet"; renderStudyTools(); toast("Note cleared");}
 function openStudyLesson(i){selectLesson(i); setTimeout(()=>go("learn"),120)}
 function searchLessons(){
   const q=($("lessonSearch")?.value||"").trim().toLowerCase();
@@ -490,7 +607,7 @@ function renderStudyTools(){
   if(note){note.value=notes[String(current)]||"";}
   if(status) status.textContent=notes[String(current)]?"Saved locally":"No note yet";
 }
-function removeBookmark(i){bookmarks=bookmarks.filter(x=>x!==i);saveBookmarks();renderStudyTools();renderLessonBookmark();toast("Bookmark removed");}
+function removeBookmark(i){bookmarks=bookmarks.filter(x=>x!==i);const deletions=readMap(BOOKMARK_DELETIONS_KEY);deletions[String(i)]=Date.now();localStorage.setItem(BOOKMARK_DELETIONS_KEY,JSON.stringify(deletions));saveBookmarks();renderStudyTools();renderLessonBookmark();toast("Bookmark removed");}
 function toast(s){$("toast").textContent=s;$("toast").classList.add("show");clearTimeout(window.__toast);window.__toast=setTimeout(()=>$('toast').classList.remove("show"),2300)}
 
 function makeWorker(){
