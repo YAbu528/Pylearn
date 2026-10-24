@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#8b5cf6">
+  <meta name="google-site-verification" content="bjsxz5n48SEUzklDGM-8VsON1DRSIGPg3Egys-O5tsA" />
+  <meta name="google-site-verification" content="0av5vwWjx_i94Oadoffjx68m6_3ZWmWY8oNUn37NarE" />
+<title>PyLearn — Interactive Python School</title>
+  <meta name="description" content="PyLearn is an interactive website for learning Python through lessons, coding challenges, quizzes, and hands-on practice.">
+  <link rel="canonical" href="https://yabu528.github.io/Pylearn/">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+
+<a class="logo" href="#top">
+  <img src="/Pylearn/assets/pylearn-logo-dark.png" alt="PyLearn">
+</a>
+
+</a>
+  <nav id="mainNav">
+    <a href="#learn">Learn</a><a href="#challenge">Challenge</a><a href="#playground">Playground</a><a href="#projects">Projects</a>
+  </nav>
+  <div class="top-actions">
+    <button class="icon-btn" id="theme" aria-label="Toggle theme">☀️</button>
+    <button class="icon-btn" id="menu" aria-label="Open menu">☰</button>
+    <button class="primary small-btn" onclick="go('learn')">Start learning</button>
+  </div>
+</header>
+
+<main id="top">
+<section class="auth-section section" id="account">
+  <div class="auth-card card">
+    <div class="auth-copy">
+      <span class="eyebrow">YOUR PYLEARN ACCOUNT</span>
+      <h2 id="authHeading">Save your learning journey.</h2>
+      <p id="authDescription">Create an account or sign in. Your existing progress on this device will remain safe while we prepare cloud sync.</p>
+      <div id="authMessage" class="auth-message" role="status" aria-live="polite"></div>
+    </div>
+    <div class="auth-panel" id="authForms">
+      <form id="signInForm" class="auth-form">
+        <h3>Welcome back</h3>
+        <label for="signInEmail">Email address</label>
+        <input id="signInEmail" type="email" autocomplete="email" required placeholder="you@example.com">
+        <label for="signInPassword">Password</label>
+        <input id="signInPassword" type="password" autocomplete="current-password" required minlength="8" placeholder="Your password">
+        <button class="primary" id="signInButton" type="submit">Sign in</button>
+        <p class="auth-switch">New to PyLearn? <button type="button" class="auth-link" id="showSignUp">Create an account</button></p>
+      </form>
+      <form id="signUpForm" class="auth-form" hidden>
+        <h3>Create your account</h3>
+        <label for="signUpEmail">Email address</label>
+        <input id="signUpEmail" type="email" autocomplete="email" required placeholder="you@example.com">
+        <label for="signUpPassword">Create a password</label>
+        <input id="signUpPassword" type="password" autocomplete="new-password" required minlength="8" placeholder="At least 8 characters">
+        <button class="primary" id="signUpButton" type="submit">Create account</button>
+        <p class="auth-switch">Already registered? <button type="button" class="auth-link" id="showSignIn">Sign in</button></p>
+      </form>
+    </div>
+    <div class="auth-signed-in" id="authSignedIn" hidden>
+      <span class="auth-avatar">✓</span>
+      <div><strong id="signedInEmail"></strong><small>You're signed in to PyLearn.</small></div>
+      <button class="ghost" id="signOutButton" type="button">Sign out</button>
+    </div>
+  </div>
+</section>
+
+<section class="hero">
+  <div>
+    <span class="eyebrow">INTERACTIVE PYTHON SCHOOL</span>
+    <h1>Learn Python.<br><em>Actually write it.</em></h1>
+    <p>Follow a structured path, test your understanding, solve coding challenges and run real Python directly in your browser.</p>
+    <div class="hero-actions">
+      <button class="primary big" onclick="go('learn')">Continue learning →</button>
+      <button class="ghost big" onclick="go('playground')">Open playground</button>
+    </div>
+    <div class="stats">
+      <b><strong id="xp">0</strong><small>XP</small></b>
+      <b><strong id="done">0/14</strong><small>lessons</small></b>
+      <b><strong id="streak">0</strong><small>day streak</small></b>
+      <b><strong id="badgeCount">0</strong><small>badges</small></b>
+    </div>
+  </div>
+  <div class="code-card">
+    <div class="bar">lesson_01.py <span>● ● ●</span></div>
+<pre><i># Your first Python program</i>
+name = <s>"Python"</s>
+
+<span>if</span> name:
+    <b>print</b>(<s>f"Hello, {name}!"</s>)
+
+<span># Now it's your turn.</span></pre>
+    <div class="ready">● Learn → Practice → Build</div>
+  </div>
+</section>
+
+<section class="dashboard section">
+  <div class="dash-card">
+    <span class="dash-icon">🎯</span><div><small>YOUR GOAL</small><strong id="goalText">Finish your first lesson</strong></div>
+  </div>
+  <div class="dash-card">
+    <span class="dash-icon">🔥</span><div><small>STREAK</small><strong id="streakText">Start learning today</strong></div>
+  </div>
+  <div class="dash-card">
+    <span class="dash-icon">🏆</span><div><small>LEVEL</small><strong id="levelText">Level 1 · Beginner</strong></div>
+  </div>
+</section>
+
+<section class="progress-dashboard section" id="dashboard">
+  <div class="dash-heading">
+    <div>
+      <span class="eyebrow">YOUR LEARNING DASHBOARD</span>
+      <h2>See exactly where you are.</h2>
+      <p>Track lessons, quizzes, challenges, XP and your current Python level.</p>
+    </div>
+    <button class="primary" id="dashboardContinue" onclick="continueLearning()">Continue learning →</button>
+  </div>
+
+  <div class="dashboard-main">
+    <article class="progress-overview card">
+      <div class="progress-ring" id="progressRing"><div><strong id="dashboardPercent">0%</strong><span>complete</span></div></div>
+      <div class="progress-overview-copy">
+        <small>PYTHON PATH</small>
+        <h3 id="dashboardPathTitle">Getting started</h3>
+        <p id="dashboardPathText">Complete your first lesson to begin your path.</p>
+        <div class="mini-bar"><i id="dashboardBar"></i></div>
+      </div>
+    </article>
+
+    <article class="dashboard-level card">
+      <div class="dashboard-card-head"><span>⚡</span><small>LEVEL PROGRESS</small></div>
+      <h3 id="dashboardLevel">Level 1 · Beginner</h3>
+      <div class="level-xp"><strong id="dashboardXp">0 XP</strong><span id="dashboardNextXp">100 XP to Level 2</span></div>
+      <div class="mini-bar"><i id="dashboardXpBar"></i></div>
+      <p id="dashboardLevelHint">Earn XP by mastering lessons, quizzes and challenges.</p>
+    </article>
+  </div>
+
+  <div class="dashboard-stats">
+    <article class="metric-card card"><span>📚</span><div><strong id="dashLessons">0/14</strong><small>Lessons mastered</small></div></article>
+    <article class="metric-card card"><span>🧠</span><div><strong id="dashQuizzes">0/14</strong><small>Quizzes mastered</small></div></article>
+    <article class="metric-card card"><span>⚔️</span><div><strong id="dashChallenges">0/14</strong><small>Challenges solved</small></div></article>
+    <article class="metric-card card"><span>🔥</span><div><strong id="dashStreak">0 days</strong><small>Current streak</small></div></article>
+  </div>
+
+  <article class="continue-card card" id="continueCard">
+    <div><small>NEXT STEP</small><h3 id="continueTitle">Start Python Basics</h3><p id="continueText">Begin with variables and print().</p></div>
+    <button class="ghost" id="continueButton" onclick="continueLearning()">Open lesson →</button>
+  </article>
+</section>
+
+<section class="learn" id="learn">
+  <aside>
+    <div class="path-title"><label>PYTHON PATH</label><span id="pathPct">0%</span></div>
+    <div id="lessons"></div>
+    <div class="path-next" id="pathNext"></div>
+    <div class="progress">
+      <b>Your progress</b><span id="percent">0%</span>
+      <hr><div><i id="bar"></i></div>
+      <small id="pathHint">Complete a lesson to unlock the next step.</small>
+    </div>
+  </aside>
+
+  <article class="lesson-panel">
+    <div class="lesson-meta"><span id="levelTag">BEGINNER</span><small id="number">LESSON 01 / 14</small></div>
+    <h2 id="title"></h2>
+    <p class="lesson-intro" id="intro"></p>
+
+    <div class="cards">
+      <div class="explain">
+        <h3>🧠 The idea</h3><p id="explain"></p>
+        <div class="analogy"><b>Think of it like this:</b><p id="analogy"></p></div>
+      </div>
+      <div class="example">
+        <header>EXAMPLE <button onclick="loadLesson()">Load in playground</button></header>
+        <pre id="lessonCode"></pre>
+      </div>
+    </div>
+
+    <div class="lesson-objectives">
+      <h3>By the end of this lesson</h3><ul id="objectives"></ul>
+    </div>
+
+
+<div class="deep-learning">
+  <div class="deep-card"><span class="eyebrow">STEP BY STEP</span><h3>🔎 Break it down</h3><div id="steps"></div></div>
+  <div class="deep-card"><span class="eyebrow">COMMON MISTAKES</span><h3>⚠️ Watch out</h3><div id="mistakes"></div></div>
+</div>
+<div class="recap-card"><span class="eyebrow">QUICK RECAP</span><p id="recap"></p></div>
+    <div class="quiz-card">
+      <div class="quiz-head"><div><span class="eyebrow">QUICK CHECK</span><h3 id="quizQuestion"></h3></div><span id="quizScore">0/1</span></div>
+      <div id="quizOptions"></div>
+      <p class="quiz-feedback" id="quizFeedback"></p>
+    </div>
+
+    <div class="lesson-actions">
+      <button class="ghost" onclick="loadLesson()">Try example</button>
+      <button class="ghost" id="bookmarkLesson" onclick="toggleBookmark()">☆ Bookmark lesson</button>
+      <button class="primary" id="completeBtn" onclick="completeLesson()">Mark complete +20 XP</button>
+      <button class="ghost next-btn" id="nextBtn" onclick="nextLesson()">Next lesson →</button>
+    </div>
+  </article>
+</section>
+
+<section class="section" id="challenge">
+  <div class="heading">
+    <div><span class="eyebrow">CODING CHALLENGE</span><h2>Prove you understood it</h2><p>Write a tiny program and let the browser test it.</p></div>
+    <strong class="badge">+30 XP</strong>
+  </div>
+  <div class="challenge">
+    <div>
+      <div class="challenge-topline"><span id="challengeLevel">BEGINNER</span><span id="challengeMode">✏️ CODE IT</span></div>
+      <h3 id="challengeTitle">Challenge</h3>
+      <p id="challengePrompt"></p>
+      <div class="hint">💡 <span id="challengeHint"></span></div>
+    </div>
+    <div class="challenge-editor">
+      <div id="challengeInstructions" class="challenge-instructions"></div>
+      <div id="challengeChoiceArea" class="challenge-choices"></div>
+      <div id="challengeAnswerArea" class="challenge-answer-area"></div>
+      <textarea id="challengeCode" spellcheck="false"></textarea>
+      <div class="challenge-actions"><button class="ghost" id="hintBtn" onclick="showHint()">💡 Hint</button><button class="ghost" id="solutionBtn" onclick="showSolution()">👀 Solution</button><button class="primary" onclick="checkChallenge()">Check solution</button></div>
+      <div id="practiceHint" class="practice-message"></div><pre id="challengeResult">Write your solution, then check it.</pre>
+    </div>
+  </div>
+</section>
+
+<section class="section playground-section" id="playground">
+  <div class="heading">
+    <div><span class="eyebrow">REAL PYTHON</span><h2>Run Python in your browser</h2><p>Powered by Pyodide and WebAssembly.</p></div>
+    <strong id="status">Loading Python…</strong>
+  </div>
+  <div class="playground">
+    <div class="editor-panel">
+      <header>playground.py <div><button onclick="starter()">Starter</button><button onclick="clearEditor()">Clear</button></div></header>
+      <textarea id="editor" spellcheck="false">name = "Python"
+print(f"Hello, {name}!")
+print("2 + 3 =", 2 + 3)</textarea>
+      <footer><button class="primary" id="run" onclick="runPython()">▶ Run Python</button><button class="ghost" onclick="loadLesson()">Load lesson</button><button class="ghost" onclick="clearEditor()">Clear code</button><small id="runCount">Ready</small></footer>
+    </div>
+    <div class="output-panel">
+      <header>OUTPUT <button onclick="clearOutput()">Clear</button></header>
+      <pre id="output">Initializing Python…</pre>
+    </div>
+  </div>
+  <div class="playground-extra">
+    <div class="input-box">
+      <div><b>⌨️ Program Input</b><span>One line per input() call</span></div>
+      <textarea id="stdin" placeholder="Example:\nKaleb\n15"></textarea>
+    </div>
+    <div class="tips-box">
+      <b>💡 Playground tips</b>
+      <span>Ctrl/Cmd + Enter runs your code.</span>
+      <span>Use one line in Program Input for each input() call.</span>
+    </div>
+  </div>
+  <div class="runtime-tools">
+    <button class="ghost" id="retryPy" onclick="initPython(true)">↻ Retry Python engine</button>
+    <span id="runtimeNote">Python runs directly in your browser. Internet is needed when the engine is first downloaded.</span>
+  </div>
+</section>
+
+
+<section class="section study-tools" id="studyTools">
+  <div class="heading"><div><span class="eyebrow">STUDY TOOLS</span><h2>Search, save & take notes</h2><p>Keep the Python ideas you want to review close at hand.</p></div></div>
+  <div class="study-search card">
+    <div class="search-row"><input id="lessonSearch" type="search" placeholder="Search lessons, topics, or concepts…" autocomplete="off"><span id="searchCount">0 results</span></div>
+    <div id="searchResults" class="search-results"><div class="search-empty">🔎 Search for a topic like <b>loops</b>, <b>functions</b>, <b>JSON</b>, or <b>errors</b>.</div></div>
+  </div>
+  <div class="study-grid">
+    <article class="bookmarks-card card">
+      <div class="study-head"><div><span class="eyebrow">BOOKMARKS</span><h3>Saved lessons</h3></div><span id="bookmarkCount">0</span></div>
+      <div id="bookmarkList" class="bookmark-list"></div>
+    </article>
+    <article class="notes-card card">
+      <div class="study-head"><div><span class="eyebrow">MY NOTES</span><h3>Notes for this lesson</h3></div><span id="noteStatus">No note yet</span></div>
+      <p class="notes-help">Your notes are saved on this device.</p>
+      <textarea id="lessonNotes" placeholder="Write something you want to remember…"></textarea>
+      <div class="notes-actions"><button class="ghost" onclick="clearCurrentNote()">Clear</button><button class="primary" onclick="saveCurrentNote()">Save note</button></div>
+    </article>
+  </div>
+</section>
+<section class="section roadmap" id="roadmap">
+<div class="heading"><div><span class="eyebrow">YOUR ROADMAP</span><h2>Where Python takes you</h2><p>Every stage builds on the previous one.</p></div></div>
+<div class="roadmap-grid">
+<div class="roadmap-stage" id="stage1"><span>01</span><b>Fundamentals</b><small>Variables · Types · Input · Conditions · Loops</small><em>5 lessons</em></div>
+<div class="roadmap-stage" id="stage2"><span>02</span><b>Core Python</b><small>Functions · Lists · Dictionaries · Modules</small><em>3 lessons</em></div>
+<div class="roadmap-stage locked-stage" id="stage3"><span>03</span><b>Intermediate</b><small>Strings · Tuples · Sets · Comprehensions · Files · OOP · APIs</small><em>6 lessons · unlocks after Core Python</em></div>
+<div class="roadmap-stage locked-stage" id="stage4"><span>04</span><b>Build</b><small>Automation · Web apps · Real projects</small><em>Coming after Intermediate</em></div>
+</div></section>
+<section class="section" id="projects">
+  <span class="eyebrow">BUILD</span><h2>Projects that make the skills stick</h2>
+  <p class="section-lead">Build real little programs instead of only answering exercises. Each project unlocks from the skills you have learned.</p>
+  <div class="project-summary" id="projectSummary"></div>
+  <div class="projects" id="projectsGrid"></div>
+  <div class="project-lab" id="projectLab" hidden>
+    <div class="project-lab-head"><div><span class="eyebrow">PROJECT LAB</span><h3 id="projectLabTitle">Project</h3><p id="projectLabIntro"></p></div><button class="ghost" onclick="closeProjectLab()">Close</button></div>
+    <div class="project-lab-grid">
+      <div class="project-brief card"><h4>🎯 Your mission</h4><p id="projectMission"></p><h4>✅ Build checklist</h4><div id="projectChecklist"></div><h4>💡 Hints</h4><p id="projectHints"></p></div>
+      <div class="project-start card"><h4>🚀 Start building</h4><p>Open the starter in the playground, modify it, run it, and come back when your project works.</p><button class="primary" id="projectOpenPlayground">Open in Playground →</button><button class="secondary project-complete-btn" id="projectCompleteBtn">✓ Mark project complete</button></div>
+    </div>
+  </div>
+</section>
+
+<section class="section badges-section">
+  <div class="heading"><div><span class="eyebrow">ACHIEVEMENTS</span><h2>Your badges</h2><p class="section-subtitle" id="badgeSummary">0/9 unlocked</p></div></div>
+  <div class="badges" id="badges"></div>
+</section>
+  
+<section class="section" id="python-curriculum">
+  <div class="heading">
+    <div>
+      <span class="eyebrow">PYTHON CURRICULUM</span>
+      <h2>Explore the Python Lessons</h2>
+      <p>PyLearn teaches Python step by step, from your first variables to working with APIs and JSON. Preview the topics covered in these interactive lessons.</p>
+    </div>
+  </div>
+
+  <div class="study-grid">
+    <article class="card">
+      <h3>1. Python Basics: Variables and print()</h3>
+      <p>Learn how variables give names to values, how assignment works, and how print() displays information.</p>
+    </article>
+
+    <article class="card">
+      <h3>2. Data Types: Strings, Integers and Floats</h3>
+      <p>Understand text (str), whole numbers (int), decimal numbers (float), and how to inspect values with type().</p>
+    </article>
+
+    <article class="card">
+      <h3>3. Operators and input()</h3>
+      <p>Practice arithmetic operators, receive user input, and convert text into numbers using int() and float().</p>
+    </article>
+
+    <article class="card">
+      <h3>4. Conditions: if, elif and else</h3>
+      <p>Make programs choose different actions using conditions, comparison operators, if, elif, and else.</p>
+    </article>
+
+    <article class="card">
+      <h3>5. Loops: for and while</h3>
+      <p>Repeat instructions with for and while loops, use range(), and learn when loops continue or stop.</p>
+    </article>
+
+    <article class="card">
+      <h3>6. Functions: Reusable Code</h3>
+      <p>Create functions with def, use parameters and arguments, and return results for other code to use.</p>
+    </article>
+
+    <article class="card">
+      <h3>7. Lists and Dictionaries</h3>
+      <p>Store and organize data, access list items by index, and retrieve dictionary values using keys.</p>
+    </article>
+
+    <article class="card">
+      <h3>8. Errors and Modules</h3>
+      <p>Understand common errors, import Python modules, and handle exceptions using try and except.</p>
+    </article>
+
+    <article class="card">
+      <h3>9. String Skills</h3>
+      <p>Work with text using indexing, slicing, string methods, and formatted strings such as f-strings.</p>
+    </article>
+
+    <article class="card">
+      <h3>10. Tuples and Sets</h3>
+      <p>Use tuples for ordered data that should not change, and sets to store unique values and remove duplicates.</p>
+    </article>
+
+    <article class="card">
+      <h3>11. List Comprehensions</h3>
+      <p>Create lists concisely using expressions and loops, with optional conditions to filter results.</p>
+    </article>
+
+    <article class="card">
+      <h3>12. File Handling</h3>
+      <p>Read and write files with open(), use with to manage files safely, and learn common file modes.</p>
+    </article>
+
+    <article class="card">
+      <h3>13. Object-Oriented Python</h3>
+      <p>Explore classes and objects, define methods, initialize objects with __init__, and use self.</p>
+    </article>
+
+    <article class="card">
+      <h3>14. APIs and JSON</h3>
+      <p>Learn how APIs exchange data and how to parse JSON into Python dictionaries and lists.</p>
+    </article>
+  </div>
+
+  <p class="section-lead">
+    Ready to practise?
+    <a href="#learn">Open the interactive lessons</a>
+    to read explanations, run examples, take quizzes, and try coding challenges. Lessons still unlock in sequence.
+  </p>
+</section>
+
+</main>
+
+<footer>
+<div>
+ 
+<a class="logo" href="#top">
+  <img src="/Pylearn/assets/pylearn-logo-dark.png" alt="PyLearn">
+</a>
+
+  <p>Learn Python by understanding, practicing and building.</p>
+</div>
+  <div><b>Learn</b><a href="#learn">Lessons</a><a href="#challenge">Challenges</a><a href="#playground">Playground</a></div>
+  <div><b>Build</b><a href="#projects">Projects</a><a href="#">Certificates</a></div>
+  <div><b>Resources</b><a href="https://docs.python.org/3/" target="_blank" rel="noopener">Python docs</a><a href="https://docs.python.org/3/tutorial/" target="_blank" rel="noopener">Python tutorial</a></div>
+</footer>
+<div id="toast" role="status"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js"></script>
+</body>
+</html>
