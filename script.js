@@ -358,6 +358,97 @@ let activeProject = null;
 
 const $ = id => document.getElementById(id);
 
+// Supabase connection: only the project URL and publishable key belong in browser code.
+const SUPABASE_URL = "https://vzgbxoxscmlmacxciwze.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_KQo7xmr50dXipb4dm_i2NA_tNGGg-Lg";
+const supabaseClient = window.supabase?.createClient
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
+  : null;
+
+function setAuthMessage(message, type="info") {
+  const el = $("authMessage");
+  if (!el) return;
+  el.textContent = message;
+  el.dataset.type = type;
+}
+function showAuthForm(mode) {
+  $("signInForm").hidden = mode !== "signin";
+  $("signUpForm").hidden = mode !== "signup";
+  $("authHeading").textContent = mode === "signup" ? "Start your PyLearn account." : "Save your learning journey.";
+  $("authDescription").textContent = mode === "signup"
+    ? "Create an account with your email and a password."
+    : "Sign in to your PyLearn account. Your existing progress on this device remains safe.";
+  setAuthMessage("");
+}
+function renderAuthSession(user) {
+  $("authForms").hidden = !!user;
+  $("authSignedIn").hidden = !user;
+  if (user) {
+    $("signedInEmail").textContent = user.email || "Signed-in account";
+    $("authHeading").textContent = "Welcome to PyLearn.";
+    $("authDescription").textContent = "Your account is connected. Cloud progress synchronization is the next step.";
+    setAuthMessage("You're signed in successfully.", "success");
+  } else {
+    showAuthForm("signin");
+  }
+}
+async function initializeAuth() {
+  if (!supabaseClient) {
+    setAuthMessage("The sign-in service could not load. Check your internet connection and refresh the page.", "error");
+    return;
+  }
+  $("showSignUp").addEventListener("click", () => showAuthForm("signup"));
+  $("showSignIn").addEventListener("click", () => showAuthForm("signin"));
+  $("signInForm").addEventListener("submit", async event => {
+    event.preventDefault();
+    const button = $("signInButton");
+    button.disabled = true;
+    button.textContent = "Signing in…";
+    setAuthMessage("");
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email: $("signInEmail").value.trim(),
+      password: $("signInPassword").value
+    });
+    button.disabled = false;
+    button.textContent = "Sign in";
+    if (error) setAuthMessage(error.message, "error");
+    else renderAuthSession(data.user);
+  });
+  $("signUpForm").addEventListener("submit", async event => {
+    event.preventDefault();
+    const button = $("signUpButton");
+    button.disabled = true;
+    button.textContent = "Creating account…";
+    setAuthMessage("");
+    const { data, error } = await supabaseClient.auth.signUp({
+      email: $("signUpEmail").value.trim(),
+      password: $("signUpPassword").value,
+      options: { emailRedirectTo: "https://yabu528.github.io/Pylearn/" }
+    });
+    button.disabled = false;
+    button.textContent = "Create account";
+    if (error) {
+      setAuthMessage(error.message, "error");
+    } else if (data.session) {
+      renderAuthSession(data.user);
+    } else {
+      showAuthForm("signin");
+      setAuthMessage("Account created. Check your email for a confirmation link, then return here and sign in.", "success");
+    }
+  });
+  $("signOutButton").addEventListener("click", async () => {
+    const { error } = await supabaseClient.auth.signOut();
+    if (error) setAuthMessage(error.message, "error");
+  });
+  const { data: { session }, error } = await supabaseClient.auth.getSession();
+  if (error) setAuthMessage(error.message, "error");
+  renderAuthSession(session?.user || null);
+  supabaseClient.auth.onAuthStateChange((_event, sessionNow) => {
+    renderAuthSession(sessionNow?.user || null);
+  });
+}
+
+
 function save(){localStorage.setItem("pylearn_state",JSON.stringify(state));localStorage.setItem("pylearn_current",String(current))}
 function go(id){$(id)?.scrollIntoView({behavior:"smooth",block:"start"}); if(id==="playground" && !pythonReady && !pythonLoading) initPython();}
 function saveBookmarks(){localStorage.setItem("pylearn_bookmarks",JSON.stringify(bookmarks))}
@@ -865,6 +956,8 @@ if (localStorage.getItem("pylearn_theme") === "light") {
 
 updateLogoTheme();
 
+
+initializeAuth();
 
 // Do not start/increase a streak just because the app was opened.
 // updateStreak() is called only after a real learning action succeeds.
