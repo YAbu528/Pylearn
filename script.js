@@ -561,6 +561,10 @@ async function syncLearningData() {
       const bookmarkWrite=await supabaseClient.from("user_bookmarks").upsert(bookmarkWrites,{onConflict:"user_id,lesson_id"});
       if(bookmarkWrite.error) throw bookmarkWrite.error;
     }
+    // Once the cloud has accepted the current bookmark state, the local
+    // add/remove markers are no longer needed. Keeping old deletion markers
+    // would incorrectly block a later re-bookmark from another device.
+    localStorage.setItem(BOOKMARK_DELETIONS_KEY, JSON.stringify({}));
     localStorage.setItem("pylearn_state", JSON.stringify(state));
     localStorage.setItem("pylearn_current", String(current));
     localStorage.setItem("pylearn_bookmarks", JSON.stringify(bookmarks));
