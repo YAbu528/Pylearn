@@ -513,6 +513,14 @@ async function syncLearningData() {
     for (let i=0;i<lessons.length;i++) {
       const id=String(i), localValue=notes[id] || "", remote=remoteNotes.get(id);
       const meta=noteMeta[id] || {};
+      // Existing notes from before cloud sync have no timestamp metadata.
+      // Treat them as local-first during their initial migration so they
+      // are not overwritten by an older cloud copy.
+      if (localValue && !Number(meta.updatedAt)) {
+        meta.updatedAt=Date.now();
+        meta.deleted=false;
+        noteMeta[id]=meta;
+      }
       const localChangedAt=Number(meta.updatedAt || 0);
       const remoteChangedAt=remote ? new Date(remote.updated_at).getTime() : 0;
       if (remote && remoteChangedAt > localChangedAt) {
