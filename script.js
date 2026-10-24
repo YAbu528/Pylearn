@@ -538,6 +538,15 @@ async function syncLearningData() {
       const noteWrite=await supabaseClient.from("user_notes").upsert(noteWrites,{onConflict:"user_id,lesson_id"});
       if(noteWrite.error) throw noteWrite.error;
     }
+    // A note can be edited while the cloud upsert is awaiting the network.
+    // Merge newer local metadata back in instead of overwriting it with this
+    // sync's older snapshot; the queued follow-up sync will upload that edit.
+    const latestNoteMeta = readMap(NOTE_META_KEY);
+    for (const [id, latestMeta] of Object.entries(latestNoteMeta)) {
+      if (Number(latestMeta?.updatedAt || 0) > Number(noteMeta[id]?.updatedAt || 0)) {
+        noteMeta[id] = latestMeta;
+      }
+    }
     localStorage.setItem("pylearn_notes",JSON.stringify(notes));
     localStorage.setItem(NOTE_META_KEY,JSON.stringify(noteMeta));
 
