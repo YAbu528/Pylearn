@@ -537,12 +537,12 @@ async function syncLearningData() {
     const remoteBookmarks=new Map((bookmarksRes.data||[]).map(row=>[Number(row.lesson_id),row]));
     const activeRemote=new Set((bookmarksRes.data||[]).filter(row=>!row.deleted_at).map(row=>Number(row.lesson_id)));\n    const remoteDeleted=new Set((bookmarksRes.data||[]).filter(row=>row.deleted_at).map(row=>Number(row.lesson_id)));
     const localBookmarks=new Set(bookmarks);
-    for(const i of activeRemote) if(!deletedBookmarks[String(i)]) localBookmarks.add(i);\n    for(const i of remoteDeleted) localBookmarks.delete(i);
+    for(const i of activeRemote) if(!deletedBookmarks[String(i)]) localBookmarks.add(i);\n    for(const i of remoteDeleted) { if(Number(deletedBookmarks[String(i)]) < 0) localBookmarks.add(i); else localBookmarks.delete(i); }
     for(const key of Object.keys(deletedBookmarks)) if(deletedBookmarks[key]) localBookmarks.delete(Number(key));
     bookmarks=[...localBookmarks].filter(i=>Number.isInteger(i)&&i>=0&&i<lessons.length).sort((a,b)=>a-b);
     const bookmarkWrites=[];
     for(let i=0;i<lessons.length;i++){
-      const id=String(i), remote=remoteBookmarks.get(i), deleted=!!deletedBookmarks[id];
+      const id=String(i), remote=remoteBookmarks.get(i), deleted=Number(deletedBookmarks[id]) > 0;
       if(deleted || bookmarks.includes(i) || remote){
         bookmarkWrites.push({user_id:userId,lesson_id:id,deleted_at:deleted?new Date(deletedBookmarks[id]).toISOString():null});
       }
@@ -568,7 +568,7 @@ function saveNotes(){localStorage.setItem("pylearn_notes",JSON.stringify(notes))
 function toggleBookmark(){
   const i=bookmarks.indexOf(current);
   const deletions=readMap(BOOKMARK_DELETIONS_KEY);
-  if(i===-1){bookmarks.push(current);delete deletions[String(current)];toast("🔖 Lesson bookmarked");}
+  if(i===-1){bookmarks.push(current);deletions[String(current)]=-Date.now();toast("🔖 Lesson bookmarked");}
   else{bookmarks.splice(i,1);deletions[String(current)]=Date.now();toast("Bookmark removed");}
   localStorage.setItem(BOOKMARK_DELETIONS_KEY,JSON.stringify(deletions));
   saveBookmarks(); renderStudyTools(); renderLessonBookmark();
