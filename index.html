@@ -29,7 +29,43 @@
   </div>
 </header>
 
-<main id="top">
+<main id="top">\n
+<section class="auth-section section" id="account">
+  <div class="auth-card card">
+    <div class="auth-copy">
+      <span class="eyebrow">YOUR PYLEARN ACCOUNT</span>
+      <h2 id="authHeading">Save your learning journey.</h2>
+      <p id="authDescription">Create an account or sign in. Your existing progress on this device will remain safe while we prepare cloud sync.</p>
+      <div id="authMessage" class="auth-message" role="status" aria-live="polite"></div>
+    </div>
+    <div class="auth-panel" id="authForms">
+      <form id="signInForm" class="auth-form">
+        <h3>Welcome back</h3>
+        <label for="signInEmail">Email address</label>
+        <input id="signInEmail" type="email" autocomplete="email" required placeholder="you@example.com">
+        <label for="signInPassword">Password</label>
+        <input id="signInPassword" type="password" autocomplete="current-password" required minlength="8" placeholder="Your password">
+        <button class="primary" id="signInButton" type="submit">Sign in</button>
+        <p class="auth-switch">New to PyLearn? <button type="button" class="auth-link" id="showSignUp">Create an account</button></p>
+      </form>
+      <form id="signUpForm" class="auth-form" hidden>
+        <h3>Create your account</h3>
+        <label for="signUpEmail">Email address</label>
+        <input id="signUpEmail" type="email" autocomplete="email" required placeholder="you@example.com">
+        <label for="signUpPassword">Create a password</label>
+        <input id="signUpPassword" type="password" autocomplete="new-password" required minlength="8" placeholder="At least 8 characters">
+        <button class="primary" id="signUpButton" type="submit">Create account</button>
+        <p class="auth-switch">Already registered? <button type="button" class="auth-link" id="showSignIn">Sign in</button></p>
+      </form>
+    </div>
+    <div class="auth-signed-in" id="authSignedIn" hidden>
+      <span class="auth-avatar">✓</span>
+      <div><strong id="signedInEmail"></strong><small>You're signed in to PyLearn.</small></div>
+      <button class="ghost" id="signOutButton" type="button">Sign out</button>
+    </div>
+  </div>
+</section>
+
 <section class="hero">
   <div>
     <span class="eyebrow">INTERACTIVE PYTHON SCHOOL</span>
@@ -376,6 +412,6 @@ print("2 + 3 =", 2 + 3)</textarea>
   <div><b>Resources</b><a href="https://docs.python.org/3/" target="_blank" rel="noopener">Python docs</a><a href="https://docs.python.org/3/tutorial/" target="_blank" rel="noopener">Python tutorial</a></div>
 </footer>
 <div id="toast" role="status"></div>
-<script src="script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>\n<script src="script.js"></script>
 </body>
 </html>
