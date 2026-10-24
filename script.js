@@ -356,7 +356,8 @@ let projectState = JSON.parse(localStorage.getItem("pylearn_projects") || '{}');
 let activeProject = null;
 
 
-const $ = id => document.getElementById(id);\n
+const $ = id => document.getElementById(id);
+
 // Supabase connection: only the project URL and publishable key belong in browser code.
 const SUPABASE_URL = "https://vzgbxoxscmlmacxciwze.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_KQo7xmr50dXipb4dm_i2NA_tNGGg-Lg";
@@ -431,8 +432,8 @@ async function initializeAuth() {
     } else if (data.session) {
       renderAuthSession(data.user);
     } else {
-      setAuthMessage("Account created. Check your email for a confirmation link, then return here and sign in.", "success");
       showAuthForm("signin");
+      setAuthMessage("Account created. Check your email for a confirmation link, then return here and sign in.", "success");
     }
   });
   $("signOutButton").addEventListener("click", async () => {
@@ -956,6 +957,8 @@ if (localStorage.getItem("pylearn_theme") === "light") {
 updateLogoTheme();
 
 
-initializeAuth();\n\n// Do not start/increase a streak just because the app was opened.
+initializeAuth();
+
+// Do not start/increase a streak just because the app was opened.
 // updateStreak() is called only after a real learning action succeeds.
 renderLesson(); renderLessons(); renderStudyTools(); searchLessons();
