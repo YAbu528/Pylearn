@@ -535,9 +535,11 @@ async function syncLearningData() {
 
     const deletedBookmarks=readMap(BOOKMARK_DELETIONS_KEY);
     const remoteBookmarks=new Map((bookmarksRes.data||[]).map(row=>[Number(row.lesson_id),row]));
-    const activeRemote=new Set((bookmarksRes.data||[]).filter(row=>!row.deleted_at).map(row=>Number(row.lesson_id)));\n    const remoteDeleted=new Set((bookmarksRes.data||[]).filter(row=>row.deleted_at).map(row=>Number(row.lesson_id)));
+    const activeRemote=new Set((bookmarksRes.data||[]).filter(row=>!row.deleted_at).map(row=>Number(row.lesson_id)));
+    const remoteDeleted=new Set((bookmarksRes.data||[]).filter(row=>row.deleted_at).map(row=>Number(row.lesson_id)));
     const localBookmarks=new Set(bookmarks);
-    for(const i of activeRemote) if(!deletedBookmarks[String(i)]) localBookmarks.add(i);\n    for(const i of remoteDeleted) { if(Number(deletedBookmarks[String(i)]) < 0) localBookmarks.add(i); else localBookmarks.delete(i); }
+    for(const i of activeRemote) if(!deletedBookmarks[String(i)]) localBookmarks.add(i);
+    for(const i of remoteDeleted) { if(Number(deletedBookmarks[String(i)]) < 0) localBookmarks.add(i); else localBookmarks.delete(i); }
     for(const key of Object.keys(deletedBookmarks)) if(Number(deletedBookmarks[key]) > 0) localBookmarks.delete(Number(key));
     bookmarks=[...localBookmarks].filter(i=>Number.isInteger(i)&&i>=0&&i<lessons.length).sort((a,b)=>a-b);
     const bookmarkWrites=[];
@@ -551,7 +553,10 @@ async function syncLearningData() {
       const bookmarkWrite=await supabaseClient.from("user_bookmarks").upsert(bookmarkWrites,{onConflict:"user_id,lesson_id"});
       if(bookmarkWrite.error) throw bookmarkWrite.error;
     }
-    save(); saveBookmarks(); renderLesson(); renderLessons(); renderStudyTools();
+    localStorage.setItem("pylearn_state", JSON.stringify(state));
+    localStorage.setItem("pylearn_current", String(current));
+    localStorage.setItem("pylearn_bookmarks", JSON.stringify(bookmarks));
+    renderLesson(); renderLessons(); renderStudyTools();
     setAuthMessage("Your lessons, notes, and bookmarks are synced.", "success");
   } catch (error) {
     console.error("PyLearn cloud sync failed:", error);
