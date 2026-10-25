@@ -661,7 +661,10 @@ function renderStudyTools(){
   const list=$("bookmarkList"), count=$("bookmarkCount"), note=$("lessonNotes"), status=$("noteStatus");
   if(count) count.textContent=bookmarks.length;
   if(list) list.innerHTML=bookmarks.length?bookmarks.map(i=>{const x=lessons[i]; return `<div class="bookmark-item"><button onclick="openStudyLesson(${i})"><span>🔖</span><div><b>${String(i+1).padStart(2,"0")} · ${x.title}</b><small>${x.short}</small></div></button><button class="remove-bookmark" onclick="removeBookmark(${i})" aria-label="Remove bookmark">×</button></div>`}).join(""):'<div class="study-empty">No bookmarks yet. Bookmark a lesson when you want to review it later.</div>';
-  if(note){note.value=notes[String(current)]||"";}
+  // A cloud sync can re-render study tools while the user is typing.
+  // Never replace the active textarea value: doing so moves the cursor and
+  // can erase text that has not reached the local save debounce yet.
+  if(note && document.activeElement !== note){note.value=notes[String(current)]||"";}
   if(status) status.textContent=notes[String(current)]?"Saved locally":"No note yet";
 }
 function removeBookmark(i){bookmarks=bookmarks.filter(x=>x!==i);const deletions=readMap(BOOKMARK_DELETIONS_KEY);deletions[String(i)]=Date.now();localStorage.setItem(BOOKMARK_DELETIONS_KEY,JSON.stringify(deletions));saveBookmarks();renderStudyTools();renderLessonBookmark();toast("Bookmark removed");}
