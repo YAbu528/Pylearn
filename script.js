@@ -561,16 +561,9 @@ async function syncLearningData() {
     if (statsRes.error) throw statsRes.error;
     if (achievementsRes.error) throw achievementsRes.error;
     if (!currentCloudUser || currentCloudUser.id !== userId) return;
-    // Keep pre-cloud Python-run/project XP as a separate local legacy balance.
-    // Only verified quiz/lesson/challenge XP is replaced by the server total.
-    const legacyXpKey = "pylearn_legacy_xp_" + userId;
-    let legacyXp = localStorage.getItem(legacyXpKey);
-    if (legacyXp === null) {
-      const verifiedLocalXp = state.quiz.length * 15 + state.done.length * 20 + state.challenges.length * 30;
-      legacyXp = String(Math.max(0, Number(state.xp || 0) - verifiedLocalXp));
-      localStorage.setItem(legacyXpKey, legacyXp);
-    }
-    state.xp = Number(statsRes.data.xp || 0) + Math.max(0, Number(legacyXp) || 0);
+    // XP is account-wide and authoritative on the server.
+    // Never add browser-local legacy XP: it would make totals differ by device.
+    state.xp = Number(statsRes.data.xp || 0);
     state.streak = Number(statsRes.data.streak || 0);
     state.lastDay = statsRes.data.last_active_date || "";
     cloudAchievements = (achievementsRes.data || []).map(row => row.achievement_id);
@@ -740,7 +733,7 @@ function makeWorker(){
       activeOutput=m.output||activeOutput;
       $("output").style.color="";
       $("output").textContent=activeOutput.trim()?activeOutput:"Program finished with no printed output.";
-      state.runs+=1; state.xp+=5; runCount++; save(); renderLessons();
+      state.runs+=1; runCount++; save(); renderLessons();
       $("runCount").textContent=`Run ${runCount}`;
       finishRunButton();
     }else if(m.type==="run-error"){
@@ -855,8 +848,8 @@ function openProject(id){
 function closeProjectLab(){ $("projectLab").hidden=true; activeProject=null; }
 function completeProject(id){
   if(projectState[id]) return;
-  projectState[id]=true; saveProjects(); state.xp+=50; save();
-  toast("🎉 Project completed! +50 XP"); renderProjects(); renderLessons();
+  projectState[id]=true; saveProjects(); save();
+  toast("🎉 Project completed!"); renderProjects(); renderLessons();
   openProject(id);
 }
 function openProjectInPlayground(p){
