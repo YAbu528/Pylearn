@@ -135,3 +135,32 @@ body.light{--bg:#f6f7fb;--panel:#fff;--card:#f1f3f8;--card2:#e9ebf2;--line:#dfe2
 .auth-avatar{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:rgba(34,197,94,.12);color:var(--green);font-weight:900}
 [hidden]{display:none!important}
 @media(max-width:760px){.auth-card{grid-template-columns:1fr;padding:19px;gap:12px}}
+
+
+/* Mobile overflow and width-stability fixes */
+html,body{max-width:100%;overflow-x:clip}
+main,section,article,aside,footer,.card,.lesson-panel,.learn,.dashboard,.hero,.challenge,.playground,.project-lab,.study-grid{min-width:0;max-width:100%}
+img,video,iframe,canvas,svg{max-width:100%}
+pre,code,.lesson-panel p,.lesson-panel li,.deep-card,.recap-card,.project-brief,.project-start{overflow-wrap:anywhere;word-break:normal}
+pre{max-width:100%}
+button,input,textarea,select{max-width:100%;min-width:0}
+.lesson-panel,.learn aside,.challenge,.playground,.project-lab,.auth-card{min-width:0}
+.lesson-panel>* , .challenge>* , .playground>* , .project-lab>*{min-width:0}
+@media(max-width:650px){
+  .hero,.section,.learn{width:100%;min-width:0}
+  .hero{gap:24px}
+  .hero>*,.dashboard>*,.dashboard-main>*,.dashboard-stats>*,.learn>*,.cards>*,.deep-learning>*,.study-grid>*,.playground>*,.challenge>*,.project-lab-grid>*{min-width:0}
+  .lesson-panel{padding:18px 14px}
+  .lesson-meta{gap:8px;flex-wrap:wrap}
+  .lesson-panel h2{overflow-wrap:anywhere}
+  .lesson-actions button{max-width:100%;white-space:normal}
+  .quiz-head{min-width:0}
+  .quiz-head>div{min-width:0}
+  .editor-panel footer{gap:8px;flex-wrap:wrap}
+  .editor-panel footer button{flex:1 1 auto}
+  .project-summary,.project-lab-head,.continue-card{min-width:0}
+  .roadmap-stage,.metric-card,.dash-card{min-width:0}
+  .topbar{min-width:0;gap:10px}
+  .topbar .logo{min-width:0}
+  .top-actions{min-width:0}
+}
