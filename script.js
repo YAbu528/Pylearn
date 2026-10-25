@@ -380,6 +380,26 @@ function showAuthForm(mode) {
     : "Sign in to your PyLearn account. Your existing progress on this device remains safe.";
   setAuthMessage("");
 }
+async function startSocialSignIn(provider, button) {
+  if (!supabaseClient) {
+    setAuthMessage("The sign-in service could not load. Check your internet connection and refresh the page.", "error");
+    return;
+  }
+  const originalText = button.textContent;
+  document.querySelectorAll(".auth-provider").forEach(item => { item.disabled = true; });
+  button.textContent = "Connecting…";
+  setAuthMessage("");
+  const options = { redirectTo: window.location.origin + window.location.pathname };
+  if (provider === "azure") options.scopes = "email";
+  try {
+    const { error } = await supabaseClient.auth.signInWithOAuth({ provider, options });
+    if (error) throw error;
+  } catch (error) {
+    setAuthMessage(error.message || "Could not start sign-in. Please try again.", "error");
+    document.querySelectorAll(".auth-provider").forEach(item => { item.disabled = false; });
+    button.textContent = originalText;
+  }
+}
 function renderAuthSession(user) {
   $("authForms").hidden = !!user;
   $("authSignedIn").hidden = !user;
@@ -399,6 +419,9 @@ async function initializeAuth() {
   }
   $("showSignUp").addEventListener("click", () => showAuthForm("signup"));
   $("showSignIn").addEventListener("click", () => showAuthForm("signin"));
+  $("googleSignIn").addEventListener("click", event => startSocialSignIn("google", event.currentTarget));
+  $("appleSignIn").addEventListener("click", event => startSocialSignIn("apple", event.currentTarget));
+  $("microsoftSignIn").addEventListener("click", event => startSocialSignIn("azure", event.currentTarget));
   $("signInForm").addEventListener("submit", async event => {
     event.preventDefault();
     const button = $("signInButton");
