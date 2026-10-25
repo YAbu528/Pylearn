@@ -479,6 +479,8 @@ function activateCloudUser(user) {
     localStorage.setItem("pylearn_notes", "{}");
     localStorage.removeItem(NOTE_META_KEY);
     localStorage.removeItem(BOOKMARK_DELETIONS_KEY);
+    localStorage.removeItem("pylearn_reward_requests");
+    cloudAchievements = [];
   }
   localStorage.setItem(CLOUD_USER_KEY, user.id);
 }
