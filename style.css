@@ -164,3 +164,11 @@ button,input,textarea,select{max-width:100%;min-width:0}
   .topbar .logo{min-width:0}
   .top-actions{min-width:0}
 }
+
+/* Social sign-in options */
+.auth-social{display:grid;gap:9px;margin-top:16px}
+.auth-divider{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+.auth-divider:before,.auth-divider:after{content:"";height:1px;background:var(--line);flex:1}
+.auth-provider{width:100%;min-height:42px;border:1px solid var(--line);border-radius:11px;background:var(--card);color:var(--text);font:inherit;font-size:13px;font-weight:750;cursor:pointer;transition:border-color .18s,background .18s}
+.auth-provider:hover{border-color:var(--purple2);background:var(--surface)}
+.auth-provider:disabled{opacity:.6;cursor:wait}
