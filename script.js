@@ -1013,6 +1013,9 @@ function renderChallengeUI(){
   $("challengeMode").textContent=challengeModeLabel(mode);
   $("challengeCode").value=x.starter||"";
   $("challengeCode").style.display=(mode==="mcq"||mode==="predict")?"none":"block";
+  const preview=$("challengePreview");
+  preview.hidden=mode!=="predict";
+  preview.textContent=mode==="predict"?(x.starter||""):"";
   $("challengeCode").readOnly=false;
   $("challengeChoiceArea").innerHTML=mode==="mcq"?(x.options||[]).map((o,i)=>`<button class="challenge-choice" onclick="answerChallengeChoice(${i})">${o}</button>`).join(""):"";
   $("challengeAnswerArea").innerHTML=mode==="predict"?`<input id="challengeAnswer" type="text" inputmode="text" autocomplete="off" placeholder="Type the output you predict…">`:"";
