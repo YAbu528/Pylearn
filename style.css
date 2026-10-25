@@ -176,3 +176,8 @@ button,input,textarea,select{max-width:100%;min-width:0}
 .auth-provider{display:flex;align-items:center;justify-content:center;gap:11px;padding:10px 14px}
 .provider-logo{display:block;flex:0 0 20px;width:20px;height:20px}
 .google-logo{width:19px;height:19px;flex-basis:19px}
+
+/* Keep social-provider marks at icon size, regardless of global SVG rules. */
+.auth-social button.auth-provider{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;gap:11px!important;min-height:46px!important;padding:10px 14px!important;}
+.auth-social button.auth-provider svg.provider-logo{display:block!important;width:20px!important;height:20px!important;min-width:20px!important;max-width:20px!important;min-height:20px!important;max-height:20px!important;flex:0 0 20px!important;}
+.auth-social button.auth-provider span{display:inline!important;flex:0 1 auto!important;}
