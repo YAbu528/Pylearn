@@ -544,7 +544,11 @@ async function syncLearningData() {
       const { error: rewardError } = await supabaseClient.functions.invoke("award-learning-reward", {
         body: { lesson_id: String(event.lesson_id), event_type: event.event_type }
       });
-      if (rewardError) throw rewardError;
+      if (rewardError) {
+        // A reward service hiccup must not block notes/bookmarks from syncing.
+        console.warn("PyLearn reward sync will retry later:", rewardError);
+        continue;
+      }
       rewardMarkers[eventKey] = true;
       localStorage.setItem("pylearn_reward_requests", JSON.stringify(rewardMarkers));
       if (!currentCloudUser || currentCloudUser.id !== userId) return;
