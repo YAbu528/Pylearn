@@ -559,7 +559,7 @@ async function syncLearningData() {
     if (!currentCloudUser || currentCloudUser.id !== userId) return;
     // Keep pre-cloud Python-run/project XP as a separate local legacy balance.
     // Only verified quiz/lesson/challenge XP is replaced by the server total.
-    const legacyXpKey = "pylearn_legacy_xp";
+    const legacyXpKey = "pylearn_legacy_xp_" + userId;
     let legacyXp = localStorage.getItem(legacyXpKey);
     if (legacyXp === null) {
       const verifiedLocalXp = state.quiz.length * 15 + state.done.length * 20 + state.challenges.length * 30;
@@ -958,11 +958,11 @@ function renderRoadmap(){
 }
 
 function renderBadges(){
-  const earned=badges.filter(b=>currentCloudUser ? cloudAchievements.includes(b.id) : b.test(state)).length;
+  const earned=badges.filter(b=>currentCloudUser && b.id!=="code" ? cloudAchievements.includes(b.id) : b.test(state)).length;
   const summary=$("badgeSummary");
   if(summary) summary.textContent=`${earned}/${badges.length} unlocked`;
   $("badges").innerHTML=badges.map(b=>{
-    const isEarned=currentCloudUser ? cloudAchievements.includes(b.id) : b.test(state);
+    const isEarned=currentCloudUser && b.id!=="code" ? cloudAchievements.includes(b.id) : b.test(state);
     const [value,total]=b.progress(state);
     const pct=Math.round(value/total*100);
     return `<article class="${isEarned?"earned":"locked-badge"}">
