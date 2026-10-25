@@ -298,10 +298,10 @@ const badges = [
  {id:"code", medal:"💻", name:"First Code", desc:"Run your first Python program.", goal:"Run Python 1 time", test:s=>s.runs>=1, progress:s=>[Math.min(s.runs,1),1]},
  {id:"challenge", medal:"⚔️", name:"Challenge Accepted", desc:"Solve your first coding challenge.", goal:"Solve 1 challenge", test:s=>s.challenges.length>=1, progress:s=>[Math.min(s.challenges.length,1),1]},
  {id:"five", medal:"🔥", name:"On a Roll", desc:"Complete five lessons.", goal:"Complete 5 lessons", test:s=>s.done.length>=5, progress:s=>[Math.min(s.done.length,5),5]},
- {id:"quiz", medal:"🧠", name:"Quiz Master", desc:"Answer every lesson quiz correctly.", goal:`Master all ${lessons.length} quizzes`, test:s=>s.quiz.length>=lessons.length, progress:s=>[Math.min(s.quiz.length,lessons.length),lessons.length]},
+ {id:"quiz", medal:"🧠", name:"Quiz Master", desc:"Answer every lesson quiz correctly.", goal:"Master all "+lessons.length+" quizzes", test:s=>s.quiz.length>=lessons.length, progress:s=>[Math.min(s.quiz.length,lessons.length),lessons.length]},
  {id:"builder", medal:"🛠️", name:"Code Builder", desc:"Solve three coding challenges.", goal:"Solve 3 challenges", test:s=>s.challenges.length>=3, progress:s=>[Math.min(s.challenges.length,3),3]},
  {id:"week", medal:"🔥", name:"Week Warrior", desc:"Build a seven-day learning streak.", goal:"Reach a 7-day streak", test:s=>s.streak>=7, progress:s=>[Math.min(s.streak,7),7]},
- {id:"python", medal:"🐍", name:"Python Fundamentals", desc:"Complete the full current learning path.", goal:`Complete all ${lessons.length} lessons`, test:s=>s.done.length>=lessons.length, progress:s=>[Math.min(s.done.length,lessons.length),lessons.length]},
+ {id:"python", medal:"🐍", name:"Python Fundamentals", desc:"Complete the full current learning path.", goal:"Complete all "+lessons.length+" lessons", test:s=>s.done.length>=lessons.length, progress:s=>[Math.min(s.done.length,lessons.length),lessons.length]},
  {id:"explorer", medal:"🧭", name:"Python Explorer", desc:"Reach 500 XP through real learning actions.", goal:"Earn 500 XP", test:s=>s.xp>=500, progress:s=>[Math.min(s.xp,500),500]}
 ];
 
@@ -557,7 +557,16 @@ async function syncLearningData() {
     if (statsRes.error) throw statsRes.error;
     if (achievementsRes.error) throw achievementsRes.error;
     if (!currentCloudUser || currentCloudUser.id !== userId) return;
-    state.xp = Number(statsRes.data.xp || 0);
+    // Keep pre-cloud Python-run/project XP as a separate local legacy balance.
+    // Only verified quiz/lesson/challenge XP is replaced by the server total.
+    const legacyXpKey = "pylearn_legacy_xp";
+    let legacyXp = localStorage.getItem(legacyXpKey);
+    if (legacyXp === null) {
+      const verifiedLocalXp = state.quiz.length * 15 + state.done.length * 20 + state.challenges.length * 30;
+      legacyXp = String(Math.max(0, Number(state.xp || 0) - verifiedLocalXp));
+      localStorage.setItem(legacyXpKey, legacyXp);
+    }
+    state.xp = Number(statsRes.data.xp || 0) + Math.max(0, Number(legacyXp) || 0);
     state.streak = Number(statsRes.data.streak || 0);
     state.lastDay = statsRes.data.last_active_date || "";
     cloudAchievements = (achievementsRes.data || []).map(row => row.achievement_id);
