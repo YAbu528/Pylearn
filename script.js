@@ -442,12 +442,12 @@ async function initializeAuth() {
   });
   const { data: { session }, error } = await supabaseClient.auth.getSession();
   if (error) setAuthMessage(error.message, "error");
-  renderAuthSession(session?.user || null);
-  if (session?.user) {
-    currentCloudUser = session.user;
-    setTimeout(() => syncLearningData(), 0);
-  }
+  activateCloudUser(session?.user || null);
+  currentCloudUser = session?.user || null;
+  renderAuthSession(currentCloudUser);
+  if (currentCloudUser) setTimeout(() => syncLearningData(), 0);
   supabaseClient.auth.onAuthStateChange((_event, sessionNow) => {
+    activateCloudUser(sessionNow?.user || null);
     currentCloudUser = sessionNow?.user || null;
     renderAuthSession(currentCloudUser);
     if (currentCloudUser) setTimeout(() => syncLearningData(), 0);
@@ -461,7 +461,26 @@ let cloudSyncQueued = false;
 let cloudSyncTimer = null;
 const NOTE_META_KEY = "pylearn_note_sync_meta";
 const BOOKMARK_DELETIONS_KEY = "pylearn_bookmark_deletions";
+const CLOUD_USER_KEY = "pylearn_cloud_user_id";
 const readMap = key => readLocalJSON(key, {});
+function activateCloudUser(user) {
+  if (!user?.id) return;
+  const previousUserId = localStorage.getItem(CLOUD_USER_KEY);
+  if (previousUserId && previousUserId !== user.id) {
+    // Never carry one account's browser cache into another account.
+    state = {done:[],quiz:[],challenges:[],runs:0,xp:0,streak:0,lastDay:""};
+    bookmarks = [];
+    notes = {};
+    current = 0;
+    localStorage.setItem("pylearn_state", JSON.stringify(state));
+    localStorage.setItem("pylearn_current", "0");
+    localStorage.setItem("pylearn_bookmarks", "[]");
+    localStorage.setItem("pylearn_notes", "{}");
+    localStorage.removeItem(NOTE_META_KEY);
+    localStorage.removeItem(BOOKMARK_DELETIONS_KEY);
+  }
+  localStorage.setItem(CLOUD_USER_KEY, user.id);
+}
 function queueCloudSync() {
   if (!currentCloudUser || !supabaseClient) return;
   clearTimeout(cloudSyncTimer);
@@ -506,6 +525,7 @@ async function syncLearningData() {
     }));
     const progressWrite = await supabaseClient.from("lesson_progress").upsert(progressUpserts, {onConflict:"user_id,lesson_id"});
     if (progressWrite.error) throw progressWrite.error;
+    if (!currentCloudUser || currentCloudUser.id !== userId) return;
 
     const noteMeta = readMap(NOTE_META_KEY);
     const remoteNotes = new Map((notesRes.data || []).map(row => [String(row.lesson_id), row]));
@@ -537,6 +557,7 @@ async function syncLearningData() {
     if (noteWrites.length) {
       const noteWrite=await supabaseClient.from("user_notes").upsert(noteWrites,{onConflict:"user_id,lesson_id"});
       if(noteWrite.error) throw noteWrite.error;
+      if (!currentCloudUser || currentCloudUser.id !== userId) return;
     }
     // A note can be edited while the cloud upsert is awaiting the network.
     // Merge newer local metadata back in instead of overwriting it with this
@@ -572,6 +593,7 @@ async function syncLearningData() {
     if(bookmarkWrites.length){
       const bookmarkWrite=await supabaseClient.from("user_bookmarks").upsert(bookmarkWrites,{onConflict:"user_id,lesson_id"});
       if(bookmarkWrite.error) throw bookmarkWrite.error;
+      if (!currentCloudUser || currentCloudUser.id !== userId) return;
     }
     // Clear only the bookmark markers that this sync actually processed.
     // A user may add/remove a bookmark while the cloud request is in flight;
