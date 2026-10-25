@@ -172,3 +172,7 @@ button,input,textarea,select{max-width:100%;min-width:0}
 .auth-provider{width:100%;min-height:42px;border:1px solid var(--line);border-radius:11px;background:var(--card);color:var(--text);font:inherit;font-size:13px;font-weight:750;cursor:pointer;transition:border-color .18s,background .18s}
 .auth-provider:hover{border-color:var(--purple2);background:var(--surface)}
 .auth-provider:disabled{opacity:.6;cursor:wait}
+
+.auth-provider{display:flex;align-items:center;justify-content:center;gap:11px;padding:10px 14px}
+.provider-logo{display:block;flex:0 0 20px;width:20px;height:20px}
+.google-logo{width:19px;height:19px;flex-basis:19px}
