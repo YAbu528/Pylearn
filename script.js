@@ -420,7 +420,6 @@ async function initializeAuth() {
   $("showSignUp").addEventListener("click", () => showAuthForm("signup"));
   $("showSignIn").addEventListener("click", () => showAuthForm("signin"));
   $("googleSignIn").addEventListener("click", event => startSocialSignIn("google", event.currentTarget));
-  $("appleSignIn").addEventListener("click", event => startSocialSignIn("apple", event.currentTarget));
   $("microsoftSignIn").addEventListener("click", event => startSocialSignIn("azure", event.currentTarget));
   $("signInForm").addEventListener("submit", async event => {
     event.preventDefault();
