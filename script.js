@@ -456,6 +456,7 @@ async function initializeAuth() {
 
 
 let currentCloudUser = null;
+let cloudAchievements = [];
 let cloudSyncRunning = false;
 let cloudSyncQueued = false;
 let cloudSyncTimer = null;
@@ -526,6 +527,39 @@ async function syncLearningData() {
     const progressWrite = await supabaseClient.from("lesson_progress").upsert(progressUpserts, {onConflict:"user_id,lesson_id"});
     if (progressWrite.error) throw progressWrite.error;
     if (!currentCloudUser || currentCloudUser.id !== userId) return;
+
+    // Award fixed learning rewards on the server after the corresponding
+    // progress record has reached Supabase. The server deduplicates each event.
+    const rewardMarkers = readMap("pylearn_reward_requests");
+    const rewardEvents = [
+      ...state.quiz.map(id => ({lesson_id:id,event_type:"quiz"})),
+      ...state.done.map(id => ({lesson_id:id,event_type:"lesson"})),
+      ...state.challenges.map(id => ({lesson_id:id,event_type:"challenge"}))
+    ];
+    for (const event of rewardEvents) {
+      const eventKey = String(event.lesson_id) + ":" + event.event_type;
+      if (rewardMarkers[eventKey]) continue;
+      const { error: rewardError } = await supabaseClient.functions.invoke("award-learning-reward", {
+        body: { lesson_id: String(event.lesson_id), event_type: event.event_type }
+      });
+      if (rewardError) throw rewardError;
+      rewardMarkers[eventKey] = true;
+      localStorage.setItem("pylearn_reward_requests", JSON.stringify(rewardMarkers));
+      if (!currentCloudUser || currentCloudUser.id !== userId) return;
+    }
+
+    const [statsRes, achievementsRes] = await Promise.all([
+      supabaseClient.from("user_stats").select("xp,streak,last_active_date").eq("user_id", userId).single(),
+      supabaseClient.from("user_achievements").select("achievement_id").eq("user_id", userId)
+    ]);
+    if (statsRes.error) throw statsRes.error;
+    if (achievementsRes.error) throw achievementsRes.error;
+    if (!currentCloudUser || currentCloudUser.id !== userId) return;
+    state.xp = Number(statsRes.data.xp || 0);
+    state.streak = Number(statsRes.data.streak || 0);
+    state.lastDay = statsRes.data.last_active_date || "";
+    cloudAchievements = (achievementsRes.data || []).map(row => row.achievement_id);
+    localStorage.setItem("pylearn_state", JSON.stringify(state));
 
     const noteMeta = readMap(NOTE_META_KEY);
     const remoteNotes = new Map((notesRes.data || []).map(row => [String(row.lesson_id), row]));
@@ -913,11 +947,11 @@ function renderRoadmap(){
 }
 
 function renderBadges(){
-  const earned=badges.filter(b=>b.test(state)).length;
+  const earned=badges.filter(b=>currentCloudUser ? cloudAchievements.includes(b.id) : b.test(state)).length;
   const summary=$("badgeSummary");
   if(summary) summary.textContent=`${earned}/${badges.length} unlocked`;
   $("badges").innerHTML=badges.map(b=>{
-    const isEarned=b.test(state);
+    const isEarned=currentCloudUser ? cloudAchievements.includes(b.id) : b.test(state);
     const [value,total]=b.progress(state);
     const pct=Math.round(value/total*100);
     return `<article class="${isEarned?"earned":"locked-badge"}">
