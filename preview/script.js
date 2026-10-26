@@ -911,6 +911,30 @@ function continueLearning(){
   selectLesson(nextIndex); go("learn");
 }
 
+function renderLearningInsights(){
+  const list=$("insightsList");
+  if(!list) return;
+  const items=[];
+  const nextIndex=lessons.findIndex((_,i)=>!state.done.includes(i));
+  lessons.forEach((lesson,i)=>{
+    if(state.quiz.includes(i)&&!state.challenges.includes(i)){
+      items.push({i,tag:"PRACTISE",title:`Try the challenge: ${lesson.short}`,text:"You passed the quick check. Try the practical challenge to apply the idea.",action:"Open challenge"});
+    }else if(state.done.includes(i)&&!state.challenges.includes(i)){
+      items.push({i,tag:"REVISIT",title:`Finish practising: ${lesson.short}`,text:"This lesson is marked complete, but its challenge is still open.",action:"Open challenge"});
+    }
+  });
+  if(nextIndex!==-1){
+    const lesson=lessons[nextIndex];
+    items.push({i:nextIndex,tag:"CONTINUE",title:`Continue learning: ${lesson.short}`,text:"This is the next lesson in your learning path.",action:"Open lesson"});
+  }
+  const chosen=items.filter((item,index)=>items.findIndex(x=>x.i===item.i&&x.tag===item.tag)===index).slice(0,3);
+  if(!chosen.length){
+    list.innerHTML='<div class="insight-empty"><b>Great progress!</b><p>You have completed the current lessons and their challenges. Explore Projects to put your Python skills to use.</p></div>';
+    return;
+  }
+  list.innerHTML=chosen.map(item=>`<div class="insight-item"><span class="insight-tag">${item.tag}</span><div class="insight-copy"><b>${item.title}</b><p>${item.text}</p></div><button class="ghost" onclick="openStudyLesson(${item.i})">${item.action} →</button></div>`).join("");
+}
+
 function renderDashboard(){
   const total=lessons.length;
   const completed=state.done.length;
@@ -953,6 +977,7 @@ function renderDashboard(){
     $("continueButton").textContent="Open lesson →";
     $("continueCard").classList.remove("complete");
   }
+  renderLearningInsights();
 }
 
 function renderRoadmap(){
