@@ -1167,8 +1167,8 @@ function handleChallengeResult(result){
 function updateLogoTheme() {
   const isLight = document.body.classList.contains("light");
   const logoPath = isLight
-    ? "assets/pylearn-logo-light.png"
-    : "assets/pylearn-logo-dark.png";
+    ? "../assets/pylearn-logo-light.png"
+    : "../assets/pylearn-logo-dark.png";
 
   document.querySelectorAll(".logo img").forEach(img => {
     img.src = logoPath;
