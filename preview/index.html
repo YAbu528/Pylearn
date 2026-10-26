@@ -12,7 +12,7 @@
 <!-- Preload both theme logos so switching themes does not wait for an image download. -->
 <link rel="preload" as="image" href="../assets/pylearn-logo-dark.png">
 <link rel="preload" as="image" href="../assets/pylearn-logo-light.png">
-<link rel="stylesheet" href="style.css?v=phase-1-m1">
+<link rel="stylesheet" href="style.css?v=phase-2-m1-insights">
 </head>
 <body>
 <header class="topbar">
@@ -161,6 +161,11 @@ name = <s>"Python"</s>
   <article class="continue-card card" id="continueCard">
     <div><small>NEXT STEP</small><h3 id="continueTitle">Start Python Basics</h3><p id="continueText">Begin with variables and print().</p></div>
     <button class="ghost" id="continueButton" onclick="continueLearning()">Open lesson →</button>
+  </article>
+  <article class="insights-card card" id="learningInsights" aria-live="polite">
+    <div class="insights-heading"><div><small>YOUR NEXT MOVES</small><h3>Learning insights</h3></div><span class="insights-label">Based on your progress</span></div>
+    <p class="insights-note">Suggestions use completed lessons, quiz results, and solved challenges. They are progress reminders, not a measure of mastery.</p>
+    <div id="insightsList" class="insights-list"></div>
   </article>
 </section>
 
@@ -428,6 +433,6 @@ print("2 + 3 =", 2 + 3)</textarea>
 </footer>
 <div id="toast" role="status"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="script.js?v=logo-path-fix"></script>
+<script src="script.js?v=phase-2-m1-insights"></script>
 </body>
 </html>
