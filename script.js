@@ -713,6 +713,7 @@ function saveCurrentNote(show=true){
 }
 function clearCurrentNote(){const box=$("lessonNotes"); if(box){box.value="";} delete notes[String(current)]; const meta=readMap(NOTE_META_KEY); meta[String(current)]={updatedAt:Date.now(),deleted:true}; localStorage.setItem(NOTE_META_KEY,JSON.stringify(meta)); saveNotes(); $("noteStatus").textContent="No note yet"; renderStudyTools(); toast("Note cleared");}
 function openStudyLesson(i){selectLesson(i); setTimeout(()=>go("learn"),120)}
+function openInsightLesson(i,tag){selectLesson(i);setTimeout(()=>{go("learn");if(tag==="PRACTISE"||tag==="REVISIT")go("challenge");},120)}
 function searchLessons(){
   const q=($("lessonSearch")?.value||"").trim().toLowerCase();
   const results=$("searchResults"), count=$("searchCount"); if(!results||!count)return;
@@ -932,7 +933,7 @@ function renderLearningInsights(){
     list.innerHTML='<div class="insight-empty"><b>Great progress!</b><p>You have completed the current lessons and their challenges. Explore Projects to put your Python skills to use.</p></div>';
     return;
   }
-  list.innerHTML=chosen.map(item=>`<div class="insight-item"><span class="insight-tag">${item.tag}</span><div class="insight-copy"><b>${item.title}</b><p>${item.text}</p></div><button class="ghost" onclick="openStudyLesson(${item.i})">${item.action} →</button></div>`).join("");
+  list.innerHTML=chosen.map(item=>`<div class="insight-item"><span class="insight-tag">${item.tag}</span><div class="insight-copy"><b>${item.title}</b><p>${item.text}</p></div><button class="ghost" onclick="openInsightLesson(${item.i}, '${item.tag}')">${item.action} →</button></div>`).join("");
 }
 
 function renderDashboard(){
