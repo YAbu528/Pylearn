@@ -88,7 +88,7 @@ const lessons = [
  code:'text = "Python is fun"\nprint(text[0])\nprint(text[0:6])\nprint(text.upper())\nname = "Alex"\nprint(f"Hello, {name}!")',
  objectives:["Index and slice strings","Use common string methods","Build messages with f-strings"],
  quiz:{q:"What does text[0:3] return for text = \"Python\"?", options:["Pyt","Pyth","yth"], answer:0, explain:"Slicing starts at index 0 and stops before index 3, so the result is Pyt."},
- challenge:{mode:"fill",title:"Fill the missing line", prompt:"Complete the missing line so the program prints Hello, Alex! using the existing name variable.", hint:"An f-string can place a variable inside curly braces.", solution:'name = "Alex"\nprint(f"Hello, {name}!")', starter:'name = "Alex"\n# Write your print line below\n'}
+ challenge:{mode:"fill",title:"Fill the missing line", prompt:"Complete the missing line so the program prints Hello, Alex! using the existing name variable.", hint:"An f-string can place a variable inside curly braces.", solution:'name = "Alex"\nprint(f"Hello, {name}!")', starter:'name = "Alex"\n{{answer}}\n', fillAnswer:'print(f"Hello, {name}!")'}
 },
 {
  title:"Tuples & sets", short:"Tuples & sets", level:"INTERMEDIATE",
@@ -298,10 +298,10 @@ const badges = [
  {id:"code", medal:"💻", name:"First Code", desc:"Run your first Python program.", goal:"Run Python 1 time", test:s=>s.runs>=1, progress:s=>[Math.min(s.runs,1),1]},
  {id:"challenge", medal:"⚔️", name:"Challenge Accepted", desc:"Solve your first coding challenge.", goal:"Solve 1 challenge", test:s=>s.challenges.length>=1, progress:s=>[Math.min(s.challenges.length,1),1]},
  {id:"five", medal:"🔥", name:"On a Roll", desc:"Complete five lessons.", goal:"Complete 5 lessons", test:s=>s.done.length>=5, progress:s=>[Math.min(s.done.length,5),5]},
- {id:"quiz", medal:"🧠", name:"Quiz Master", desc:"Answer every lesson quiz correctly.", goal:`Master all ${lessons.length} quizzes`, test:s=>s.quiz.length>=lessons.length, progress:s=>[Math.min(s.quiz.length,lessons.length),lessons.length]},
+ {id:"quiz", medal:"🧠", name:"Quiz Master", desc:"Answer every lesson quiz correctly.", goal:"Master all "+lessons.length+" quizzes", test:s=>s.quiz.length>=lessons.length, progress:s=>[Math.min(s.quiz.length,lessons.length),lessons.length]},
  {id:"builder", medal:"🛠️", name:"Code Builder", desc:"Solve three coding challenges.", goal:"Solve 3 challenges", test:s=>s.challenges.length>=3, progress:s=>[Math.min(s.challenges.length,3),3]},
  {id:"week", medal:"🔥", name:"Week Warrior", desc:"Build a seven-day learning streak.", goal:"Reach a 7-day streak", test:s=>s.streak>=7, progress:s=>[Math.min(s.streak,7),7]},
- {id:"python", medal:"🐍", name:"Python Fundamentals", desc:"Complete the full current learning path.", goal:`Complete all ${lessons.length} lessons`, test:s=>s.done.length>=lessons.length, progress:s=>[Math.min(s.done.length,lessons.length),lessons.length]},
+ {id:"python", medal:"🐍", name:"Python Fundamentals", desc:"Complete the full current learning path.", goal:"Complete all "+lessons.length+" lessons", test:s=>s.done.length>=lessons.length, progress:s=>[Math.min(s.done.length,lessons.length),lessons.length]},
  {id:"explorer", medal:"🧭", name:"Python Explorer", desc:"Reach 500 XP through real learning actions.", goal:"Earn 500 XP", test:s=>s.xp>=500, progress:s=>[Math.min(s.xp,500),500]}
 ];
 
@@ -380,6 +380,26 @@ function showAuthForm(mode) {
     : "Sign in to your PyLearn account. Your existing progress on this device remains safe.";
   setAuthMessage("");
 }
+async function startSocialSignIn(provider, button) {
+  if (!supabaseClient) {
+    setAuthMessage("The sign-in service could not load. Check your internet connection and refresh the page.", "error");
+    return;
+  }
+  const originalText = button.textContent;
+  document.querySelectorAll(".auth-provider").forEach(item => { item.disabled = true; });
+  button.textContent = "Connecting…";
+  setAuthMessage("");
+  const options = { redirectTo: window.location.origin + window.location.pathname };
+  if (provider === "azure") options.scopes = "email";
+  try {
+    const { error } = await supabaseClient.auth.signInWithOAuth({ provider, options });
+    if (error) throw error;
+  } catch (error) {
+    setAuthMessage(error.message || "Could not start sign-in. Please try again.", "error");
+    document.querySelectorAll(".auth-provider").forEach(item => { item.disabled = false; });
+    button.textContent = originalText;
+  }
+}
 function renderAuthSession(user) {
   $("authForms").hidden = !!user;
   $("authSignedIn").hidden = !user;
@@ -399,6 +419,8 @@ async function initializeAuth() {
   }
   $("showSignUp").addEventListener("click", () => showAuthForm("signup"));
   $("showSignIn").addEventListener("click", () => showAuthForm("signin"));
+  $("googleSignIn").addEventListener("click", event => startSocialSignIn("google", event.currentTarget));
+  $("microsoftSignIn").addEventListener("click", event => startSocialSignIn("azure", event.currentTarget));
   $("signInForm").addEventListener("submit", async event => {
     event.preventDefault();
     const button = $("signInButton");
@@ -442,12 +464,12 @@ async function initializeAuth() {
   });
   const { data: { session }, error } = await supabaseClient.auth.getSession();
   if (error) setAuthMessage(error.message, "error");
-  renderAuthSession(session?.user || null);
-  if (session?.user) {
-    currentCloudUser = session.user;
-    setTimeout(() => syncLearningData(), 0);
-  }
+  activateCloudUser(session?.user || null);
+  currentCloudUser = session?.user || null;
+  renderAuthSession(currentCloudUser);
+  if (currentCloudUser) setTimeout(() => syncLearningData(), 0);
   supabaseClient.auth.onAuthStateChange((_event, sessionNow) => {
+    activateCloudUser(sessionNow?.user || null);
     currentCloudUser = sessionNow?.user || null;
     renderAuthSession(currentCloudUser);
     if (currentCloudUser) setTimeout(() => syncLearningData(), 0);
@@ -456,12 +478,34 @@ async function initializeAuth() {
 
 
 let currentCloudUser = null;
+let cloudAchievements = [];
 let cloudSyncRunning = false;
 let cloudSyncQueued = false;
 let cloudSyncTimer = null;
 const NOTE_META_KEY = "pylearn_note_sync_meta";
 const BOOKMARK_DELETIONS_KEY = "pylearn_bookmark_deletions";
+const CLOUD_USER_KEY = "pylearn_cloud_user_id";
 const readMap = key => readLocalJSON(key, {});
+function activateCloudUser(user) {
+  if (!user?.id) return;
+  const previousUserId = localStorage.getItem(CLOUD_USER_KEY);
+  if (previousUserId && previousUserId !== user.id) {
+    // Never carry one account's browser cache into another account.
+    state = {done:[],quiz:[],challenges:[],runs:0,xp:0,streak:0,lastDay:""};
+    bookmarks = [];
+    notes = {};
+    current = 0;
+    localStorage.setItem("pylearn_state", JSON.stringify(state));
+    localStorage.setItem("pylearn_current", "0");
+    localStorage.setItem("pylearn_bookmarks", "[]");
+    localStorage.setItem("pylearn_notes", "{}");
+    localStorage.removeItem(NOTE_META_KEY);
+    localStorage.removeItem(BOOKMARK_DELETIONS_KEY);
+    localStorage.removeItem("pylearn_reward_requests");
+    cloudAchievements = [];
+  }
+  localStorage.setItem(CLOUD_USER_KEY, user.id);
+}
 function queueCloudSync() {
   if (!currentCloudUser || !supabaseClient) return;
   clearTimeout(cloudSyncTimer);
@@ -506,6 +550,46 @@ async function syncLearningData() {
     }));
     const progressWrite = await supabaseClient.from("lesson_progress").upsert(progressUpserts, {onConflict:"user_id,lesson_id"});
     if (progressWrite.error) throw progressWrite.error;
+    if (!currentCloudUser || currentCloudUser.id !== userId) return;
+
+    // Award fixed learning rewards on the server after the corresponding
+    // progress record has reached Supabase. The server deduplicates each event.
+    const rewardMarkers = readMap("pylearn_reward_requests");
+    const rewardEvents = [
+      ...state.quiz.map(id => ({lesson_id:id,event_type:"quiz"})),
+      ...state.done.map(id => ({lesson_id:id,event_type:"lesson"})),
+      ...state.challenges.map(id => ({lesson_id:id,event_type:"challenge"}))
+    ];
+    for (const event of rewardEvents) {
+      const eventKey = String(event.lesson_id) + ":" + event.event_type;
+      if (rewardMarkers[eventKey]) continue;
+      const { error: rewardError } = await supabaseClient.functions.invoke("award-learning-reward", {
+        body: { lesson_id: String(event.lesson_id), event_type: event.event_type }
+      });
+      if (rewardError) {
+        // A reward service hiccup must not block notes/bookmarks from syncing.
+        console.warn("PyLearn reward sync will retry later:", rewardError);
+        continue;
+      }
+      rewardMarkers[eventKey] = true;
+      localStorage.setItem("pylearn_reward_requests", JSON.stringify(rewardMarkers));
+      if (!currentCloudUser || currentCloudUser.id !== userId) return;
+    }
+
+    const [statsRes, achievementsRes] = await Promise.all([
+      supabaseClient.from("user_stats").select("xp,streak,last_active_date").eq("user_id", userId).single(),
+      supabaseClient.from("user_achievements").select("achievement_id").eq("user_id", userId)
+    ]);
+    if (statsRes.error) throw statsRes.error;
+    if (achievementsRes.error) throw achievementsRes.error;
+    if (!currentCloudUser || currentCloudUser.id !== userId) return;
+    // XP is account-wide and authoritative on the server.
+    // Never add browser-local legacy XP: it would make totals differ by device.
+    state.xp = Number(statsRes.data.xp || 0);
+    state.streak = Number(statsRes.data.streak || 0);
+    state.lastDay = statsRes.data.last_active_date || "";
+    cloudAchievements = (achievementsRes.data || []).map(row => row.achievement_id);
+    localStorage.setItem("pylearn_state", JSON.stringify(state));
 
     const noteMeta = readMap(NOTE_META_KEY);
     const remoteNotes = new Map((notesRes.data || []).map(row => [String(row.lesson_id), row]));
@@ -537,6 +621,7 @@ async function syncLearningData() {
     if (noteWrites.length) {
       const noteWrite=await supabaseClient.from("user_notes").upsert(noteWrites,{onConflict:"user_id,lesson_id"});
       if(noteWrite.error) throw noteWrite.error;
+      if (!currentCloudUser || currentCloudUser.id !== userId) return;
     }
     // A note can be edited while the cloud upsert is awaiting the network.
     // Merge newer local metadata back in instead of overwriting it with this
@@ -572,6 +657,7 @@ async function syncLearningData() {
     if(bookmarkWrites.length){
       const bookmarkWrite=await supabaseClient.from("user_bookmarks").upsert(bookmarkWrites,{onConflict:"user_id,lesson_id"});
       if(bookmarkWrite.error) throw bookmarkWrite.error;
+      if (!currentCloudUser || currentCloudUser.id !== userId) return;
     }
     // Clear only the bookmark markers that this sync actually processed.
     // A user may add/remove a bookmark while the cloud request is in flight;
@@ -639,7 +725,10 @@ function renderStudyTools(){
   const list=$("bookmarkList"), count=$("bookmarkCount"), note=$("lessonNotes"), status=$("noteStatus");
   if(count) count.textContent=bookmarks.length;
   if(list) list.innerHTML=bookmarks.length?bookmarks.map(i=>{const x=lessons[i]; return `<div class="bookmark-item"><button onclick="openStudyLesson(${i})"><span>🔖</span><div><b>${String(i+1).padStart(2,"0")} · ${x.title}</b><small>${x.short}</small></div></button><button class="remove-bookmark" onclick="removeBookmark(${i})" aria-label="Remove bookmark">×</button></div>`}).join(""):'<div class="study-empty">No bookmarks yet. Bookmark a lesson when you want to review it later.</div>';
-  if(note){note.value=notes[String(current)]||"";}
+  // A cloud sync can re-render study tools while the user is typing.
+  // Never replace the active textarea value: doing so moves the cursor and
+  // can erase text that has not reached the local save debounce yet.
+  if(note && document.activeElement !== note){note.value=notes[String(current)]||"";}
   if(status) status.textContent=notes[String(current)]?"Saved locally":"No note yet";
 }
 function removeBookmark(i){bookmarks=bookmarks.filter(x=>x!==i);const deletions=readMap(BOOKMARK_DELETIONS_KEY);deletions[String(i)]=Date.now();localStorage.setItem(BOOKMARK_DELETIONS_KEY,JSON.stringify(deletions));saveBookmarks();renderStudyTools();renderLessonBookmark();toast("Bookmark removed");}
@@ -666,7 +755,7 @@ function makeWorker(){
       activeOutput=m.output||activeOutput;
       $("output").style.color="";
       $("output").textContent=activeOutput.trim()?activeOutput:"Program finished with no printed output.";
-      state.runs+=1; state.xp+=5; runCount++; save(); renderLessons();
+      state.runs+=1; runCount++; save(); renderLessons();
       $("runCount").textContent=`Run ${runCount}`;
       finishRunButton();
     }else if(m.type==="run-error"){
@@ -781,8 +870,8 @@ function openProject(id){
 function closeProjectLab(){ $("projectLab").hidden=true; activeProject=null; }
 function completeProject(id){
   if(projectState[id]) return;
-  projectState[id]=true; saveProjects(); state.xp+=50; save();
-  toast("🎉 Project completed! +50 XP"); renderProjects(); renderLessons();
+  projectState[id]=true; saveProjects(); save();
+  toast("🎉 Project completed!"); renderProjects(); renderLessons();
   openProject(id);
 }
 function openProjectInPlayground(p){
@@ -888,11 +977,11 @@ function renderRoadmap(){
 }
 
 function renderBadges(){
-  const earned=badges.filter(b=>b.test(state)).length;
+  const earned=badges.filter(b=>currentCloudUser && b.id!=="code" ? cloudAchievements.includes(b.id) : b.test(state)).length;
   const summary=$("badgeSummary");
   if(summary) summary.textContent=`${earned}/${badges.length} unlocked`;
   $("badges").innerHTML=badges.map(b=>{
-    const isEarned=b.test(state);
+    const isEarned=currentCloudUser && b.id!=="code" ? cloudAchievements.includes(b.id) : b.test(state);
     const [value,total]=b.progress(state);
     const pct=Math.round(value/total*100);
     return `<article class="${isEarned?"earned":"locked-badge"}">
@@ -923,12 +1012,17 @@ function renderChallengeUI(){
   const x=lessons[current].challenge, mode=x.mode||"code";
   $("challengeMode").textContent=challengeModeLabel(mode);
   $("challengeCode").value=x.starter||"";
-  $("challengeCode").style.display=(mode==="mcq"||mode==="predict")?"none":"block";
+  $("challengeCode").style.display=(mode==="mcq"||mode==="predict"||mode==="fill")?"none":"block";
   $("challengeCode").readOnly=false;
+  const preview=$("challengePreview");
+  preview.hidden=mode!=="predict";
+  preview.textContent=mode==="predict"?(x.previewCode||x.starter||""):"";
   $("challengeChoiceArea").innerHTML=mode==="mcq"?(x.options||[]).map((o,i)=>`<button class="challenge-choice" onclick="answerChallengeChoice(${i})">${o}</button>`).join(""):"";
-  $("challengeAnswerArea").innerHTML=mode==="predict"?`<input id="challengeAnswer" type="text" inputmode="text" autocomplete="off" placeholder="Type the output you predict…">`:"";
-  $("challengeInstructions").style.display=(mode==="mcq"||mode==="predict")?"block":"none";
-  $("challengeInstructions").textContent=mode==="mcq"?"Choose one answer, then check it.":mode==="predict"?"Type the exact output you think the program will produce.":"";
+  $("challengeAnswerArea").innerHTML=mode==="predict"?`<input id="challengeAnswer" type="text" inputmode="text" autocomplete="off" placeholder="Type the output you predict…">`:mode==="fill"?`<label class="challenge-fill-label" for="challengeFillAnswer">Your missing line</label><textarea id="challengeFillAnswer" rows="3" spellcheck="false" placeholder="Write the missing Python line…"></textarea>`:"";
+  const instructions=$("challengeInstructions");
+  instructions.style.display=(mode==="mcq"||mode==="predict"||mode==="fill")?"block":"none";
+  instructions.textContent=mode==="mcq"?"Choose one answer, then check it.":mode==="predict"?"Type the exact output you think the program will produce.":mode==="fill"?"Complete the missing line in the code, then check your answer.":"";
+  window.__challengeChoice=null;
   $("hintBtn").style.display="inline-block";
   $("solutionBtn").style.display="inline-block";
 }
@@ -937,6 +1031,7 @@ function showSolution(){
   const x=lessons[current].challenge;
   if((x.mode||"code")==="mcq"){ $("practiceHint").textContent="👀 The correct answer is: "+x.options[x.answer]; return; }
   if((x.mode||"code")==="predict"){ $("practiceHint").textContent="👀 Expected output: "+x.solution; return; }
+  if((x.mode||"code")==="fill"){ const answer=$("challengeFillAnswer"); if(answer) answer.value=x.fillAnswer||""; $("practiceHint").textContent="👀 Missing line shown above. Study it, then try again."; return; }
   $("practiceHint").textContent="👀 Solution shown below. Study it, then try writing it yourself.";
   $("challengeCode").value=x.solution;
 }
@@ -1036,8 +1131,8 @@ async function checkChallenge(){
     else out.textContent="Not quite. Run through the code step by step and try again.";
     return;
   }
-  const code=$("challengeCode").value;
-  if(!code.trim()){out.textContent="Write some Python first, then check your solution.";return;}
+  const code=mode==="fill" ? (x.starter||"").replace("{{answer}}",($("challengeFillAnswer")?.value||"").trim()) : $("challengeCode").value;
+  if(!code.trim() || (mode==="fill" && !($("challengeFillAnswer")?.value||"").trim())){out.textContent=mode==="fill"?"Write the missing line first, then check your answer.":"Write some Python first, then check your solution.";return;}
   if(!pythonReady){
     out.textContent="Loading Python…";
     await initPython();
@@ -1072,8 +1167,8 @@ function handleChallengeResult(result){
 function updateLogoTheme() {
   const isLight = document.body.classList.contains("light");
   const logoPath = isLight
-    ? "/Pylearn/assets/pylearn-logo-light.png"
-    : "/Pylearn/assets/pylearn-logo-dark.png";
+    ? "assets/pylearn-logo-light.png"
+    : "assets/pylearn-logo-dark.png";
 
   document.querySelectorAll(".logo img").forEach(img => {
     img.src = logoPath;
