@@ -88,7 +88,7 @@ const lessons = [
  code:'text = "Python is fun"\nprint(text[0])\nprint(text[0:6])\nprint(text.upper())\nname = "Alex"\nprint(f"Hello, {name}!")',
  objectives:["Index and slice strings","Use common string methods","Build messages with f-strings"],
  quiz:{q:"What does text[0:3] return for text = \"Python\"?", options:["Pyt","Pyth","yth"], answer:0, explain:"Slicing starts at index 0 and stops before index 3, so the result is Pyt."},
- challenge:{mode:"fill",title:"Fill the missing line", prompt:"Complete the missing line so the program prints Hello, Alex! using the existing name variable.", hint:"An f-string can place a variable inside curly braces.", solution:'name = "Alex"\nprint(f"Hello, {name}!")', starter:'name = "Alex"\n# Write your print line below\n'}
+ challenge:{mode:"fill",title:"Fill the missing line", prompt:"Complete the missing line so the program prints Hello, Alex! using the existing name variable.", hint:"An f-string can place a variable inside curly braces.", solution:'name = "Alex"\nprint(f"Hello, {name}!")', starter:'name = "Alex"\n{{answer}}\n', fillAnswer:'print(f"Hello, {name}!")'}
 },
 {
  title:"Tuples & sets", short:"Tuples & sets", level:"INTERMEDIATE",
@@ -1012,15 +1012,17 @@ function renderChallengeUI(){
   const x=lessons[current].challenge, mode=x.mode||"code";
   $("challengeMode").textContent=challengeModeLabel(mode);
   $("challengeCode").value=x.starter||"";
-  $("challengeCode").style.display=(mode==="mcq"||mode==="predict")?"none":"block";
+  $("challengeCode").style.display=(mode==="mcq"||mode==="predict"||mode==="fill")?"none":"block";
+  $("challengeCode").readOnly=false;
   const preview=$("challengePreview");
   preview.hidden=mode!=="predict";
-  preview.textContent=mode==="predict"?(x.starter||""):"";
-  $("challengeCode").readOnly=false;
+  preview.textContent=mode==="predict"?(x.previewCode||x.starter||""):"";
   $("challengeChoiceArea").innerHTML=mode==="mcq"?(x.options||[]).map((o,i)=>`<button class="challenge-choice" onclick="answerChallengeChoice(${i})">${o}</button>`).join(""):"";
-  $("challengeAnswerArea").innerHTML=mode==="predict"?`<input id="challengeAnswer" type="text" inputmode="text" autocomplete="off" placeholder="Type the output you predict…">`:"";
-  $("challengeInstructions").style.display=(mode==="mcq"||mode==="predict")?"block":"none";
-  $("challengeInstructions").textContent=mode==="mcq"?"Choose one answer, then check it.":mode==="predict"?"Type the exact output you think the program will produce.":"";
+  $("challengeAnswerArea").innerHTML=mode==="predict"?`<input id="challengeAnswer" type="text" inputmode="text" autocomplete="off" placeholder="Type the output you predict…">`:mode==="fill"?`<label class="challenge-fill-label" for="challengeFillAnswer">Your missing line</label><textarea id="challengeFillAnswer" rows="3" spellcheck="false" placeholder="Write the missing Python line…">${x.fillAnswer||""}</textarea>`:"";
+  const instructions=$("challengeInstructions");
+  instructions.style.display=(mode==="mcq"||mode==="predict"||mode==="fill")?"block":"none";
+  instructions.textContent=mode==="mcq"?"Choose one answer, then check it.":mode==="predict"?"Type the exact output you think the program will produce.":mode==="fill"?"Complete the missing line in the code, then check your answer.":"";
+  window.__challengeChoice=null;
   $("hintBtn").style.display="inline-block";
   $("solutionBtn").style.display="inline-block";
 }
@@ -1029,6 +1031,7 @@ function showSolution(){
   const x=lessons[current].challenge;
   if((x.mode||"code")==="mcq"){ $("practiceHint").textContent="👀 The correct answer is: "+x.options[x.answer]; return; }
   if((x.mode||"code")==="predict"){ $("practiceHint").textContent="👀 Expected output: "+x.solution; return; }
+  if((x.mode||"code")==="fill"){ const answer=$("challengeFillAnswer"); if(answer) answer.value=x.fillAnswer||""; $("practiceHint").textContent="👀 Missing line shown above. Study it, then try again."; return; }
   $("practiceHint").textContent="👀 Solution shown below. Study it, then try writing it yourself.";
   $("challengeCode").value=x.solution;
 }
@@ -1128,8 +1131,8 @@ async function checkChallenge(){
     else out.textContent="Not quite. Run through the code step by step and try again.";
     return;
   }
-  const code=$("challengeCode").value;
-  if(!code.trim()){out.textContent="Write some Python first, then check your solution.";return;}
+  const code=mode==="fill" ? (x.starter||"").replace("{{answer}}",($("challengeFillAnswer")?.value||"").trim()) : $("challengeCode").value;
+  if(!code.trim() || (mode==="fill" && !($("challengeFillAnswer")?.value||"").trim())){out.textContent=mode==="fill"?"Write the missing line first, then check your answer.":"Write some Python first, then check your solution.";return;}
   if(!pythonReady){
     out.textContent="Loading Python…";
     await initPython();
