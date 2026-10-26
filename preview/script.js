@@ -1204,6 +1204,21 @@ if (localStorage.getItem("pylearn_theme") === "light") {
 updateLogoTheme();
 
 
+
+const challengeTestMode = new URLSearchParams(window.location.search).get("challenge-test") === "1";
+if (challengeTestMode) {
+  // Preview-only test state: unlock every lesson in memory without touching
+  // local progress, cloud sync, authentication, or reward records.
+  state.done = lessons.map((_, index) => index);
+  state.quiz = lessons.map((_, index) => index);
+  state.challenges = [];
+  current = 0;
+  save = () => {};
+  queueCloudSync = () => {};
+  syncLearningData = async () => {};
+  initializeAuth = () => {};
+}
+
 initializeAuth();
 
 // Do not start/increase a streak just because the app was opened.
