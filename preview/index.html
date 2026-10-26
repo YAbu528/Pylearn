@@ -9,13 +9,16 @@
 <title>PyLearn — Interactive Python School</title>
   <meta name="description" content="PyLearn is an interactive website for learning Python through lessons, coding challenges, quizzes, and hands-on practice.">
   <link rel="canonical" href="https://yabu528.github.io/Pylearn/">
-<link rel="stylesheet" href="style.css">
+<!-- Preload both theme logos so switching themes does not wait for an image download. -->
+<link rel="preload" as="image" href="../assets/pylearn-logo-dark.png">
+<link rel="preload" as="image" href="../assets/pylearn-logo-light.png">
+<link rel="stylesheet" href="style.css?v=phase-1-m1">
 </head>
 <body>
 <header class="topbar">
 
 <a class="logo" href="#top">
-  <img src="/Pylearn/assets/pylearn-logo-dark.png" alt="PyLearn">
+  <img src="../assets/pylearn-logo-dark.png" alt="PyLearn">
 </a>
 
 </a>
@@ -57,6 +60,17 @@
         <button class="primary" id="signUpButton" type="submit">Create account</button>
         <p class="auth-switch">Already registered? <button type="button" class="auth-link" id="showSignIn">Sign in</button></p>
       </form>
+      <div class="auth-social" aria-label="Other sign-in options">
+        <div class="auth-divider"><span>or continue with</span></div>
+        <button class="auth-provider" id="googleSignIn" type="button">
+          <svg class="provider-logo google-logo" width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.76 7.18l7.73 6C44.42 37.96 46.98 31.86 46.98 24.55z"/><path fill="#FBBC05" d="M10.53 28.59A14.4 14.4 0 0 1 9.75 24c0-1.59.27-3.13.76-4.59l-7.98-6.19A23.9 23.9 0 0 0 0 24c0 3.87.93 7.53 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.91-5.8l-7.73-6c-2.14 1.45-4.89 2.3-8.18 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+          <span>Continue with Google</span>
+        </button>
+        <button class="auth-provider" id="microsoftSignIn" type="button">
+          <svg class="provider-logo microsoft-logo" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="#F25022" d="M1 1h10.5v10.5H1z"/><path fill="#7FBA00" d="M12.5 1H23v10.5H12.5z"/><path fill="#00A4EF" d="M1 12.5h10.5V23H1z"/><path fill="#FFB900" d="M12.5 12.5H23V23H12.5z"/></svg>
+          <span>Continue with Microsoft</span>
+        </button>
+      </div>
     </div>
     <div class="auth-signed-in" id="authSignedIn" hidden>
       <span class="auth-avatar">✓</span>
@@ -218,6 +232,7 @@ name = <s>"Python"</s>
     <div class="challenge-editor">
       <div id="challengeInstructions" class="challenge-instructions"></div>
       <div id="challengeChoiceArea" class="challenge-choices"></div>
+      <pre id="challengePreview" class="challenge-preview" hidden></pre>
       <div id="challengeAnswerArea" class="challenge-answer-area"></div>
       <textarea id="challengeCode" spellcheck="false"></textarea>
       <div class="challenge-actions"><button class="ghost" id="hintBtn" onclick="showHint()">💡 Hint</button><button class="ghost" id="solutionBtn" onclick="showSolution()">👀 Solution</button><button class="primary" onclick="checkChallenge()">Check solution</button></div>
@@ -402,7 +417,7 @@ print("2 + 3 =", 2 + 3)</textarea>
 <div>
  
 <a class="logo" href="#top">
-  <img src="/Pylearn/assets/pylearn-logo-dark.png" alt="PyLearn">
+  <img src="../assets/pylearn-logo-dark.png" alt="PyLearn">
 </a>
 
   <p>Learn Python by understanding, practicing and building.</p>
