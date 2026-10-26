@@ -204,4 +204,4 @@ button,input,textarea,select{max-width:100%;min-width:0}
 .insight-item button{flex:0 0 auto;white-space:nowrap;}
 .insight-empty{padding:14px;border:1px solid var(--line);border-radius:13px;background:var(--surface);}
 .insight-empty>b{font-size:14px;}
-@media(max-width:650px){.insights-card{padding:17px 14px;}.insights-heading{align-items:flex-start;flex-wrap:wrap;}.insight-item{align-items:flex-start;flex-wrap:wrap;}.insight-item button{margin-left:auto;}}
+@media(max-width:650px){.insights-card{padding:17px 14px;}.insights-heading{align-items:flex-start;flex-wrap:wrap;}.insight-item{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:10px 12px;}.insight-tag{grid-column:1;grid-row:1;justify-self:start;}.insight-copy{grid-column:1/-1;grid-row:2;width:100%;min-width:0;}.insight-copy b,.insight-copy p{overflow-wrap:normal;word-break:normal;}.insight-item button{grid-column:2;grid-row:1;justify-self:end;margin:0;}}
