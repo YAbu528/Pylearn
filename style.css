@@ -21,8 +21,8 @@ button,a,textarea{font:inherit}button{cursor:pointer}a{color:inherit;text-decora
 
 /* Smaller logo in the top navigation bar */
 .topbar .logo img {
-  width: 48px;
-  height: 48px;
+  width: 60px;
+  height: 60px;
 }
 
 .topbar nav{display:flex;gap:24px;margin-left:auto}.topbar nav a{color:var(--muted);font-weight:700}.topbar nav a:hover{color:var(--text)}
