@@ -160,9 +160,10 @@ button,input,textarea,select{max-width:100%;min-width:0}
   .editor-panel footer button{flex:1 1 auto}
   .project-summary,.project-lab-head,.continue-card{min-width:0}
   .roadmap-stage,.metric-card,.dash-card{min-width:0}
-  .topbar{min-width:0;gap:10px}
-  .topbar .logo{min-width:0}
-  .top-actions{min-width:0;margin-left:auto;gap:10px}
+  .topbar{display:grid;grid-template-columns:auto minmax(0,1fr) auto;min-width:0;gap:10px}
+  .topbar .logo{grid-column:1;min-width:0;justify-self:start}
+  .topbar nav{display:none}
+  .top-actions{grid-column:3;min-width:0;margin-left:0;gap:10px;justify-self:end}
 }
 
 /* Social sign-in options */
