@@ -1018,7 +1018,7 @@ function renderChallengeUI(){
   preview.hidden=mode!=="predict";
   preview.textContent=mode==="predict"?(x.previewCode||x.starter||""):"";
   $("challengeChoiceArea").innerHTML=mode==="mcq"?(x.options||[]).map((o,i)=>`<button class="challenge-choice" onclick="answerChallengeChoice(${i})">${o}</button>`).join(""):"";
-  $("challengeAnswerArea").innerHTML=mode==="predict"?`<input id="challengeAnswer" type="text" inputmode="text" autocomplete="off" placeholder="Type the output you predict…">`:mode==="fill"?`<label class="challenge-fill-label" for="challengeFillAnswer">Your missing line</label><textarea id="challengeFillAnswer" rows="3" spellcheck="false" placeholder="Write the missing Python line…">${x.fillAnswer||""}</textarea>`:"";
+  $("challengeAnswerArea").innerHTML=mode==="predict"?`<input id="challengeAnswer" type="text" inputmode="text" autocomplete="off" placeholder="Type the output you predict…">`:mode==="fill"?`<label class="challenge-fill-label" for="challengeFillAnswer">Your missing line</label><textarea id="challengeFillAnswer" rows="3" spellcheck="false" placeholder="Write the missing Python line…"></textarea>`:"";
   const instructions=$("challengeInstructions");
   instructions.style.display=(mode==="mcq"||mode==="predict"||mode==="fill")?"block":"none";
   instructions.textContent=mode==="mcq"?"Choose one answer, then check it.":mode==="predict"?"Type the exact output you think the program will produce.":mode==="fill"?"Complete the missing line in the code, then check your answer.":"";
