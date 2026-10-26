@@ -21,8 +21,8 @@ button,a,textarea{font:inherit}button{cursor:pointer}a{color:inherit;text-decora
 
 /* Smaller logo in the top navigation bar */
 .topbar .logo img {
-  width: 48px;
-  height: 48px;
+  width: 60px;
+  height: 60px;
 }
 
 .topbar nav{display:flex;gap:24px;margin-left:auto}.topbar nav a{color:var(--muted);font-weight:700}.topbar nav a:hover{color:var(--text)}
@@ -81,7 +81,7 @@ body.light{--bg:#f6f7fb;--panel:#fff;--card:#f1f3f8;--card2:#e9ebf2;--line:#dfe2
 .path-next{margin-top:14px}.path-next-card{padding:13px;border:1px solid rgba(96,165,250,.22);border-radius:13px;background:rgba(59,130,246,.07)}.path-next-card small{display:block;color:var(--purple2);font-size:9px;font-weight:900;letter-spacing:.12em}.path-next-card b{display:block;font-size:12px;margin:3px 0}.path-next-card span{display:block;color:var(--muted);font-size:11px}.path-next-card.complete{border-color:rgba(52,211,153,.22);background:rgba(52,211,153,.06)}.path-next-card.complete b{color:var(--green)}
 .roadmap-stage{position:relative;transition:.2s}.roadmap-stage em{display:block;font-style:normal;color:var(--muted);font-size:11px;font-weight:800;margin-top:12px}.roadmap-stage.active-stage{border-color:rgba(96,165,250,.45);box-shadow:0 0 0 1px rgba(59,130,246,.08)}.roadmap-stage.active-stage em{color:var(--purple2)}.roadmap-stage.complete{border-color:rgba(52,211,153,.28)}.roadmap-stage.complete em{color:var(--green)}
 .challenge-topline{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.challenge-topline span:last-child{padding:5px 9px;border-radius:99px;background:rgba(59,130,246,.1);color:var(--purple2);font-size:10px;letter-spacing:.08em;font-weight:900}.challenge-instructions{display:none;margin-bottom:10px;color:var(--muted);font-size:13px}.challenge-actions{display:flex;gap:8px;flex-wrap:wrap}.challenge-choices{display:grid;gap:8px;margin-bottom:10px}.challenge-choice{width:100%;text-align:left;padding:12px 14px;border:1px solid var(--line);border-radius:11px;background:var(--card);color:var(--text);font-weight:700}.challenge-choice.correct{border-color:var(--green);background:rgba(52,211,153,.08)}.challenge-choice.wrong{border-color:var(--red);background:rgba(251,113,133,.08)}
-.challenge-answer-area{margin-bottom:10px}.challenge-answer-area input{width:100%;box-sizing:border-box;padding:13px 15px;border:1px solid var(--line);border-radius:11px;background:var(--card);color:var(--text);font:600 15px/1.4 inherit}.challenge-answer-area input:focus{outline:2px solid rgba(59,130,246,.35);border-color:var(--purple2)}
+.challenge-answer-area{margin-bottom:10px}.challenge-answer-area input{width:100%;box-sizing:border-box;padding:13px 15px;border:1px solid var(--line);border-radius:11px;background:var(--card);color:var(--text);font:600 15px/1.4 inherit}.challenge-answer-area input:focus{outline:2px solid rgba(59,130,246,.35);border-color:var(--purple2)}.challenge-answer-area textarea{width:100%;box-sizing:border-box;min-height:76px;padding:13px 15px;border:1px solid var(--line);border-radius:11px;background:var(--card);color:var(--text);font:13px/1.55 "SFMono-Regular",Consolas,monospace;resize:vertical}.challenge-fill-label{display:block;margin:0 0 7px;color:var(--muted);font-size:12px;font-weight:700}.challenge-answer-area textarea:focus{outline:2px solid rgba(59,130,246,.35);border-color:var(--purple2)}
 
 .playground-extra{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}.input-box,.tips-box{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px}.input-box>div{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}.input-box span,.tips-box span{display:block;color:var(--muted);font-size:12px;margin-top:7px}.input-box textarea{width:100%;min-height:92px;resize:vertical;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);padding:11px;font:13px/1.5 "SFMono-Regular",Consolas,monospace;outline:0}.input-box textarea:focus{border-color:var(--purple2)}.tips-box{display:flex;flex-direction:column;justify-content:center}
 @media(max-width:650px){.playground-extra{grid-template-columns:1fr}.input-box textarea{min-height:75px}}
@@ -135,3 +135,54 @@ body.light{--bg:#f6f7fb;--panel:#fff;--card:#f1f3f8;--card2:#e9ebf2;--line:#dfe2
 .auth-avatar{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:rgba(34,197,94,.12);color:var(--green);font-weight:900}
 [hidden]{display:none!important}
 @media(max-width:760px){.auth-card{grid-template-columns:1fr;padding:19px;gap:12px}}
+
+
+/* Mobile overflow and width-stability fixes */
+html,body{max-width:100%;overflow-x:clip}
+main,section,article,aside,footer,.card,.lesson-panel,.learn,.dashboard,.hero,.challenge,.playground,.project-lab,.study-grid{min-width:0;max-width:100%}
+img,video,iframe,canvas,svg{max-width:100%}
+pre,code,.lesson-panel p,.lesson-panel li,.deep-card,.recap-card,.project-brief,.project-start{overflow-wrap:anywhere;word-break:normal}
+pre{max-width:100%}
+button,input,textarea,select{max-width:100%;min-width:0}
+.lesson-panel,.learn aside,.challenge,.playground,.project-lab,.auth-card{min-width:0}
+.lesson-panel>* , .challenge>* , .playground>* , .project-lab>*{min-width:0}
+@media(max-width:650px){
+  .hero,.section,.learn{width:100%;min-width:0}
+  .hero{gap:24px}
+  .hero>*,.dashboard>*,.dashboard-main>*,.dashboard-stats>*,.learn>*,.cards>*,.deep-learning>*,.study-grid>*,.playground>*,.challenge>*,.project-lab-grid>*{min-width:0}
+  .lesson-panel{padding:18px 14px}
+  .lesson-meta{gap:8px;flex-wrap:wrap}
+  .lesson-panel h2{overflow-wrap:anywhere}
+  .lesson-actions button{max-width:100%;white-space:normal}
+  .quiz-head{min-width:0}
+  .quiz-head>div{min-width:0}
+  .editor-panel footer{gap:8px;flex-wrap:wrap}
+  .editor-panel footer button{flex:1 1 auto}
+  .project-summary,.project-lab-head,.continue-card{min-width:0}
+  .roadmap-stage,.metric-card,.dash-card{min-width:0}
+  .topbar{display:grid;grid-template-columns:auto minmax(0,1fr) auto;min-width:0;gap:10px}
+  .topbar .logo{grid-column:1;min-width:0;justify-self:start}
+  .topbar nav{display:none}
+  .top-actions{grid-column:3;min-width:0;margin-left:0;gap:10px;justify-self:end}
+}
+
+/* Social sign-in options */
+.auth-social{display:grid;gap:9px;margin-top:16px}
+.auth-divider{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+.auth-divider:before,.auth-divider:after{content:"";height:1px;background:var(--line);flex:1}
+.auth-provider{width:100%;min-height:42px;border:1px solid var(--line);border-radius:11px;background:var(--card);color:var(--text);font:inherit;font-size:13px;font-weight:750;cursor:pointer;transition:border-color .18s,background .18s}
+.auth-provider:hover{border-color:var(--purple2);background:var(--surface)}
+.auth-provider:disabled{opacity:.6;cursor:wait}
+
+.auth-provider{display:flex;align-items:center;justify-content:center;gap:11px;padding:10px 14px}
+.provider-logo{display:block;flex:0 0 20px;width:20px;height:20px}
+.google-logo{width:19px;height:19px;flex-basis:19px}
+
+/* Keep social-provider marks at icon size, regardless of global SVG rules. */
+.auth-social button.auth-provider{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;gap:11px!important;min-height:46px!important;padding:10px 14px!important;}
+.auth-social button.auth-provider svg.provider-logo{display:block!important;width:20px!important;height:20px!important;min-width:20px!important;max-width:20px!important;min-height:20px!important;max-height:20px!important;flex:0 0 20px!important;}
+.auth-social button.auth-provider span{display:inline!important;flex:0 1 auto!important;}
+
+
+/* Show the example program clearly in output-prediction challenges. */
+.challenge-preview{box-sizing:border-box;margin:0 0 12px;padding:14px 16px;overflow-x:auto;border:1px solid var(--line);border-radius:13px;background:var(--card);color:var(--text);font:13px/1.65 "SFMono-Regular",Consolas,monospace;white-space:pre;}
