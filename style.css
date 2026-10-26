@@ -162,7 +162,7 @@ button,input,textarea,select{max-width:100%;min-width:0}
   .roadmap-stage,.metric-card,.dash-card{min-width:0}
   .topbar{min-width:0;gap:10px}
   .topbar .logo{min-width:0}
-  .top-actions{min-width:0}
+  .top-actions{min-width:0;margin-left:auto;gap:10px}
 }
 
 /* Social sign-in options */
