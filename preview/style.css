@@ -186,6 +186,8 @@ button,input,textarea,select{max-width:100%;min-width:0}
 
 /* Show the example program clearly in output-prediction challenges. */
 .challenge-preview{box-sizing:border-box;margin:0 0 12px;padding:14px 16px;overflow-x:auto;border:1px solid var(--line);border-radius:13px;background:var(--card);color:var(--text);font:13px/1.65 "SFMono-Regular",Consolas,monospace;white-space:pre;}
+
+
 /* Phase 2: progress-based learning insights */
 .insights-card{margin-top:16px;padding:20px 22px;}
 .insights-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;}
@@ -203,3 +205,11 @@ button,input,textarea,select{max-width:100%;min-width:0}
 .insight-empty{padding:14px;border:1px solid var(--line);border-radius:13px;background:var(--surface);}
 .insight-empty>b{font-size:14px;}
 @media(max-width:650px){.insights-card{padding:17px 14px;}.insights-heading{align-items:flex-start;flex-wrap:wrap;}.insight-item{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:10px 12px;}.insight-tag{grid-column:1;grid-row:1;justify-self:start;}.insight-copy{grid-column:1/-1;grid-row:2;width:100%;min-width:0;}.insight-copy b,.insight-copy p{overflow-wrap:normal;word-break:normal;}.insight-item button{grid-column:2;grid-row:1;justify-self:end;margin:0;}}
+
+.lesson-review{margin-top:18px;padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
+.lesson-review h3{margin:0 0 6px}.lesson-review p{margin:0 0 12px;color:var(--muted)}
+.review-ratings{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.review-ratings button{border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:var(--surface);color:var(--text);font:inherit;cursor:pointer}
+.review-ratings button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lesson-review small{color:var(--muted)}
+@media(max-width:600px){.review-ratings{display:grid;grid-template-columns:1fr 1fr}.review-ratings button{min-height:42px}}
