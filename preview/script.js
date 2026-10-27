@@ -1239,7 +1239,7 @@ async function checkChallenge(){
       },8000);
     });
     handleChallengeResult(result);
-  }catch(err){ out.textContent=String(err); }
+  }catch(err){ handleChallengeResult({ok:false,output:"ERROR: "+String(err)}); }
 }
 
 function recordChallengeAttempt(result) {
