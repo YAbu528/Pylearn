@@ -314,6 +314,9 @@ current = Number.isInteger(current) ? Math.max(0, Math.min(current, lessons.leng
 let state = readLocalJSON("pylearn_state", {done:[],quiz:[],challenges:[],runs:0,xp:0,streak:0,lastDay:""});
 const CHALLENGE_ATTEMPTS_KEY = "pylearn_challenge_attempts";
 const LESSON_REVIEWS_KEY = "pylearn_lesson_reviews";
+function writeEventList(key, items) {
+  localStorage.setItem(key, JSON.stringify(items));
+}
 function readEventList(key) {
   const value = readLocalJSON(key, []);
   return Array.isArray(value) ? value.filter(item => item && typeof item.id === "string") : [];
@@ -1242,7 +1245,7 @@ function recordChallengeAttempt(result) {
     passed_tests:isError ? null : (result?.ok ? 1 : 0), total_tests:isError ? null : 1,
     attempted_at:new Date().toISOString(), synced:false
   });
-  localStorage.setItem(CHALLENGE_ATTEMPTS_KEY, JSON.stringify(attempts.slice(-1000)));
+  writeEventList(CHALLENGE_ATTEMPTS_KEY, attempts.slice(-1000));
   queueCloudSync();
 }
 function calculateReviewInterval(rating, previousInterval=0) {
@@ -1253,17 +1256,17 @@ function calculateReviewInterval(rating, previousInterval=0) {
 function recordLessonReview(rating) {
   const value=Number(rating); if (![1,2,3,4].includes(value)) return;
   const reviews=readEventList(LESSON_REVIEWS_KEY);
-  const previous=reviews.filter(item=>Number(item.lesson_id)===current).sort((a,b)=>new Date(b.reviewed_at)-new Date(a.reviewed_at))[0];
+  const previous=reviews.filter(item=>(currentCloudUser ? item.user_id===currentCloudUser.id : !item.user_id) && Number(item.lesson_id)===current).sort((a,b)=>new Date(b.reviewed_at)-new Date(a.reviewed_at))[0];
   const interval=calculateReviewInterval(value,Number(previous?.interval_days||0));
   const reviewedAt=new Date(), next=new Date(reviewedAt); next.setDate(next.getDate()+interval);
   reviews.push({id:createEventId(),user_id:currentCloudUser?.id||null,lesson_id:String(current),rating:value,interval_days:interval,reviewed_at:reviewedAt.toISOString(),next_review_at:next.toISOString(),created_at:reviewedAt.toISOString(),synced:false});
-  localStorage.setItem(LESSON_REVIEWS_KEY, JSON.stringify(reviews.slice(-500)));
+  writeEventList(LESSON_REVIEWS_KEY, reviews.slice(-500));
   queueCloudSync();
   const status=$("reviewStatus");
   if(status) status.textContent="Review saved. Next review: "+next.toLocaleDateString()+" ("+interval+" day"+(interval===1?"":"s")+").";
 }
 function renderLessonReview() {
-  const latest=readEventList(LESSON_REVIEWS_KEY).filter(item=>Number(item.lesson_id)===current).sort((a,b)=>new Date(b.reviewed_at)-new Date(a.reviewed_at))[0];
+  const latest=readEventList(LESSON_REVIEWS_KEY).filter(item=>(currentCloudUser ? item.user_id===currentCloudUser.id : !item.user_id) && Number(item.lesson_id)===current).sort((a,b)=>new Date(b.reviewed_at)-new Date(a.reviewed_at))[0];
   const status=$("reviewStatus");
   if(status && latest) status.textContent="Last reviewed "+new Date(latest.reviewed_at).toLocaleDateString()+" · Next review "+new Date(latest.next_review_at).toLocaleDateString()+".";
 }
