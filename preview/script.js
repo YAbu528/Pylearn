@@ -312,12 +312,9 @@ function readLocalJSON(key, fallback){
 let current = Number(localStorage.getItem("pylearn_current") || 0);
 current = Number.isInteger(current) ? Math.max(0, Math.min(current, lessons.length-1)) : 0;
 let state = readLocalJSON("pylearn_state", {done:[],quiz:[],challenges:[],runs:0,xp:0,streak:0,lastDay:""});
-// Preview-only isolated challenge test mode. Never persist test events or contact Supabase.
+// Preview-only isolated challenge test mode. Event data stays in memory in this mode.
 const challengeTestMode = new URLSearchParams(window.location.search).get("challenge-test") === "1";
-const challengeTestEvents = {
-  pylearn_challenge_attempts: [],
-  pylearn_lesson_reviews: []
-};
+const challengeTestEvents = { pylearn_challenge_attempts: [], pylearn_lesson_reviews: [] };
 
 const CHALLENGE_ATTEMPTS_KEY = "pylearn_challenge_attempts";
 const LESSON_REVIEWS_KEY = "pylearn_lesson_reviews";
@@ -589,8 +586,8 @@ async function syncLearningData() {
     for (const item of (attemptsRes.data || [])) if (!attemptIds.has(item.id)) localAttempts.push({...item, synced:true});
     localReviews = localReviews.slice(-500);
     localAttempts = localAttempts.slice(-1000);
-    writeEventList(LESSON_REVIEWS_KEY, localReviews);
-    writeEventList(CHALLENGE_ATTEMPTS_KEY, localAttempts);
+    localStorage.setItem(LESSON_REVIEWS_KEY, JSON.stringify(localReviews));
+    localStorage.setItem(CHALLENGE_ATTEMPTS_KEY, JSON.stringify(localAttempts));
 
     const remoteProgress = progressRes.data || [];
     const progressById = new Map(remoteProgress.map(row => [Number(row.lesson_id), row]));
@@ -1271,7 +1268,7 @@ function recordLessonReview(rating) {
   const interval=calculateReviewInterval(value,Number(previous?.interval_days||0));
   const reviewedAt=new Date(), next=new Date(reviewedAt); next.setDate(next.getDate()+interval);
   reviews.push({id:createEventId(),user_id:currentCloudUser?.id||null,lesson_id:String(current),rating:value,interval_days:interval,reviewed_at:reviewedAt.toISOString(),next_review_at:next.toISOString(),created_at:reviewedAt.toISOString(),synced:false});
-  writeEventList(LESSON_REVIEWS_KEY,reviews.slice(-500));
+  writeEventList(LESSON_REVIEWS_KEY, reviews.slice(-500));
   queueCloudSync();
   const status=$("reviewStatus");
   if(status) status.textContent="Review saved. Next review: "+next.toLocaleDateString()+" ("+interval+" day"+(interval===1?"":"s")+").";
@@ -1297,8 +1294,8 @@ function handleChallengeResult(result){
 function updateLogoTheme() {
   const isLight = document.body.classList.contains("light");
   const logoPath = isLight
-    ? "assets/pylearn-logo-light.png"
-    : "assets/pylearn-logo-dark.png";
+    ? "../assets/pylearn-logo-light.png"
+    : "../assets/pylearn-logo-dark.png";
 
   document.querySelectorAll(".logo img").forEach(img => {
     img.src = logoPath;
@@ -1333,7 +1330,6 @@ if (localStorage.getItem("pylearn_theme") === "light") {
 
 updateLogoTheme();
 
-
 if (challengeTestMode) {
   state.done = lessons.map((_, index) => index);
   state.quiz = lessons.map((_, index) => index);
@@ -1346,6 +1342,7 @@ if (challengeTestMode) {
   const accountSection = document.getElementById("account");
   if (accountSection) accountSection.hidden = true;
 }
+
 initializeAuth();
 
 // Do not start/increase a streak just because the app was opened.
