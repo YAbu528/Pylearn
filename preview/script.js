@@ -312,10 +312,9 @@ function readLocalJSON(key, fallback){
 let current = Number(localStorage.getItem("pylearn_current") || 0);
 current = Number.isInteger(current) ? Math.max(0, Math.min(current, lessons.length-1)) : 0;
 let state = readLocalJSON("pylearn_state", {done:[],quiz:[],challenges:[],runs:0,xp:0,streak:0,lastDay:""});
-// Preview-only isolated challenge test mode. Event data stays in memory in this mode.
+// Isolated preview test mode: keep event records in memory only.
 const challengeTestMode = new URLSearchParams(window.location.search).get("challenge-test") === "1";
 const challengeTestEvents = { pylearn_challenge_attempts: [], pylearn_lesson_reviews: [] };
-
 const CHALLENGE_ATTEMPTS_KEY = "pylearn_challenge_attempts";
 const LESSON_REVIEWS_KEY = "pylearn_lesson_reviews";
 function readEventList(key) {
@@ -558,36 +557,33 @@ async function syncLearningData() {
 
     let localReviews = readEventList(LESSON_REVIEWS_KEY);
     let localAttempts = readEventList(CHALLENGE_ATTEMPTS_KEY);
-    const pendingReviews = localReviews.filter(item => !item.synced);
-    const pendingAttempts = localAttempts.filter(item => !item.synced);
-    if (pendingReviews.length) {
-      const { error } = await supabaseClient.from("lesson_reviews").upsert(
-        pendingReviews.map(({synced, ...item}) => ({...item, user_id:userId})),
-        {onConflict:"id", ignoreDuplicates:true}
-      );
-      if (error) throw error;
-      const ids = new Set(pendingReviews.map(item => item.id));
-      localReviews = localReviews.map(item => ids.has(item.id) ? {...item, synced:true, user_id:userId} : item);
-      writeEventList(LESSON_REVIEWS_KEY, localReviews);
-    }
-    if (pendingAttempts.length) {
-      const { error } = await supabaseClient.from("challenge_attempts").upsert(
-        pendingAttempts.map(({synced, ...item}) => ({...item, user_id:userId})),
-        {onConflict:"id", ignoreDuplicates:true}
-      );
-      if (error) throw error;
-      const ids = new Set(pendingAttempts.map(item => item.id));
-      localAttempts = localAttempts.map(item => ids.has(item.id) ? {...item, synced:true, user_id:userId} : item);
-      writeEventList(CHALLENGE_ATTEMPTS_KEY, localAttempts);
-    }
+    // Append-only event rows use INSERT, never UPSERT (authenticated users
+    // deliberately have no UPDATE permission on these tables). Only sync
+    // events created for this exact account; guest/other-account events stay local.
+    const syncAppendOnlyEvents = async (table, events) => {
+      const ownedPending = events.filter(item => !item.synced && item.user_id === userId);
+      const syncedIds = new Set();
+      for (const item of ownedPending) {
+        const { synced, ...row } = item;
+        const { error } = await supabaseClient.from(table).insert(row);
+        if (error && error.code !== "23505") throw error;
+        // A duplicate UUID means a previous retry already inserted this event.
+        syncedIds.add(item.id);
+      }
+      return events.map(item => syncedIds.has(item.id) ? {...item, synced:true} : item);
+    };
+    localReviews = await syncAppendOnlyEvents("lesson_reviews", localReviews);
+    localAttempts = await syncAppendOnlyEvents("challenge_attempts", localAttempts);
+    writeEventList(LESSON_REVIEWS_KEY, localReviews);
+    writeEventList(CHALLENGE_ATTEMPTS_KEY, localAttempts);
     const reviewIds = new Set(localReviews.map(item => item.id));
     for (const item of (reviewsRes.data || [])) if (!reviewIds.has(item.id)) localReviews.push({...item, synced:true});
     const attemptIds = new Set(localAttempts.map(item => item.id));
     for (const item of (attemptsRes.data || [])) if (!attemptIds.has(item.id)) localAttempts.push({...item, synced:true});
     localReviews = localReviews.slice(-500);
     localAttempts = localAttempts.slice(-1000);
-    writeEventList(LESSON_REVIEWS_KEY, localReviews);
-    writeEventList(CHALLENGE_ATTEMPTS_KEY, localAttempts);
+    localStorage.setItem(LESSON_REVIEWS_KEY, JSON.stringify(localReviews));
+    localStorage.setItem(CHALLENGE_ATTEMPTS_KEY, JSON.stringify(localAttempts));
 
     const remoteProgress = progressRes.data || [];
     const progressById = new Map(remoteProgress.map(row => [Number(row.lesson_id), row]));
