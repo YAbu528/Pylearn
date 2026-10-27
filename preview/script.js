@@ -526,8 +526,8 @@ function activateCloudUser(user) {
     localStorage.setItem("pylearn_current", "0");
     localStorage.setItem("pylearn_bookmarks", "[]");
     localStorage.setItem("pylearn_notes", "{}");
-    localStorage.setItem(CHALLENGE_ATTEMPTS_KEY, "[]");
-    localStorage.setItem(LESSON_REVIEWS_KEY, "[]");
+    writeEventList(CHALLENGE_ATTEMPTS_KEY, []);
+    writeEventList(LESSON_REVIEWS_KEY, []);
     localStorage.removeItem(NOTE_META_KEY);
     localStorage.removeItem(BOOKMARK_DELETIONS_KEY);
     localStorage.removeItem("pylearn_reward_requests");
@@ -586,8 +586,8 @@ async function syncLearningData() {
     for (const item of (attemptsRes.data || [])) if (!attemptIds.has(item.id)) localAttempts.push({...item, synced:true});
     localReviews = localReviews.slice(-500);
     localAttempts = localAttempts.slice(-1000);
-    localStorage.setItem(LESSON_REVIEWS_KEY, JSON.stringify(localReviews));
-    localStorage.setItem(CHALLENGE_ATTEMPTS_KEY, JSON.stringify(localAttempts));
+    writeEventList(LESSON_REVIEWS_KEY, localReviews);
+    writeEventList(CHALLENGE_ATTEMPTS_KEY, localAttempts);
 
     const remoteProgress = progressRes.data || [];
     const progressById = new Map(remoteProgress.map(row => [Number(row.lesson_id), row]));
