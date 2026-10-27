@@ -1260,7 +1260,7 @@ function calculateReviewInterval(rating, previousInterval=0) {
 function recordLessonReview(rating) {
   const value=Number(rating); if (![1,2,3,4].includes(value)) return;
   const reviews=readEventList(LESSON_REVIEWS_KEY);
-  const previous=reviews.filter(item=>Number(item.lesson_id)===current).sort((a,b)=>new Date(b.reviewed_at)-new Date(a.reviewed_at))[0];
+  const previous=reviews.filter(item=>(currentCloudUser ? item.user_id===currentCloudUser.id : !item.user_id) && Number(item.lesson_id)===current).sort((a,b)=>new Date(b.reviewed_at)-new Date(a.reviewed_at))[0];
   const interval=calculateReviewInterval(value,Number(previous?.interval_days||0));
   const reviewedAt=new Date(), next=new Date(reviewedAt); next.setDate(next.getDate()+interval);
   reviews.push({id:createEventId(),user_id:currentCloudUser?.id||null,lesson_id:String(current),rating:value,interval_days:interval,reviewed_at:reviewedAt.toISOString(),next_review_at:next.toISOString(),created_at:reviewedAt.toISOString(),synced:false});
@@ -1270,7 +1270,7 @@ function recordLessonReview(rating) {
   if(status) status.textContent="Review saved. Next review: "+next.toLocaleDateString()+" ("+interval+" day"+(interval===1?"":"s")+").";
 }
 function renderLessonReview() {
-  const latest=readEventList(LESSON_REVIEWS_KEY).filter(item=>Number(item.lesson_id)===current).sort((a,b)=>new Date(b.reviewed_at)-new Date(a.reviewed_at))[0];
+  const latest=readEventList(LESSON_REVIEWS_KEY).filter(item=>(currentCloudUser ? item.user_id===currentCloudUser.id : !item.user_id) && Number(item.lesson_id)===current).sort((a,b)=>new Date(b.reviewed_at)-new Date(a.reviewed_at))[0];
   const status=$("reviewStatus");
   if(status && latest) status.textContent="Last reviewed "+new Date(latest.reviewed_at).toLocaleDateString()+" · Next review "+new Date(latest.next_review_at).toLocaleDateString()+".";
 }
