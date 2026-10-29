@@ -582,8 +582,8 @@ async function syncLearningData() {
     for (const item of (attemptsRes.data || [])) if (!attemptIds.has(item.id)) localAttempts.push({...item, synced:true});
     localReviews = localReviews.slice(-500);
     localAttempts = localAttempts.slice(-1000);
-    localStorage.setItem(LESSON_REVIEWS_KEY, JSON.stringify(localReviews));
-    localStorage.setItem(CHALLENGE_ATTEMPTS_KEY, JSON.stringify(localAttempts));
+    writeEventList(LESSON_REVIEWS_KEY, localReviews);
+    writeEventList(CHALLENGE_ATTEMPTS_KEY, localAttempts);
 
     const remoteProgress = progressRes.data || [];
     const progressById = new Map(remoteProgress.map(row => [Number(row.lesson_id), row]));
