@@ -312,18 +312,18 @@ function readLocalJSON(key, fallback){
 let current = Number(localStorage.getItem("pylearn_current") || 0);
 current = Number.isInteger(current) ? Math.max(0, Math.min(current, lessons.length-1)) : 0;
 let state = readLocalJSON("pylearn_state", {done:[],quiz:[],challenges:[],runs:0,xp:0,streak:0,lastDay:""});
-// Isolated preview test mode: keep event records in memory only.
 const challengeTestMode = new URLSearchParams(window.location.search).get("challenge-test") === "1";
-const challengeTestEvents = { pylearn_challenge_attempts: [], pylearn_lesson_reviews: [] };
+const challengeTestEvents = Object.create(null);
 const CHALLENGE_ATTEMPTS_KEY = "pylearn_challenge_attempts";
 const LESSON_REVIEWS_KEY = "pylearn_lesson_reviews";
-function readEventList(key) {
-  const value = challengeTestMode ? challengeTestEvents[key] : readLocalJSON(key, []);
-  return Array.isArray(value) ? value.filter(item => item && typeof item.id === "string") : [];
-}
 function writeEventList(key, items) {
-  if (challengeTestMode) challengeTestEvents[key] = items;
-  else localStorage.setItem(key, JSON.stringify(items));
+  if (challengeTestMode) { challengeTestEvents[key] = items; return; }
+  localStorage.setItem(key, JSON.stringify(items));
+}
+function readEventList(key) {
+  if (challengeTestMode) return Array.isArray(challengeTestEvents[key]) ? challengeTestEvents[key] : [];
+  const value = readLocalJSON(key, []);
+  return Array.isArray(value) ? value.filter(item => item && typeof item.id === "string") : [];
 }
 function createEventId() {
   if (window.crypto?.randomUUID) return window.crypto.randomUUID();
@@ -525,8 +525,8 @@ function activateCloudUser(user) {
     localStorage.setItem("pylearn_current", "0");
     localStorage.setItem("pylearn_bookmarks", "[]");
     localStorage.setItem("pylearn_notes", "{}");
-    writeEventList(CHALLENGE_ATTEMPTS_KEY, []);
-    writeEventList(LESSON_REVIEWS_KEY, []);
+    localStorage.setItem(CHALLENGE_ATTEMPTS_KEY, "[]");
+    localStorage.setItem(LESSON_REVIEWS_KEY, "[]");
     localStorage.removeItem(NOTE_META_KEY);
     localStorage.removeItem(BOOKMARK_DELETIONS_KEY);
     localStorage.removeItem("pylearn_reward_requests");
@@ -574,16 +574,16 @@ async function syncLearningData() {
     };
     localReviews = await syncAppendOnlyEvents("lesson_reviews", localReviews);
     localAttempts = await syncAppendOnlyEvents("challenge_attempts", localAttempts);
-    writeEventList(LESSON_REVIEWS_KEY, localReviews);
-    writeEventList(CHALLENGE_ATTEMPTS_KEY, localAttempts);
+    localStorage.setItem(LESSON_REVIEWS_KEY, JSON.stringify(localReviews));
+    localStorage.setItem(CHALLENGE_ATTEMPTS_KEY, JSON.stringify(localAttempts));
     const reviewIds = new Set(localReviews.map(item => item.id));
     for (const item of (reviewsRes.data || [])) if (!reviewIds.has(item.id)) localReviews.push({...item, synced:true});
     const attemptIds = new Set(localAttempts.map(item => item.id));
     for (const item of (attemptsRes.data || [])) if (!attemptIds.has(item.id)) localAttempts.push({...item, synced:true});
     localReviews = localReviews.slice(-500);
     localAttempts = localAttempts.slice(-1000);
-    writeEventList(LESSON_REVIEWS_KEY, localReviews);
-    writeEventList(CHALLENGE_ATTEMPTS_KEY, localAttempts);
+    localStorage.setItem(LESSON_REVIEWS_KEY, JSON.stringify(localReviews));
+    localStorage.setItem(CHALLENGE_ATTEMPTS_KEY, JSON.stringify(localAttempts));
 
     const remoteProgress = progressRes.data || [];
     const progressById = new Map(remoteProgress.map(row => [Number(row.lesson_id), row]));
