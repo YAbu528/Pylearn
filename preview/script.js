@@ -1420,6 +1420,152 @@ function selectLesson(i){
 }
 
 
+
+// Real teaching workshop content for the first five foundation lessons.
+// Each lesson gets a worked example, guided attempt, understanding check, and mini-task.
+const lessonWorkshops = {
+  0: {
+    goal:"A variable gives a value a useful name so your program can use and update it.",
+    workedTitle:"A score that changes",
+    workedCode:"score = 10\nscore = score + 5\nprint(score)",
+    workedOutput:"15",
+    workedSteps:[
+      "The first line creates score and stores 10.",
+      "In the second line, Python reads the current 10, adds 5, then stores 15 back in score.",
+      "print(score) displays the latest value: 15."
+    ],
+    guided:"Start with points = 8. Add 4 to points, then print the updated value.",
+    guidedStarter:"points = 8\n# Update points here\nprint(points)",
+    checkQ:"After count = 3 followed by count = count * 2, what is count?",
+    checkA:["3","5","6"], checkCorrect:2,
+    checkWhy:"The old value is 3. Multiplying it by 2 gives 6, which is stored back in count.",
+    miniTitle:"Mini-task: a simple points tracker",
+    mini:"Create a variable called points with 0. Add 10, then add 5, and print the final total.",
+    miniStarter:"points = 0\n# Add the two rewards\nprint(points)"
+  },
+  1: {
+    goal:"A data type tells Python what kind of value it is working with. The type affects which operations make sense.",
+    workedTitle:"Text that becomes a number",
+    workedCode:'age_text = "14"\nage = int(age_text)\nprint(age + 1)\nprint(type(age))',
+    workedOutput:"15\n<class 'int'>",
+    workedSteps:[
+      'age_text stores the characters "14", so its type is str.',
+      "int(age_text) converts valid whole-number text into the integer 14.",
+      "Now age + 1 is arithmetic, and type(age) confirms that age is an int."
+    ],
+    guided:"Convert the text temperature = \"23.5\" into a decimal number, then print it plus 1.",
+    guidedStarter:'temperature = "23.5"\n# Convert it with float()\n',
+    checkQ:'What is the type of the value "8"?',
+    checkA:["int","str","float"], checkCorrect:1,
+    checkWhy:'Quotation marks make "8" text, so Python treats it as a str.',
+    miniTitle:"Mini-task: receipt total",
+    mini:"A price is stored as text. Convert it into a decimal number and add a delivery fee of 2.5.",
+    miniStarter:'price_text = "12.5"\n# Convert, add 2.5, and print\n'
+  },
+  2: {
+    goal:"Operators calculate values. input() lets a person provide information while the program is running.",
+    workedTitle:"Ask, convert, calculate",
+    workedCode:'first = int(input("First number: "))\nsecond = int(input("Second number: "))\ntotal = first + second\nprint(total)',
+    workedOutput:"Example input: 7, then 4\nOutput: 11",
+    workedSteps:[
+      "input() displays a prompt and waits for the user to type. It returns text.",
+      "int(...) converts each typed whole-number string into an integer.",
+      "The + operator adds the two integers, and print() displays the result."
+    ],
+    guided:"Read one whole number with input(), convert it to an integer, then print the number multiplied by 3.",
+    guidedStarter:'number = int(input("Enter a number: "))\n# Calculate and print the result\n',
+    checkQ:"If a = 17 and b = 5, what does a % b give?",
+    checkA:["3","2","3.4"], checkCorrect:1,
+    checkWhy:"% gives the remainder. Five fits into 17 three times (15), leaving 2.",
+    miniTitle:"Mini-task: age next year",
+    mini:"Ask the user for their age, convert it to an integer, and print how old they will be next year.",
+    miniStarter:'age = int(input("How old are you? "))\n# Print next year's age\n'
+  },
+  3: {
+    goal:"A condition is an expression that becomes True or False. if, elif, and else let a program choose which instructions to run.",
+    workedTitle:"Choose a message from a score",
+    workedCode:'score = 72\nif score >= 50:\n    print("Passed")\nelse:\n    print("Keep practicing")',
+    workedOutput:"Passed",
+    workedSteps:[
+      "Python checks whether score >= 50 is True. With score set to 72, it is True.",
+      "Because the if condition is True, Python runs the indented print() line.",
+      "The else block is skipped. Only one of these two paths runs."
+    ],
+    guided:"Set temperature = 30. If it is 25 or higher, print Warm; otherwise print Cool.",
+    guidedStarter:"temperature = 30\n# Write an if/else decision\n",
+    checkQ:"If x = 4, which branch runs in if x > 5: ... else: ...?",
+    checkA:["if","else","both"], checkCorrect:1,
+    checkWhy:"4 > 5 is False, so Python skips the if block and runs else.",
+    miniTitle:"Mini-task: classify a number",
+    mini:"Use if/elif/else to print Negative when n is below 0, Zero when it equals 0, and Positive otherwise.",
+    miniStarter:"n = -3\n# Add the three decision paths\n"
+  },
+  4: {
+    goal:"A loop repeats a block of code. for is useful when working through a sequence; while repeats as long as a condition stays True.",
+    workedTitle:"Repeat a calculation",
+    workedCode:"total = 0\nfor number in range(1, 4):\n    total = total + number\nprint(total)",
+    workedOutput:"6",
+    workedSteps:[
+      "range(1, 4) produces 1, 2, and 3. The stop value 4 is not included.",
+      "The loop runs once for each value. Each time, that value is added to total.",
+      "The total changes 0 → 1 → 3 → 6. After the loop, print() displays 6."
+    ],
+    guided:"Use a for loop and range() to print the numbers 2, 4, 6, 8, and 10.",
+    guidedStarter:"# Use range(start, stop, step)\n",
+    checkQ:"How many times does for n in range(2, 6): run?",
+    checkA:["3","4","5"], checkCorrect:1,
+    checkWhy:"The values are 2, 3, 4, and 5. That is four iterations.",
+    miniTitle:"Mini-task: add the first five numbers",
+    mini:"Use a loop to add 1 + 2 + 3 + 4 + 5, then print the total.",
+    miniStarter:"total = 0\n# Loop through 1 to 5 and add each value\nprint(total)"
+  }
+};
+
+function renderLessonWorkshop(){
+  const section=$("lessonWorkshop");
+  if(!section)return;
+  const w=lessonWorkshops[current];
+  section.hidden=!w;
+  section.replaceChildren();
+  if(!w)return;
+  const make=(tag,cls,txt)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(txt!==undefined)el.textContent=txt;return el;};
+  section.append(make("span","eyebrow","LEARN BY DOING"),make("h3","", "Let's understand it properly"));
+  section.append(make("p","workshop-goal",w.goal));
+  const worked=make("article","workshop-card");
+  worked.append(make("h4","", "1. Worked example: "+w.workedTitle));
+  worked.append(make("pre","workshop-code",w.workedCode));
+  worked.append(make("b","workshop-label","What happens?"));
+  const steps=make("ol","workshop-steps");
+  w.workedSteps.forEach(step=>steps.append(make("li","",step)));
+  worked.append(steps,make("b","workshop-label","Program output"),make("pre","workshop-output",w.workedOutput));
+  section.append(worked);
+  const guided=make("article","workshop-card");
+  guided.append(make("h4","","2. Guided practice"),make("p","",w.guided),make("pre","workshop-code",w.guidedStarter));
+  const guidedButton=make("button","ghost","Open guided starter in playground");
+  guidedButton.type="button";
+  guidedButton.addEventListener("click",()=>{$("editor").value=w.guidedStarter;go("playground");toast("Guided starter loaded. Try it yourself.");});
+  guided.append(guidedButton);section.append(guided);
+  const check=make("article","workshop-card");
+  check.append(make("h4","","3. Check your understanding"),make("p","",w.checkQ));
+  const choices=make("div","workshop-choices");
+  const feedback=make("p","workshop-feedback","");
+  w.checkA.forEach((answer,index)=>{
+    const button=make("button","ghost",answer);button.type="button";
+    button.addEventListener("click",()=>{
+      choices.querySelectorAll("button").forEach((b,i)=>{b.disabled=true;b.classList.toggle("workshop-correct",i===w.checkCorrect);b.classList.toggle("workshop-wrong",i===index&&i!==w.checkCorrect);});
+      feedback.textContent=(index===w.checkCorrect?"Correct. ":"Not quite. ")+w.checkWhy;
+    });
+    choices.append(button);
+  });
+  check.append(choices,feedback);section.append(check);
+  const mini=make("article","workshop-card");
+  mini.append(make("h4","",w.miniTitle),make("p","",w.mini),make("pre","workshop-code",w.miniStarter));
+  const miniButton=make("button","ghost","Open mini-task in playground");
+  miniButton.type="button";
+  miniButton.addEventListener("click",()=>{$("editor").value=w.miniStarter;go("playground");toast("Mini-task loaded. Build it step by step.");});
+  mini.append(miniButton);section.append(mini);
+}
+
 function renderDeep(){
  const d=deepData[current]||deepData[0];
  $("steps").innerHTML=d.steps.map(s=>`<div class="step"><span class="step-num">${s[0]}</span><div><b>${s[1]}</b><p>${s[2]}</p></div></div>`).join("");
@@ -1487,6 +1633,7 @@ function renderLesson(){
   const x=lessons[current];
   renderDeep();
   renderFoundationPractice();
+  renderLessonWorkshop();
   $("levelTag").textContent=x.level; $("number").textContent=`LESSON ${String(current+1).padStart(2,"0")} / ${String(lessons.length).padStart(2,"0")}`;
   $("title").textContent=x.title; $("intro").textContent=x.intro; $("explain").textContent=x.idea; $("analogy").textContent=x.analogy;
   $("lessonCode").textContent=x.code; $("objectives").innerHTML=x.objectives.map(o=>`<li>${o}</li>`).join("");
