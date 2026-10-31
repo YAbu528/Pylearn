@@ -335,7 +335,12 @@ print("2 + 3 =", 2 + 3)</textarea>
 </section>
 
 <section class="section badges-section">
-  <div class="heading"><div><span class="eyebrow">ACHIEVEMENTS</span><h2>Your badges</h2><p class="section-subtitle" id="badgeSummary">0/9 unlocked</p></div></div>
+  <div class="heading"><div><span class="eyebrow">ACHIEVEMENTS</span><h2>Your badges</h2><p class="section-subtitle" id="badgeSummary">0 of 9 badges earned · 9 to go</p></div></div>
+  <div class="badge-collection card" aria-label="Achievement collection progress">
+    <div class="badge-collection-top"><strong>Collection progress</strong><span id="badgeProgressLabel">0/9 · 0%</span></div>
+    <div class="badge-collection-track"><i id="badgeCollectionFill"></i></div>
+    <p id="badgeCollectionHint">Nine achievements to discover. Keep learning at your own pace.</p>
+  </div>
   <div class="badges" id="badges"></div>
 </section>
   
