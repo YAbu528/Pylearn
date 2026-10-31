@@ -242,6 +242,17 @@ name = <s>"Python"</s>
       <textarea id="challengeCode" spellcheck="false"></textarea>
       <div class="challenge-actions"><button class="ghost" id="hintBtn" onclick="showHint()">💡 Hint</button><button class="ghost" id="solutionBtn" onclick="showSolution()">👀 Solution</button><button class="primary" onclick="checkChallenge()">Check solution</button></div>
       <div id="practiceHint" class="practice-message"></div><pre id="challengeResult">Write your solution, then check it.</pre>
+    <section class="lesson-review" aria-labelledby="reviewHeading">
+      <h3 id="reviewHeading">📅 Review this lesson</h3>
+      <p>How well do you understand this lesson right now?</p>
+      <div class="review-ratings">
+        <button type="button" onclick="recordLessonReview(1)">1 · Not yet</button>
+        <button type="button" onclick="recordLessonReview(2)">2 · Need practice</button>
+        <button type="button" onclick="recordLessonReview(3)">3 · Mostly</button>
+        <button type="button" onclick="recordLessonReview(4)">4 · Confident</button>
+      </div>
+      <small id="reviewStatus" aria-live="polite">Your review schedule will appear here.</small>
+    </section>
     </div>
   </div>
 </section>

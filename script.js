@@ -312,6 +312,28 @@ function readLocalJSON(key, fallback){
 let current = Number(localStorage.getItem("pylearn_current") || 0);
 current = Number.isInteger(current) ? Math.max(0, Math.min(current, lessons.length-1)) : 0;
 let state = readLocalJSON("pylearn_state", {done:[],quiz:[],challenges:[],runs:0,xp:0,streak:0,lastDay:""});
+const CHALLENGE_ATTEMPTS_KEY = "pylearn_challenge_attempts";
+const LESSON_REVIEWS_KEY = "pylearn_lesson_reviews";
+function writeEventList(key, items) {
+  localStorage.setItem(key, JSON.stringify(items));
+}
+function readEventList(key) {
+  const value = readLocalJSON(key, []);
+  return Array.isArray(value) ? value.filter(item => item && typeof item.id === "string") : [];
+}
+function createEventId() {
+  if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+  if (window.crypto?.getRandomValues) {
+    const bytes = new Uint8Array(16);
+    window.crypto.getRandomValues(bytes);
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    const hex = [...bytes].map(value => value.toString(16).padStart(2, "0"));
+    return hex.slice(0,4).join("")+"-"+hex.slice(4,6).join("")+"-"+hex.slice(6,8).join("")+"-"+hex.slice(8,10).join("")+"-"+hex.slice(10).join("");
+  }
+  throw new Error("Secure random IDs are unavailable; this learning event was not saved.");
+}
+
 state.done=Array.isArray(state.done)?state.done.filter(Number.isInteger):[];
 state.quiz=Array.isArray(state.quiz)?state.quiz.filter(Number.isInteger):[];
 state.challenges=Array.isArray(state.challenges)?state.challenges.filter(Number.isInteger):[];
@@ -499,6 +521,8 @@ function activateCloudUser(user) {
     localStorage.setItem("pylearn_current", "0");
     localStorage.setItem("pylearn_bookmarks", "[]");
     localStorage.setItem("pylearn_notes", "{}");
+    localStorage.setItem(CHALLENGE_ATTEMPTS_KEY, "[]");
+    localStorage.setItem(LESSON_REVIEWS_KEY, "[]");
     localStorage.removeItem(NOTE_META_KEY);
     localStorage.removeItem(BOOKMARK_DELETIONS_KEY);
     localStorage.removeItem("pylearn_reward_requests");
@@ -517,13 +541,45 @@ async function syncLearningData() {
   cloudSyncRunning = true;
   const userId = currentCloudUser.id;
   try {
-    const [progressRes, notesRes, bookmarksRes] = await Promise.all([
+    const [progressRes, notesRes, bookmarksRes, reviewsRes, attemptsRes] = await Promise.all([
       supabaseClient.from("lesson_progress").select("lesson_id,completed,quiz_best_score,challenge_completed").eq("user_id", userId),
       supabaseClient.from("user_notes").select("lesson_id,content,updated_at,deleted_at").eq("user_id", userId),
-      supabaseClient.from("user_bookmarks").select("lesson_id,deleted_at").eq("user_id", userId)
+      supabaseClient.from("user_bookmarks").select("lesson_id,deleted_at").eq("user_id", userId),
+      supabaseClient.from("lesson_reviews").select("*").eq("user_id", userId).order("reviewed_at", {ascending:false}).limit(500),
+      supabaseClient.from("challenge_attempts").select("*").eq("user_id", userId).order("attempted_at", {ascending:false}).limit(1000)
     ]);
-    for (const r of [progressRes, notesRes, bookmarksRes]) if (r.error) throw r.error;
+    for (const r of [progressRes, notesRes, bookmarksRes, reviewsRes, attemptsRes]) if (r.error) throw r.error;
     if (!currentCloudUser || currentCloudUser.id !== userId) return;
+
+    let localReviews = readEventList(LESSON_REVIEWS_KEY);
+    let localAttempts = readEventList(CHALLENGE_ATTEMPTS_KEY);
+    // Append-only event rows use INSERT, never UPSERT (authenticated users
+    // deliberately have no UPDATE permission on these tables). Only sync
+    // events created for this exact account; guest/other-account events stay local.
+    const syncAppendOnlyEvents = async (table, events) => {
+      const ownedPending = events.filter(item => !item.synced && item.user_id === userId);
+      const syncedIds = new Set();
+      for (const item of ownedPending) {
+        const { synced, ...row } = item;
+        const { error } = await supabaseClient.from(table).insert(row);
+        if (error && error.code !== "23505") throw error;
+        // A duplicate UUID means a previous retry already inserted this event.
+        syncedIds.add(item.id);
+      }
+      return events.map(item => syncedIds.has(item.id) ? {...item, synced:true} : item);
+    };
+    localReviews = await syncAppendOnlyEvents("lesson_reviews", localReviews);
+    localAttempts = await syncAppendOnlyEvents("challenge_attempts", localAttempts);
+    localStorage.setItem(LESSON_REVIEWS_KEY, JSON.stringify(localReviews));
+    localStorage.setItem(CHALLENGE_ATTEMPTS_KEY, JSON.stringify(localAttempts));
+    const reviewIds = new Set(localReviews.map(item => item.id));
+    for (const item of (reviewsRes.data || [])) if (!reviewIds.has(item.id)) localReviews.push({...item, synced:true});
+    const attemptIds = new Set(localAttempts.map(item => item.id));
+    for (const item of (attemptsRes.data || [])) if (!attemptIds.has(item.id)) localAttempts.push({...item, synced:true});
+    localReviews = localReviews.slice(-500);
+    localAttempts = localAttempts.slice(-1000);
+    localStorage.setItem(LESSON_REVIEWS_KEY, JSON.stringify(localReviews));
+    localStorage.setItem(CHALLENGE_ATTEMPTS_KEY, JSON.stringify(localAttempts));
 
     const remoteProgress = progressRes.data || [];
     const progressById = new Map(remoteProgress.map(row => [Number(row.lesson_id), row]));
@@ -672,7 +728,7 @@ async function syncLearningData() {
     localStorage.setItem("pylearn_state", JSON.stringify(state));
     localStorage.setItem("pylearn_current", String(current));
     localStorage.setItem("pylearn_bookmarks", JSON.stringify(bookmarks));
-    renderLesson(); renderLessons(); renderStudyTools();
+    renderLesson(); renderLessons(); renderStudyTools(); renderLessonReview();
     setAuthMessage("Your lessons, notes, and bookmarks are synced.", "success");
   } catch (error) {
     console.error("PyLearn cloud sync failed:", error);
@@ -1022,7 +1078,7 @@ function renderBadges(){
 
 function selectLesson(i){
   if(!isUnlocked(i)){toast("Complete the previous lesson to unlock this one.");return}
-  current=i; save(); renderLesson(); renderLessons();
+  current=i; save(); renderLesson(); renderLessons(); renderLessonReview();
   document.querySelector(".lesson-panel")?.scrollIntoView({behavior:"smooth",block:"start"});
 }
 
@@ -1147,14 +1203,14 @@ async function checkChallenge(){
   if(mode==="mcq"){
     if(window.__challengeChoice==null){out.textContent="Choose an answer first.";return;}
     if(window.__challengeChoice===x.answer) handleChallengeResult({ok:true,output:x.options[x.answer]});
-    else out.textContent="Not quite. Try again or review the lesson.";
+    else handleChallengeResult({ok:false,output:"Incorrect multiple-choice answer."});
     return;
   }
   if(mode==="predict"){
     const answer=($("challengeAnswer")?.value||"").trim();
     if(!answer){out.textContent="Type your predicted output first.";return;}
     if(answer.toLowerCase()===String(x.solution).trim().toLowerCase()) handleChallengeResult({ok:true,output:answer});
-    else out.textContent="Not quite. Run through the code step by step and try again.";
+    else handleChallengeResult({ok:false,output:"Incorrect predicted output."});
     return;
   }
   const code=mode==="fill" ? (x.starter||"").replace("{{answer}}",($("challengeFillAnswer")?.value||"").trim()) : $("challengeCode").value;
@@ -1175,10 +1231,47 @@ async function checkChallenge(){
       },8000);
     });
     handleChallengeResult(result);
-  }catch(err){ out.textContent=String(err); }
+  }catch(err){ handleChallengeResult({ok:false,output:"ERROR: "+String(err)}); }
 }
 
+function recordChallengeAttempt(result) {
+  const mode = lessons[current].challenge.mode || "code";
+  const attempts = readEventList(CHALLENGE_ATTEMPTS_KEY);
+  const isError = String(result?.output || "").startsWith("ERROR:");
+  attempts.push({
+    id:createEventId(), user_id:currentCloudUser?.id || null,
+    lesson_id:String(current), challenge_id:"lesson-" + (current + 1) + "-" + mode,
+    challenge_type:mode, outcome:isError ? "error" : (result?.ok ? "correct" : "incorrect"),
+    passed_tests:isError ? null : (result?.ok ? 1 : 0), total_tests:isError ? null : 1,
+    attempted_at:new Date().toISOString(), synced:false
+  });
+  writeEventList(CHALLENGE_ATTEMPTS_KEY, attempts.slice(-1000));
+  queueCloudSync();
+}
+function calculateReviewInterval(rating, previousInterval=0) {
+  const first = {1:1,2:2,3:4,4:7};
+  if (!previousInterval || rating === 1) return first[rating];
+  return Math.min(60, Math.max(first[rating], Math.round(previousInterval * ({1:1,2:1.5,3:2,4:2.5})[rating])));
+}
+function recordLessonReview(rating) {
+  const value=Number(rating); if (![1,2,3,4].includes(value)) return;
+  const reviews=readEventList(LESSON_REVIEWS_KEY);
+  const previous=reviews.filter(item=>(currentCloudUser ? item.user_id===currentCloudUser.id : !item.user_id) && Number(item.lesson_id)===current).sort((a,b)=>new Date(b.reviewed_at)-new Date(a.reviewed_at))[0];
+  const interval=calculateReviewInterval(value,Number(previous?.interval_days||0));
+  const reviewedAt=new Date(), next=new Date(reviewedAt); next.setDate(next.getDate()+interval);
+  reviews.push({id:createEventId(),user_id:currentCloudUser?.id||null,lesson_id:String(current),rating:value,interval_days:interval,reviewed_at:reviewedAt.toISOString(),next_review_at:next.toISOString(),created_at:reviewedAt.toISOString(),synced:false});
+  writeEventList(LESSON_REVIEWS_KEY, reviews.slice(-500));
+  queueCloudSync();
+  const status=$("reviewStatus");
+  if(status) status.textContent="Review saved. Next review: "+next.toLocaleDateString()+" ("+interval+" day"+(interval===1?"":"s")+").";
+}
+function renderLessonReview() {
+  const latest=readEventList(LESSON_REVIEWS_KEY).filter(item=>(currentCloudUser ? item.user_id===currentCloudUser.id : !item.user_id) && Number(item.lesson_id)===current).sort((a,b)=>new Date(b.reviewed_at)-new Date(a.reviewed_at))[0];
+  const status=$("reviewStatus");
+  if(status && latest) status.textContent="Last reviewed "+new Date(latest.reviewed_at).toLocaleDateString()+" · Next review "+new Date(latest.next_review_at).toLocaleDateString()+".";
+}
 function handleChallengeResult(result){
+  recordChallengeAttempt(result);
   const out=$("challengeResult");
   if(result.ok){
     out.textContent="✓ Correct! +30 XP";
@@ -1234,4 +1327,4 @@ initializeAuth();
 
 // Do not start/increase a streak just because the app was opened.
 // updateStreak() is called only after a real learning action succeeds.
-renderLesson(); renderLessons(); renderStudyTools(); searchLessons();
+renderLesson(); renderLessons(); renderStudyTools(); renderLessonReview(); searchLessons();
