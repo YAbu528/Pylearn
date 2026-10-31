@@ -560,7 +560,7 @@ function applyCosmetic(id){
   renderCosmetics();
 }
 function loadCosmeticPreference(user=currentCloudUser){
-  const saved=user?.user_metadata?.pylearn_cosmetic || uiStorage.getItem("pylearn_cosmetic") || "classic";
+  const saved=user ? (user.user_metadata?.pylearn_cosmetic || "classic") : (uiStorage.getItem("pylearn_cosmetic") || "classic");
   applyCosmetic(saved);
 }
 async function chooseCosmetic(id){
