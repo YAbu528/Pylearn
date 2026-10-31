@@ -1147,6 +1147,52 @@ function renderLearningInsights(){
   list.innerHTML=chosen.map(item=>`<div class="insight-item"><span class="insight-tag">${item.tag}</span><div class="insight-copy"><b>${item.title}</b><p>${item.text}</p></div><button class="ghost" onclick="openInsightLesson(${item.i}, '${item.tag}')">${item.action} →</button></div>`).join("");
 }
 
+const learningMissions = [
+  {id:"lessons",icon:"📚",title:"Build your foundations",description:"Complete any 3 Python lessons.",goal:3,progress:()=>state.done.length,section:"learn",action:"Open lessons"},
+  {id:"quizzes",icon:"🧠",title:"Check your understanding",description:"Master the quick checks in 2 lessons.",goal:2,progress:()=>state.quiz.length,section:"learn",action:"Try a quiz"},
+  {id:"challenges",icon:"⚔️",title:"Solve the challenges",description:"Successfully solve 2 coding challenges.",goal:2,progress:()=>state.challenges.length,section:"learn",action:"Try a challenge"}
+];
+
+function renderMissions(){
+  const host=$("missionsList");
+  if(!host) return;
+  const completed=learningMissions.filter(m=>m.progress()>=m.goal).length;
+  const summary=$("missionsSummary");
+  if(summary) summary.textContent=`${completed} of ${learningMissions.length} missions complete`;
+  host.innerHTML=learningMissions.map(m=>{
+    const value=Math.min(m.goal,Math.max(0,m.progress()));
+    const done=value>=m.goal;
+    const pct=Math.round(value/m.goal*100);
+    return `<article class="mission-card ${done?"mission-done":""}">
+      <div class="mission-icon" aria-hidden="true">${m.icon}</div>
+      <div class="mission-copy"><div class="mission-title-row"><h3>${m.title}</h3><span>${done?"✓ COMPLETE":`${value}/${m.goal}`}</span></div>
+        <p>${m.description}</p>
+        <div class="mission-track" role="progressbar" aria-label="${m.title} progress" aria-valuemin="0" aria-valuemax="${m.goal}" aria-valuenow="${value}"><i style="width:${pct}%"></i></div>
+      </div>
+      <button class="ghost mission-action" ${done?"disabled":`onclick="openMission('${m.id}')"`}>${done?"Completed":m.action+" →"}</button>
+    </article>`;
+  }).join("");
+}
+
+function openMission(id){
+  const targets={
+      quizzes:()=>lessons.findIndex((_,i)=>isUnlocked(i)&&!state.quiz.includes(i)),
+    challenges:()=>lessons.findIndex((_,i)=>isUnlocked(i)&&!state.challenges.includes(i))
+  };
+  let index;
+  if(id==="lessons") index=lessons.findIndex((_,i)=>isUnlocked(i)&&!state.done.includes(i));
+  else index=targets[id]?.();
+  if(index===undefined||index<0){
+    if(id==="lessons") go("learn");
+    else toast("You have completed the available steps for this mission.");
+    return;
+  }
+  selectLesson(index);
+  go("learn");
+  if(id==="quizzes") $("quizCard")?.scrollIntoView({behavior:"smooth",block:"center"});
+  if(id==="challenges") $("challengeTitle")?.scrollIntoView({behavior:"smooth",block:"center"});
+}
+
 function renderDashboard(){
   const total=lessons.length;
   const completed=state.done.length;
@@ -1185,6 +1231,7 @@ function renderDashboard(){
     $("continueCard").classList.remove("complete");
   }
   renderLearningInsights();
+  renderMissions();
 }
 
 function renderRoadmap(){
