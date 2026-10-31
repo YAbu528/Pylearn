@@ -305,25 +305,41 @@ const badges = [
  {id:"explorer", medal:"🧭", name:"Python Explorer", desc:"Reach 500 XP through real learning actions.", goal:"Earn 500 XP", test:s=>s.xp>=500, progress:s=>[Math.min(s.xp,500),500]}
 ];
 
+// Keep preview/test data separate from the live site's app data.
+// Supabase's own auth storage is untouched; only PyLearn-owned keys are namespaced.
+const APP_STORAGE_PREFIX = location.pathname.toLowerCase().includes("/preview/")
+  ? "pylearn_preview_"
+  : "pylearn_prod_";
+// Learning data lives only in memory while this page is open. Supabase is the
+// permanent source of truth. Supabase Auth manages its own session storage.
+const learningMemory = new Map();
+const appStorage = {
+  getItem(key) { return learningMemory.has(key) ? learningMemory.get(key) : null; },
+  setItem(key, value) { learningMemory.set(key, String(value)); },
+  removeItem(key) { learningMemory.delete(key); }
+};
+// Keep only interface preferences and unfinished coding-project drafts on-device.
+const uiStorage = {
+  getItem(key) { return localStorage.getItem(APP_STORAGE_PREFIX + String(key).replace(/^pylearn_/, "")); },
+  setItem(key, value) { localStorage.setItem(APP_STORAGE_PREFIX + String(key).replace(/^pylearn_/, ""), value); },
+  removeItem(key) { localStorage.removeItem(APP_STORAGE_PREFIX + String(key).replace(/^pylearn_/, "")); }
+};
+
 function readLocalJSON(key, fallback){
-  try { return JSON.parse(localStorage.getItem(key) ?? JSON.stringify(fallback)); }
+  try { return JSON.parse(appStorage.getItem(key) ?? JSON.stringify(fallback)); }
   catch { return fallback; }
 }
-let current = Number(localStorage.getItem("pylearn_current") || 0);
+let current = Number(appStorage.getItem("pylearn_current") || 0);
 current = Number.isInteger(current) ? Math.max(0, Math.min(current, lessons.length-1)) : 0;
 let state = readLocalJSON("pylearn_state", {done:[],quiz:[],challenges:[],runs:0,xp:0,streak:0,lastDay:""});
-const challengeTestMode = new URLSearchParams(window.location.search).get("challenge-test") === "1";
 const CHALLENGE_ATTEMPTS_KEY = "pylearn_challenge_attempts";
 const LESSON_REVIEWS_KEY = "pylearn_lesson_reviews";
-const challengeTestEvents = { [CHALLENGE_ATTEMPTS_KEY]: [], [LESSON_REVIEWS_KEY]: [] };
 function writeEventList(key, items) {
-  if (challengeTestMode) { challengeTestEvents[key] = items; return; }
-  localStorage.setItem(key, JSON.stringify(items));
+  appStorage.setItem(key, JSON.stringify(items));
 }
 function readEventList(key) {
-  if (challengeTestMode) return challengeTestEvents[key] || [];
-  try { const parsed = JSON.parse(localStorage.getItem(key) || "[]"); return Array.isArray(parsed) ? parsed : []; }
-  catch { return []; }
+  const value = readLocalJSON(key, []);
+  return Array.isArray(value) ? value.filter(item => item && typeof item.id === "string") : [];
 }
 function createEventId() {
   if (window.crypto?.randomUUID) return window.crypto.randomUUID();
@@ -378,7 +394,7 @@ secret = random.randint(1, 20)
 `, testText:"Connect Python to real-world data and handle failure safely."}
 ];
 
-let projectState = JSON.parse(localStorage.getItem("pylearn_projects") || '{}');
+let projectState = JSON.parse(uiStorage.getItem("pylearn_projects") || '{}');
 let activeProject = null;
 
 
@@ -403,7 +419,7 @@ function showAuthForm(mode) {
   $("authHeading").textContent = mode === "signup" ? "Start your PyLearn account." : "Save your learning journey.";
   $("authDescription").textContent = mode === "signup"
     ? "Create an account with your email and a password."
-    : "Sign in to your PyLearn account. Your existing progress on this device remains safe.";
+    : "Sign in to save your progress, notes, bookmarks, and revision history to the cloud.";
   setAuthMessage("");
 }
 async function startSocialSignIn(provider, button) {
@@ -432,10 +448,18 @@ function renderAuthSession(user) {
   if (user) {
     $("signedInEmail").textContent = user.email || "Signed-in account";
     $("authHeading").textContent = "Welcome to PyLearn.";
-    $("authDescription").textContent = "Your account is connected. Your learning progress can sync across devices.";
+    $("authDescription").textContent = "Your progress, notes, bookmarks, and study history are saved to your account.";
     setAuthMessage("You're signed in successfully.", "success");
   } else {
     showAuthForm("signin");
+    state = {done:[],quiz:[],challenges:[],runs:0,xp:0,streak:0,lastDay:""};
+    bookmarks = [];
+    notes = {};
+    current = 0;
+    renderLessons();
+    renderLesson();
+    renderStudyTools();
+    renderLessonReview();
   }
 }
 async function initializeAuth() {
@@ -508,37 +532,41 @@ let cloudAchievements = [];
 let cloudSyncRunning = false;
 let cloudSyncQueued = false;
 let cloudSyncTimer = null;
+let cloudRetryAttempt = 0;
 const NOTE_META_KEY = "pylearn_note_sync_meta";
 const BOOKMARK_DELETIONS_KEY = "pylearn_bookmark_deletions";
 const CLOUD_USER_KEY = "pylearn_cloud_user_id";
 const readMap = key => readLocalJSON(key, {});
 function activateCloudUser(user) {
   if (!user?.id) return;
-  const previousUserId = localStorage.getItem(CLOUD_USER_KEY);
+  const previousUserId = appStorage.getItem(CLOUD_USER_KEY);
   if (previousUserId && previousUserId !== user.id) {
     // Never carry one account's browser cache into another account.
     state = {done:[],quiz:[],challenges:[],runs:0,xp:0,streak:0,lastDay:""};
     bookmarks = [];
     notes = {};
     current = 0;
-    localStorage.setItem("pylearn_state", JSON.stringify(state));
-    localStorage.setItem("pylearn_current", "0");
-    localStorage.setItem("pylearn_bookmarks", "[]");
-    localStorage.setItem("pylearn_notes", "{}");
-    writeEventList(CHALLENGE_ATTEMPTS_KEY, []);
-    writeEventList(LESSON_REVIEWS_KEY, []);
-    localStorage.removeItem(NOTE_META_KEY);
-    localStorage.removeItem(BOOKMARK_DELETIONS_KEY);
-    localStorage.removeItem("pylearn_reward_requests");
+    appStorage.setItem("pylearn_state", JSON.stringify(state));
+    appStorage.setItem("pylearn_current", "0");
+    appStorage.setItem("pylearn_bookmarks", "[]");
+    appStorage.setItem("pylearn_notes", "{}");
+    appStorage.setItem(CHALLENGE_ATTEMPTS_KEY, "[]");
+    appStorage.setItem(LESSON_REVIEWS_KEY, "[]");
+    appStorage.removeItem(NOTE_META_KEY);
+    appStorage.removeItem(BOOKMARK_DELETIONS_KEY);
+    appStorage.removeItem("pylearn_reward_requests");
     cloudAchievements = [];
   }
-  localStorage.setItem(CLOUD_USER_KEY, user.id);
+  appStorage.setItem(CLOUD_USER_KEY, user.id);
 }
 function queueCloudSync() {
   if (!currentCloudUser || !supabaseClient) return;
   clearTimeout(cloudSyncTimer);
-  cloudSyncTimer = setTimeout(() => syncLearningData(), 900);
+  cloudSyncTimer = setTimeout(() => syncLearningData(), 250);
 }
+window.addEventListener("online", () => {
+  if (currentCloudUser) syncLearningData();
+});
 async function syncLearningData() {
   if (!currentCloudUser || !supabaseClient) return;
   if (cloudSyncRunning) { cloudSyncQueued = true; return; }
@@ -574,16 +602,16 @@ async function syncLearningData() {
     };
     localReviews = await syncAppendOnlyEvents("lesson_reviews", localReviews);
     localAttempts = await syncAppendOnlyEvents("challenge_attempts", localAttempts);
-    writeEventList(LESSON_REVIEWS_KEY, localReviews);
-    writeEventList(CHALLENGE_ATTEMPTS_KEY, localAttempts);
+    appStorage.setItem(LESSON_REVIEWS_KEY, JSON.stringify(localReviews));
+    appStorage.setItem(CHALLENGE_ATTEMPTS_KEY, JSON.stringify(localAttempts));
     const reviewIds = new Set(localReviews.map(item => item.id));
     for (const item of (reviewsRes.data || [])) if (!reviewIds.has(item.id)) localReviews.push({...item, synced:true});
     const attemptIds = new Set(localAttempts.map(item => item.id));
     for (const item of (attemptsRes.data || [])) if (!attemptIds.has(item.id)) localAttempts.push({...item, synced:true});
     localReviews = localReviews.slice(-500);
     localAttempts = localAttempts.slice(-1000);
-    writeEventList(LESSON_REVIEWS_KEY, localReviews);
-    writeEventList(CHALLENGE_ATTEMPTS_KEY, localAttempts);
+    appStorage.setItem(LESSON_REVIEWS_KEY, JSON.stringify(localReviews));
+    appStorage.setItem(CHALLENGE_ATTEMPTS_KEY, JSON.stringify(localAttempts));
 
     const remoteProgress = progressRes.data || [];
     const progressById = new Map(remoteProgress.map(row => [Number(row.lesson_id), row]));
@@ -632,7 +660,7 @@ async function syncLearningData() {
         continue;
       }
       rewardMarkers[eventKey] = true;
-      localStorage.setItem("pylearn_reward_requests", JSON.stringify(rewardMarkers));
+      appStorage.setItem("pylearn_reward_requests", JSON.stringify(rewardMarkers));
       if (!currentCloudUser || currentCloudUser.id !== userId) return;
     }
 
@@ -649,7 +677,7 @@ async function syncLearningData() {
     state.streak = Number(statsRes.data.streak || 0);
     state.lastDay = statsRes.data.last_active_date || "";
     cloudAchievements = (achievementsRes.data || []).map(row => row.achievement_id);
-    localStorage.setItem("pylearn_state", JSON.stringify(state));
+    appStorage.setItem("pylearn_state", JSON.stringify(state));
 
     const noteMeta = readMap(NOTE_META_KEY);
     const remoteNotes = new Map((notesRes.data || []).map(row => [String(row.lesson_id), row]));
@@ -692,8 +720,8 @@ async function syncLearningData() {
         noteMeta[id] = latestMeta;
       }
     }
-    localStorage.setItem("pylearn_notes",JSON.stringify(notes));
-    localStorage.setItem(NOTE_META_KEY,JSON.stringify(noteMeta));
+    appStorage.setItem("pylearn_notes",JSON.stringify(notes));
+    appStorage.setItem(NOTE_META_KEY,JSON.stringify(noteMeta));
 
     const deletedBookmarks=readMap(BOOKMARK_DELETIONS_KEY);
     const remoteBookmarks=new Map((bookmarksRes.data||[]).map(row=>[Number(row.lesson_id),row]));
@@ -728,50 +756,68 @@ async function syncLearningData() {
         delete latestBookmarkMarkers[key];
       }
     }
-    localStorage.setItem(BOOKMARK_DELETIONS_KEY, JSON.stringify(latestBookmarkMarkers));
-    localStorage.setItem("pylearn_state", JSON.stringify(state));
-    localStorage.setItem("pylearn_current", String(current));
-    localStorage.setItem("pylearn_bookmarks", JSON.stringify(bookmarks));
+    appStorage.setItem(BOOKMARK_DELETIONS_KEY, JSON.stringify(latestBookmarkMarkers));
+    appStorage.setItem("pylearn_state", JSON.stringify(state));
+    appStorage.setItem("pylearn_current", String(current));
+    appStorage.setItem("pylearn_bookmarks", JSON.stringify(bookmarks));
     renderLesson(); renderLessons(); renderStudyTools(); renderLessonReview();
-    setAuthMessage("Your lessons, notes, and bookmarks are synced.", "success");
+    cloudRetryAttempt = 0;
+    setAuthMessage("Your progress, notes, bookmarks, and study history are synced.", "success");
+    const noteStatus=$("noteStatus");
+    if(noteStatus) noteStatus.textContent=notes[String(current)]?"Saved to your account":"No note yet";
   } catch (error) {
     console.error("PyLearn cloud sync failed:", error);
-    setAuthMessage("Cloud sync couldn't finish: " + (error.message || "Please check your connection and try again."), "error");
+    setAuthMessage("Cloud save failed: " + (error.message || "Please check your connection.") + " Your unsent changes are only in this open page. Keep it open while PyLearn retries.", "error");
+    if (navigator.onLine && cloudRetryAttempt < 5) {
+      const delay = Math.min(30000, 2000 * (2 ** cloudRetryAttempt));
+      cloudRetryAttempt += 1;
+      clearTimeout(cloudSyncTimer);
+      cloudSyncTimer = setTimeout(() => queueCloudSync(), delay);
+    }
   } finally {
     cloudSyncRunning=false;
     if(cloudSyncQueued){cloudSyncQueued=false;queueCloudSync();}
   }
 }
-function save(){localStorage.setItem("pylearn_state",JSON.stringify(state));localStorage.setItem("pylearn_current",String(current));queueCloudSync()}
+function save(){
+  if (!currentCloudUser) return;
+  appStorage.setItem("pylearn_state",JSON.stringify(state));
+  appStorage.setItem("pylearn_current",String(current));
+  queueCloudSync();
+}
 function go(id){$(id)?.scrollIntoView({behavior:"smooth",block:"start"}); if(id==="playground" && !pythonReady && !pythonLoading) initPython();}
-function saveBookmarks(){localStorage.setItem("pylearn_bookmarks",JSON.stringify(bookmarks));queueCloudSync()}
-function saveNotes(){localStorage.setItem("pylearn_notes",JSON.stringify(notes));queueCloudSync()}
+function saveBookmarks(){if(!currentCloudUser)return;appStorage.setItem("pylearn_bookmarks",JSON.stringify(bookmarks));queueCloudSync()}
+function saveNotes(){if(!currentCloudUser)return;appStorage.setItem("pylearn_notes",JSON.stringify(notes));queueCloudSync()}
 function toggleBookmark(){
+  if(!currentCloudUser){toast("Sign in to save bookmarks.");return}
   const i=bookmarks.indexOf(current);
   const deletions=readMap(BOOKMARK_DELETIONS_KEY);
-  if(i===-1){bookmarks.push(current);deletions[String(current)]=-Date.now();toast("🔖 Lesson bookmarked");}
+  if(i===-1){bookmarks.push(current);deletions[String(current)]=-Date.now();toast("Lesson bookmarked","success");}
   else{bookmarks.splice(i,1);deletions[String(current)]=Date.now();toast("Bookmark removed");}
-  localStorage.setItem(BOOKMARK_DELETIONS_KEY,JSON.stringify(deletions));
+  appStorage.setItem(BOOKMARK_DELETIONS_KEY,JSON.stringify(deletions));
   saveBookmarks(); renderStudyTools(); renderLessonBookmark();
 }
 function renderLessonBookmark(){
   const b=$("bookmarkLesson"); if(!b) return;
+  b.disabled=!currentCloudUser;
+  b.title=currentCloudUser?"Save this lesson to your account":"Sign in to save bookmarks";
   const saved=bookmarks.includes(current);
   b.textContent=saved?"★ Bookmarked":"☆ Bookmark lesson";
   b.classList.toggle("saved",saved);
 }
 function saveCurrentNote(show=true){
+  if(!currentCloudUser){toast("Sign in to save lesson notes.");return}
   const box=$("lessonNotes"); if(!box) return;
   const value=box.value.trim();
   const meta=readMap(NOTE_META_KEY);
   if(value) notes[String(current)]=value; else delete notes[String(current)];
   meta[String(current)]={updatedAt:Date.now(),deleted:!value};
-  localStorage.setItem(NOTE_META_KEY,JSON.stringify(meta));
+  appStorage.setItem(NOTE_META_KEY,JSON.stringify(meta));
   saveNotes();
-  if(show){$("noteStatus").textContent=value?"Saved locally":"No note yet"; toast(value?"📝 Note saved":"Note cleared");}
+  if(show){$("noteStatus").textContent=value?"Saving to your account…":"Saving note change…"; toast(value?"📝 Saving note…":"Saving note change…");}
   renderStudyTools();
 }
-function clearCurrentNote(){const box=$("lessonNotes"); if(box){box.value="";} delete notes[String(current)]; const meta=readMap(NOTE_META_KEY); meta[String(current)]={updatedAt:Date.now(),deleted:true}; localStorage.setItem(NOTE_META_KEY,JSON.stringify(meta)); saveNotes(); $("noteStatus").textContent="No note yet"; renderStudyTools(); toast("Note cleared");}
+function clearCurrentNote(){if(!currentCloudUser){toast("Sign in to manage saved notes.");return} const box=$("lessonNotes"); if(box){box.value="";} delete notes[String(current)]; const meta=readMap(NOTE_META_KEY); meta[String(current)]={updatedAt:Date.now(),deleted:true}; appStorage.setItem(NOTE_META_KEY,JSON.stringify(meta)); saveNotes(); $("noteStatus").textContent="No note yet"; renderStudyTools(); toast("Note cleared","success");}
 function openStudyLesson(i){selectLesson(i); setTimeout(()=>go("learn"),120)}
 function openInsightLesson(i,tag){selectLesson(i);setTimeout(()=>{go("learn");if(tag==="PRACTISE"||tag==="REVISIT")go("challenge");},120)}
 function searchLessons(){
@@ -785,15 +831,58 @@ function searchLessons(){
 function renderStudyTools(){
   const list=$("bookmarkList"), count=$("bookmarkCount"), note=$("lessonNotes"), status=$("noteStatus");
   if(count) count.textContent=bookmarks.length;
+  if(note){
+    note.disabled=!currentCloudUser;
+    note.placeholder=currentCloudUser?"Write a note for this lesson…":"Sign in to save lesson notes.";
+  }
   if(list) list.innerHTML=bookmarks.length?bookmarks.map(i=>{const x=lessons[i]; return `<div class="bookmark-item"><button onclick="openStudyLesson(${i})"><span>🔖</span><div><b>${String(i+1).padStart(2,"0")} · ${x.title}</b><small>${x.short}</small></div></button><button class="remove-bookmark" onclick="removeBookmark(${i})" aria-label="Remove bookmark">×</button></div>`}).join(""):'<div class="study-empty">No bookmarks yet. Bookmark a lesson when you want to review it later.</div>';
   // A cloud sync can re-render study tools while the user is typing.
   // Never replace the active textarea value: doing so moves the cursor and
   // can erase text that has not reached the local save debounce yet.
   if(note && document.activeElement !== note){note.value=notes[String(current)]||"";}
-  if(status) status.textContent=notes[String(current)]?"Saved locally":"No note yet";
+  if(status) status.textContent=notes[String(current)]?(currentCloudUser?"Saved to your account":"Sign in to save this note"):"No note yet";
 }
-function removeBookmark(i){bookmarks=bookmarks.filter(x=>x!==i);const deletions=readMap(BOOKMARK_DELETIONS_KEY);deletions[String(i)]=Date.now();localStorage.setItem(BOOKMARK_DELETIONS_KEY,JSON.stringify(deletions));saveBookmarks();renderStudyTools();renderLessonBookmark();toast("Bookmark removed");}
-function toast(s){$("toast").textContent=s;$("toast").classList.add("show");clearTimeout(window.__toast);window.__toast=setTimeout(()=>$('toast').classList.remove("show"),2300)}
+function removeBookmark(i){bookmarks=bookmarks.filter(x=>x!==i);const deletions=readMap(BOOKMARK_DELETIONS_KEY);deletions[String(i)]=Date.now();appStorage.setItem(BOOKMARK_DELETIONS_KEY,JSON.stringify(deletions));saveBookmarks();renderStudyTools();renderLessonBookmark();toast("Bookmark removed");}
+function toast(message,type="info"){
+  const el=$("toast"); if(!el) return;
+  const icons={success:"✓",error:"!",warning:"⚠",info:"✦"};
+  const queue=window.__toastQueue||(window.__toastQueue=[]);
+  queue.push({message:String(message),type});
+  if(window.__toastActive) return;
+  const showNext=()=>{
+    const item=queue.shift();
+    if(!item){window.__toastActive=false;return;}
+    window.__toastActive=true;
+    el.dataset.type=item.type;
+    $("toastIcon").textContent=icons[item.type]||icons.info;
+    $("toastMessage").textContent=item.message;
+    el.classList.add("show");
+    clearTimeout(window.__toast);
+    window.__toast=setTimeout(()=>{
+      el.classList.remove("show");
+      window.__toast=setTimeout(showNext,220);
+    },2600);
+  };
+  showNext();
+}
+function celebrate(title,message,xp=0,eyebrow="NICE WORK!"){
+  const modal=$("celebrationModal"); if(!modal) {toast(title,"success");return;}
+  $("celebrationEyebrow").textContent=eyebrow;
+  $("celebrationTitle").textContent=title;
+  $("celebrationMessage").textContent=message;
+  $("celebrationReward").hidden=!(Number(xp)>0);
+  if(Number(xp)>0) $("celebrationXp").textContent="+"+Number(xp)+" XP";
+  modal.hidden=false;
+  requestAnimationFrame(()=>modal.classList.add("show"));
+  document.body.classList.add("celebration-open");
+  $("celebrationDone").focus();
+}
+function closeCelebration(){
+  const modal=$("celebrationModal"); if(!modal)return;
+  modal.classList.remove("show");
+  document.body.classList.remove("celebration-open");
+  setTimeout(()=>{modal.hidden=true;},180);
+}
 
 function makeWorker(){
   const worker=new Worker("python-worker.js", {type:"module"});
@@ -897,11 +986,11 @@ function updateStreak(){
   }
 }
 
-function isUnlocked(i){return i===0 || state.done.includes(i-1)}
+function isUnlocked(i){return !currentCloudUser || i===0 || state.done.includes(i-1)}
 function levelName(){const level=Math.floor(state.xp/100)+1;return `Level ${level} · ${level<3?"Beginner":level<6?"Builder":"Python Explorer"}`}
 
 function projectUnlocked(p){ return state.done.length >= p.req; }
-function saveProjects(){ localStorage.setItem("pylearn_projects",JSON.stringify(projectState)); }
+function saveProjects(){ uiStorage.setItem("pylearn_projects",JSON.stringify(projectState)); }
 function renderProjects(){
   const grid=$("projectsGrid"), summary=$("projectSummary");
   if(!grid) return;
@@ -932,11 +1021,11 @@ function closeProjectLab(){ $("projectLab").hidden=true; activeProject=null; }
 function completeProject(id){
   if(projectState[id]) return;
   projectState[id]=true; saveProjects(); save();
-  toast("🎉 Project completed!"); renderProjects(); renderLessons();
+  renderProjects(); renderLessons(); celebrate("Project completed!","You finished "+(projects.find(x=>x.id===id)?.title||"your project")+". That is a real step forward!",0,"PROJECT BUILDER");
   openProject(id);
 }
 function openProjectInPlayground(p){
-  $("editor").value=p.starter; localStorage.setItem("pylearn_editor",p.starter);
+  $("editor").value=p.starter;
   go("playground"); toast(`${p.title} loaded into the playground.`);
 }
 
@@ -1150,14 +1239,19 @@ function renderLesson(){
 }
 
 function answerQuiz(choice){
-  if(state.quiz.includes(current)){toast("You already completed this quiz.");return}
+  if(currentCloudUser && state.quiz.includes(current)){toast("You already completed this quiz.");return}
   const x=lessons[current];
   const options=[...document.querySelectorAll(".quiz-option")];
   options.forEach((b,i)=>b.disabled=true);
   if(choice===x.quiz.answer){
     options[choice].classList.add("correct");
     $("quizFeedback").textContent="✓ Correct! "+x.quiz.explain;
-    $("quizScore").textContent="1/1"; quizAnswered=true; state.quiz.push(current); state.xp+=15; save(); updateStreak(); renderLessons(); toast("+15 XP — quiz mastered!");
+    $("quizScore").textContent="1/1"; quizAnswered=true;
+    if(currentCloudUser){
+      state.quiz.push(current); state.xp+=15; save(); updateStreak(); renderLessons(); toast("+15 XP — quiz mastered!","success");
+    } else {
+      toast("Correct! Sign in to save quiz mastery and earn XP.","success");
+    }
   }else{
     options[choice].classList.add("wrong"); options[x.quiz.answer].classList.add("correct");
     $("quizFeedback").textContent="Not quite. "+x.quiz.explain;
@@ -1166,9 +1260,10 @@ function answerQuiz(choice){
 }
 
 function completeLesson(){
+  if(!currentCloudUser){setAuthMessage("Sign in to save lesson completion and earn XP.","info");toast("Sign in to save your progress.");return}
   if(state.done.includes(current)){toast("Lesson already completed.");return}
   if(!quizAnswered){toast("Finish the quick check first.");return}
-  state.done.push(current); state.xp+=20; updateStreak(); save(); renderLessons(); renderLesson(); toast("+20 XP — lesson complete!");
+  state.done.push(current); state.xp+=20; updateStreak(); save(); renderLessons(); renderLesson(); celebrate("Lesson complete!","You mastered "+lessons[current].title+". Keep that momentum going!",20,"LESSON MASTERED");
 }
 
 function nextLesson(){
@@ -1239,6 +1334,7 @@ async function checkChallenge(){
 }
 
 function recordChallengeAttempt(result) {
+  if (!currentCloudUser) return;
   const mode = lessons[current].challenge.mode || "code";
   const attempts = readEventList(CHALLENGE_ATTEMPTS_KEY);
   const isError = String(result?.output || "").startsWith("ERROR:");
@@ -1258,6 +1354,7 @@ function calculateReviewInterval(rating, previousInterval=0) {
   return Math.min(60, Math.max(first[rating], Math.round(previousInterval * ({1:1,2:1.5,3:2,4:2.5})[rating])));
 }
 function recordLessonReview(rating) {
+  if (!currentCloudUser) { toast("Sign in to save your revision schedule."); return; }
   const value=Number(rating); if (![1,2,3,4].includes(value)) return;
   const reviews=readEventList(LESSON_REVIEWS_KEY);
   const previous=reviews.filter(item=>(currentCloudUser ? item.user_id===currentCloudUser.id : !item.user_id) && Number(item.lesson_id)===current).sort((a,b)=>new Date(b.reviewed_at)-new Date(a.reviewed_at))[0];
@@ -1267,19 +1364,25 @@ function recordLessonReview(rating) {
   writeEventList(LESSON_REVIEWS_KEY, reviews.slice(-500));
   queueCloudSync();
   const status=$("reviewStatus");
-  if(status) status.textContent="Review saved. Next review: "+next.toLocaleDateString()+" ("+interval+" day"+(interval===1?"":"s")+").";
+  if(status) status.textContent="Saving review to your account… Next review: "+next.toLocaleDateString()+" ("+interval+" day"+(interval===1?"":"s")+").";
 }
 function renderLessonReview() {
   const latest=readEventList(LESSON_REVIEWS_KEY).filter(item=>(currentCloudUser ? item.user_id===currentCloudUser.id : !item.user_id) && Number(item.lesson_id)===current).sort((a,b)=>new Date(b.reviewed_at)-new Date(a.reviewed_at))[0];
   const status=$("reviewStatus");
   if(status && latest) status.textContent="Last reviewed "+new Date(latest.reviewed_at).toLocaleDateString()+" · Next review "+new Date(latest.next_review_at).toLocaleDateString()+".";
+  else if(status && !currentCloudUser) status.textContent="Sign in to save a revision schedule.";
 }
 function handleChallengeResult(result){
   recordChallengeAttempt(result);
   const out=$("challengeResult");
   if(result.ok){
-    out.textContent="✓ Correct! +30 XP";
-    if(!state.challenges.includes(current)){state.challenges.push(current);state.xp+=30;updateStreak();save();renderLessons();toast("+30 XP — challenge solved!")}
+    if(currentCloudUser){
+      out.textContent="✓ Correct! +30 XP";
+      if(!state.challenges.includes(current)){state.challenges.push(current);state.xp+=30;updateStreak();save();renderLessons();celebrate("Challenge conquered!","You solved "+lessons[current].challenge.title+". Ready for the next one?",30,"CHALLENGE COMPLETE")}
+    } else {
+      out.textContent="✓ Correct! Sign in to save this achievement and earn XP.";
+      toast("Challenge solved! Sign in to save your result.","success");
+    }
   }else{
     out.textContent=result.output.startsWith("ERROR:") ? result.output+"\n\nCheck your code and try again." : "Not quite yet.\n\nYour code ran, but it did not meet the challenge requirements.\nUse the hint if you need help, then try again.";
   }
@@ -1290,8 +1393,8 @@ function handleChallengeResult(result){
 function updateLogoTheme() {
   const isLight = document.body.classList.contains("light");
   const logoPath = isLight
-    ? "../assets/pylearn-logo-light.png"
-    : "../assets/pylearn-logo-dark.png";
+    ? "assets/pylearn-logo-light.png"
+    : "assets/pylearn-logo-dark.png";
 
   document.querySelectorAll(".logo img").forEach(img => {
     img.src = logoPath;
@@ -1304,7 +1407,7 @@ $("theme").onclick = () => {
   const isLight = document.body.classList.contains("light");
   $("theme").textContent = isLight ? "🌙" : "☀️";
 
-  localStorage.setItem("pylearn_theme", isLight ? "light" : "dark");
+  uiStorage.setItem("pylearn_theme", isLight ? "light" : "dark");
   updateLogoTheme();
 };
 
@@ -1319,7 +1422,7 @@ $("lessonNotes")?.addEventListener("input",()=>{
 $("editor").addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){e.preventDefault();runPython()}});
 
 
-if (localStorage.getItem("pylearn_theme") === "light") {
+if (uiStorage.getItem("pylearn_theme") === "light") {
   document.body.classList.add("light");
   $("theme").textContent = "🌙";
 }
@@ -1327,18 +1430,6 @@ if (localStorage.getItem("pylearn_theme") === "light") {
 updateLogoTheme();
 
 
-if (challengeTestMode) {
-  state.done = lessons.map((_, index) => index);
-  state.quiz = lessons.map((_, index) => index);
-  state.challenges = [];
-  current = 0;
-  save = () => {};
-  queueCloudSync = () => {};
-  syncLearningData = async () => {};
-  initializeAuth = () => {};
-  const accountSection = document.getElementById("account");
-  if (accountSection) accountSection.hidden = true;
-}
 initializeAuth();
 
 // Do not start/increase a streak just because the app was opened.
