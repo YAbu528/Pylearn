@@ -1,3 +1,34 @@
+
+// Extra guided practice for the first five foundation lessons.
+// These are optional, ungraded tasks: they do not award XP or alter saved progress.
+const foundationPractice = {
+  0: [
+    {title:"Update a score",prompt:"Create score = 10, add 5 to it, then print the updated score.",starter:"score = 10\n# Update the score below\n\nprint(score)",solution:"score = 10\nscore = score + 5\nprint(score)",hint:"Assign score + 5 back to the score variable."},
+    {title:"Build a short introduction",prompt:"Store your name and a favorite subject in two variables. Print one sentence using both.",starter:'name = "Alex"\nsubject = "Science"\n# Write your print() line below\n',solution:'name = "Alex"\nsubject = "Science"\nprint("My name is", name, "and I like", subject)',hint:"print() can display several comma-separated values."},
+    {title:"Predict a variable change",prompt:"Before running the code, predict the final value of total. Then try it in the playground.",starter:"total = 4\ntotal = total + 3\ntotal = total * 2\nprint(total)",solution:"total = 14",hint:"Follow each assignment in order: first add, then multiply."}
+  ],
+  1: [
+    {title:"Convert text to a number",prompt:"Convert the text value price_text into a float, then print the number plus 2.",starter:'price_text = "12.5"\n# Convert and calculate\n',solution:'price_text = "12.5"\nprice = float(price_text)\nprint(price + 2)',hint:"Use float(price_text) to convert decimal text."},
+    {title:"Check the types",prompt:"Create a string, an integer, and a float. Print type() for each one.",starter:'city = "Addis Ababa"\npopulation = 500\naverage = 2.5\n',solution:'city = "Addis Ababa"\npopulation = 500\naverage = 2.5\nprint(type(city))\nprint(type(population))\nprint(type(average))',hint:"Call type(variable) inside print()."},
+    {title:"Fix the type mismatch",prompt:"Fix the program so it prints 18 instead of joining text and a number.",starter:'age_text = "17"\nprint(age_text + 1)',solution:'age_text = "17"\nage = int(age_text)\nprint(age + 1)',hint:"Convert the numeric text with int() before adding."}
+  ],
+  2: [
+    {title:"Calculate a remainder",prompt:"Use the remainder operator to print the remainder when 23 is divided by 5.",starter:"number = 23\n divisor = 5\n# Calculate the remainder\n",solution:"number = 23\ndivisor = 5\nprint(number % divisor)",hint:"The % operator gives the remainder."},
+    {title:"Make a simple calculator",prompt:"Read two whole numbers using input(), add them, and print the result. The playground's Program Input accepts one number per line.",starter:'first = int(input("First number: "))\nsecond = int(input("Second number: "))\n# Print their sum\n',solution:'first = int(input("First number: "))\nsecond = int(input("Second number: "))\nprint(first + second)',hint:"Convert each input with int(), then add the variables."},
+    {title:"Explore division",prompt:"Print the results of 17 / 5, 17 // 5, and 17 % 5 on separate lines.",starter:"number = 17\ndivisor = 5\n",solution:"number = 17\ndivisor = 5\nprint(number / divisor)\nprint(number // divisor)\nprint(number % divisor)",hint:"/, //, and % mean division, floor division, and remainder."}
+  ],
+  3: [
+    {title:"Check a pass mark",prompt:"If score is at least 50, print Passed. Otherwise print Keep practicing.",starter:"score = 46\n# Add your if/else here\n",solution:'score = 46\nif score >= 50:\n    print("Passed")\nelse:\n    print("Keep practicing")',hint:"Use if score >= 50: and an indented else block."},
+    {title:"Combine two rules",prompt:"Print Eligible only when age is at least 15 AND has_permission is True.",starter:"age = 16\nhas_permission = True\n",solution:'age = 16\nhas_permission = True\nif age >= 15 and has_permission:\n    print("Eligible")\nelse:\n    print("Not eligible")',hint:"The and operator requires both conditions to be true."},
+    {title:"Choose a category",prompt:"Print Small for numbers below 10, Medium for numbers from 10 to 19, and Large for 20 or more.",starter:"number = 14\n",solution:'number = 14\nif number < 10:\n    print("Small")\nelif number < 20:\n    print("Medium")\nelse:\n    print("Large")',hint:"Check the smaller range first with if, then use elif and else."}
+  ],
+  4: [
+    {title:"Count by twos",prompt:"Use a for loop and range() to print 2, 4, 6, 8, and 10.",starter:"# Write your loop below\n",solution:"for number in range(2, 11, 2):\n    print(number)",hint:"range(start, stop, step) can count by twos."},
+    {title:"Add numbers with a loop",prompt:"Use a loop to calculate the total of the numbers from 1 through 5, then print the total.",starter:"total = 0\n# Add your loop below\nprint(total)",solution:"total = 0\nfor number in range(1, 6):\n    total += number\nprint(total)",hint:"Start total at 0 and add each number inside the loop."},
+    {title:"Repeat until finished",prompt:"Use a while loop to print 3, 2, 1, then print Go!",starter:"count = 3\n",solution:'count = 3\nwhile count > 0:\n    print(count)\n    count -= 1\nprint("Go!")',hint:"Decrease count by 1 each time so the condition eventually becomes false."}
+  ]
+};
+
 const lessons = [
 {
  title:"Python Basics: variables & print()", short:"Variables & print()", level:"BEGINNER",
@@ -1429,9 +1460,33 @@ function answerChallengeChoice(choice){
   window.__challengeChoice=choice;
 }
 
+
+function renderFoundationPractice(){
+  const section=$("foundationPractice"), list=$("foundationPracticeList");
+  if(!section||!list)return;
+  const tasks=foundationPractice[current]||[];
+  section.hidden=!tasks.length;
+  list.replaceChildren();
+  tasks.forEach((task,index)=>{
+    const card=document.createElement("article"); card.className="foundation-practice-item";
+    const title=document.createElement("h4"); title.textContent=(index+1)+". "+task.title;
+    const prompt=document.createElement("p"); prompt.textContent=task.prompt;
+    const code=document.createElement("pre"); code.textContent=task.starter;
+    const actions=document.createElement("div"); actions.className="foundation-practice-actions";
+    const load=document.createElement("button"); load.className="ghost"; load.type="button"; load.textContent="Open starter in playground";
+    load.addEventListener("click",()=>{$("editor").value=task.starter;go("playground");toast("Practice starter loaded. Try completing it.");});
+    const reveal=document.createElement("button"); reveal.className="ghost"; reveal.type="button"; reveal.textContent="Show example solution";
+    const solution=document.createElement("pre"); solution.hidden=true; solution.textContent=task.solution;
+    reveal.addEventListener("click",()=>{solution.hidden=!solution.hidden;reveal.textContent=solution.hidden?"Show example solution":"Hide example solution";});
+    const hint=document.createElement("p"); hint.className="foundation-practice-hint"; hint.textContent="Hint: "+task.hint;
+    actions.append(load,reveal); card.append(title,prompt,code,actions,solution,hint); list.append(card);
+  });
+}
+
 function renderLesson(){
   const x=lessons[current];
   renderDeep();
+  renderFoundationPractice();
   $("levelTag").textContent=x.level; $("number").textContent=`LESSON ${String(current+1).padStart(2,"0")} / ${String(lessons.length).padStart(2,"0")}`;
   $("title").textContent=x.title; $("intro").textContent=x.intro; $("explain").textContent=x.idea; $("analogy").textContent=x.analogy;
   $("lessonCode").textContent=x.code; $("objectives").innerHTML=x.objectives.map(o=>`<li>${o}</li>`).join("");
