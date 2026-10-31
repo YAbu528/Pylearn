@@ -213,3 +213,29 @@ button,input,textarea,select{max-width:100%;min-width:0}
 .review-ratings button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .lesson-review small{color:var(--muted)}
 @media(max-width:600px){.review-ratings{display:grid;grid-template-columns:1fr 1fr}.review-ratings button{min-height:42px}}
+
+
+/* Gamified feedback: accessible toast notifications and milestone celebrations */
+#toast.toast{position:fixed;z-index:1200;left:50%;bottom:22px;display:flex;align-items:center;gap:11px;width:max-content;max-width:min(92vw,520px);box-sizing:border-box;padding:13px 17px;border:1px solid var(--line);border-radius:15px;background:var(--panel);color:var(--text);font-size:13px;font-weight:800;line-height:1.45;box-shadow:0 16px 45px rgba(0,0,0,.24);opacity:0;visibility:hidden;pointer-events:none;transform:translate(-50%,18px) scale(.98);transition:opacity .2s ease,transform .2s ease,visibility .2s}
+#toast.toast.show{opacity:1;visibility:visible;transform:translate(-50%,0) scale(1)}
+.toast-icon{display:grid;place-items:center;flex:0 0 27px;width:27px;height:27px;border-radius:9px;background:rgba(139,92,246,.14);color:var(--purple2);font-size:15px}
+#toast[data-type="success"] .toast-icon{background:rgba(34,197,94,.14);color:var(--green)}
+#toast[data-type="error"] .toast-icon{background:rgba(239,68,68,.14);color:var(--red)}
+#toast[data-type="warning"] .toast-icon{background:rgba(245,158,11,.15);color:#d97706}
+.celebration-backdrop{position:fixed;z-index:1100;inset:0;display:grid;place-items:center;padding:20px;background:rgba(5,8,18,.72);backdrop-filter:blur(7px);opacity:0;transition:opacity .18s ease}
+.celebration-backdrop[hidden]{display:none}
+.celebration-backdrop.show{opacity:1}
+.celebration-card{position:relative;width:min(100%,390px);box-sizing:border-box;padding:30px 25px 25px;border:1px solid rgba(167,139,250,.35);border-radius:25px;background:var(--panel);color:var(--text);text-align:center;box-shadow:0 28px 90px rgba(0,0,0,.4);transform:translateY(14px) scale(.97);transition:transform .22s cubic-bezier(.2,.8,.2,1)}
+.celebration-backdrop.show .celebration-card{transform:translateY(0) scale(1)}
+.celebration-close{position:absolute;top:11px;right:13px;width:35px;height:35px;border:0;border-radius:50%;background:var(--card);color:var(--muted);font-size:24px;cursor:pointer}
+.celebration-art{display:grid;place-items:center;width:82px;height:82px;margin:2px auto 13px;border-radius:25px;background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(34,197,94,.16));font-size:43px;animation:celebration-bounce .65s both}
+.celebration-eyebrow{margin:0;color:var(--purple2);font-size:10px;font-weight:950;letter-spacing:.17em}
+.celebration-card h2{margin:8px 0;font-size:clamp(25px,7vw,32px);line-height:1.12}
+.celebration-message{margin:0 auto;max-width:290px;color:var(--muted);font-size:14px;line-height:1.6}
+.celebration-reward{display:inline-flex;align-items:center;gap:9px;margin:20px auto 17px;padding:10px 17px;border:1px solid rgba(139,92,246,.3);border-radius:999px;background:rgba(139,92,246,.1);color:var(--purple2);font-size:19px}
+.celebration-reward[hidden]{display:none}
+.celebration-done{display:block;width:100%;margin-top:3px}
+body.celebration-open{overflow:hidden}
+@keyframes celebration-bounce{0%{transform:scale(.5) rotate(-12deg);opacity:0}65%{transform:scale(1.12) rotate(5deg)}100%{transform:scale(1);opacity:1}}
+@media(max-width:480px){#toast.toast{bottom:14px;max-width:calc(100vw - 24px);font-size:12px}.celebration-card{padding:27px 20px 21px}}
+@media(prefers-reduced-motion:reduce){#toast.toast,.celebration-backdrop,.celebration-card{transition:none}.celebration-art{animation:none}}
