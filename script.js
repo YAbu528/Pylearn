@@ -530,6 +530,7 @@ async function initializeAuth() {
 
 let currentCloudUser = null;
 let cloudAchievements = [];
+let achievementsInitializedUserId = null;
 let xpInitializedUserId = null;
 let cloudSyncRunning = false;
 let cloudSyncQueued = false;
@@ -544,6 +545,7 @@ function activateCloudUser(user) {
   const previousUserId = appStorage.getItem(CLOUD_USER_KEY);
   if (previousUserId && previousUserId !== user.id) {
     xpInitializedUserId = null;
+    achievementsInitializedUserId = null;
     // Never carry one account's browser cache into another account.
     state = {done:[],quiz:[],challenges:[],runs:0,xp:0,streak:0,lastDay:""};
     bookmarks = [];
@@ -693,8 +695,17 @@ async function syncLearningData() {
     state.xp = authoritativeXp;
     state.streak = Number(statsRes.data.streak || 0);
     state.lastDay = statsRes.data.last_active_date || "";
+    const previousAchievements = new Set(cloudAchievements);
+    const isFirstAchievementSync = achievementsInitializedUserId !== userId;
     cloudAchievements = (achievementsRes.data || []).map(row => row.achievement_id);
+    achievementsInitializedUserId = userId;
     renderBadges();
+    // Announce only achievements earned since this account's first sync in this session.
+    // This avoids replaying old unlocks on refresh or when signing in on another device.
+    if (!isFirstAchievementSync) {
+      badges.filter(b => cloudAchievements.includes(b.id) && !previousAchievements.has(b.id))
+        .forEach(b => toast(`Badge unlocked: ${b.name}`, "success"));
+    }
     xpInitializedUserId = userId;
     if (hadAuthoritativeXp && nextLevel > previousLevel) {
       const levelUp = {
