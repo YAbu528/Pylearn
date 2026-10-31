@@ -313,17 +313,17 @@ let current = Number(localStorage.getItem("pylearn_current") || 0);
 current = Number.isInteger(current) ? Math.max(0, Math.min(current, lessons.length-1)) : 0;
 let state = readLocalJSON("pylearn_state", {done:[],quiz:[],challenges:[],runs:0,xp:0,streak:0,lastDay:""});
 const challengeTestMode = new URLSearchParams(window.location.search).get("challenge-test") === "1";
-const challengeTestEvents = Object.create(null);
 const CHALLENGE_ATTEMPTS_KEY = "pylearn_challenge_attempts";
+const challengeTestEvents = { [CHALLENGE_ATTEMPTS_KEY]: [], [LESSON_REVIEWS_KEY]: [] };
 const LESSON_REVIEWS_KEY = "pylearn_lesson_reviews";
 function writeEventList(key, items) {
   if (challengeTestMode) { challengeTestEvents[key] = items; return; }
   localStorage.setItem(key, JSON.stringify(items));
 }
 function readEventList(key) {
-  if (challengeTestMode) return Array.isArray(challengeTestEvents[key]) ? challengeTestEvents[key] : [];
-  const value = readLocalJSON(key, []);
-  return Array.isArray(value) ? value.filter(item => item && typeof item.id === "string") : [];
+  if (challengeTestMode) return challengeTestEvents[key] || [];
+  try { const parsed = JSON.parse(localStorage.getItem(key) || "[]"); return Array.isArray(parsed) ? parsed : []; }
+  catch { return []; }
 }
 function createEventId() {
   if (window.crypto?.randomUUID) return window.crypto.randomUUID();
@@ -525,8 +525,8 @@ function activateCloudUser(user) {
     localStorage.setItem("pylearn_current", "0");
     localStorage.setItem("pylearn_bookmarks", "[]");
     localStorage.setItem("pylearn_notes", "{}");
-    localStorage.setItem(CHALLENGE_ATTEMPTS_KEY, "[]");
-    localStorage.setItem(LESSON_REVIEWS_KEY, "[]");
+    writeEventList(CHALLENGE_ATTEMPTS_KEY, []);
+    writeEventList(LESSON_REVIEWS_KEY, []);
     localStorage.removeItem(NOTE_META_KEY);
     localStorage.removeItem(BOOKMARK_DELETIONS_KEY);
     localStorage.removeItem("pylearn_reward_requests");
@@ -574,16 +574,16 @@ async function syncLearningData() {
     };
     localReviews = await syncAppendOnlyEvents("lesson_reviews", localReviews);
     localAttempts = await syncAppendOnlyEvents("challenge_attempts", localAttempts);
-    localStorage.setItem(LESSON_REVIEWS_KEY, JSON.stringify(localReviews));
-    localStorage.setItem(CHALLENGE_ATTEMPTS_KEY, JSON.stringify(localAttempts));
+    writeEventList(LESSON_REVIEWS_KEY, localReviews);
+    writeEventList(CHALLENGE_ATTEMPTS_KEY, localAttempts);
     const reviewIds = new Set(localReviews.map(item => item.id));
     for (const item of (reviewsRes.data || [])) if (!reviewIds.has(item.id)) localReviews.push({...item, synced:true});
     const attemptIds = new Set(localAttempts.map(item => item.id));
     for (const item of (attemptsRes.data || [])) if (!attemptIds.has(item.id)) localAttempts.push({...item, synced:true});
     localReviews = localReviews.slice(-500);
     localAttempts = localAttempts.slice(-1000);
-    localStorage.setItem(LESSON_REVIEWS_KEY, JSON.stringify(localReviews));
-    localStorage.setItem(CHALLENGE_ATTEMPTS_KEY, JSON.stringify(localAttempts));
+    writeEventList(LESSON_REVIEWS_KEY, localReviews);
+    writeEventList(CHALLENGE_ATTEMPTS_KEY, localAttempts);
 
     const remoteProgress = progressRes.data || [];
     const progressById = new Map(remoteProgress.map(row => [Number(row.lesson_id), row]));
@@ -1326,6 +1326,7 @@ if (localStorage.getItem("pylearn_theme") === "light") {
 
 updateLogoTheme();
 
+
 if (challengeTestMode) {
   state.done = lessons.map((_, index) => index);
   state.quiz = lessons.map((_, index) => index);
@@ -1338,7 +1339,6 @@ if (challengeTestMode) {
   const accountSection = document.getElementById("account");
   if (accountSection) accountSection.hidden = true;
 }
-
 initializeAuth();
 
 // Do not start/increase a streak just because the app was opened.
