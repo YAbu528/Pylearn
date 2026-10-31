@@ -369,3 +369,25 @@ body.celebration-open{overflow:hidden}
 .foundation-practice-actions button{font-size:12px;padding:8px 11px}
 .foundation-practice-hint{color:var(--muted);font-size:13px;margin:10px 0 0}
 @media(max-width:650px){.foundation-practice{padding:15px}.foundation-practice-item{padding:12px}}
+
+
+/* Structured, visible teaching workshop for foundation lessons */
+.lesson-workshop{display:grid;gap:14px;margin:22px 0;padding:20px;border:1px solid var(--line);border-radius:18px;background:var(--panel)}
+.lesson-workshop h3{margin:0;font-size:23px}
+.workshop-goal{margin:0;color:var(--muted);line-height:1.65}
+.workshop-card{min-width:0;padding:17px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+.workshop-card h4{margin:0 0 10px;font-size:16px}
+.workshop-card p{color:var(--muted);line-height:1.6}
+.workshop-code,.workshop-output{box-sizing:border-box;max-width:100%;margin:10px 0;padding:13px;border-radius:10px;overflow-x:auto;white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.7 "SFMono-Regular",Consolas,monospace}
+.workshop-code{background:#080a10;color:#e5e7eb}
+.workshop-output{background:rgba(34,197,94,.09);border:1px solid rgba(34,197,94,.2);color:var(--text)}
+.workshop-label{display:block;margin-top:13px;font-size:12px}
+.workshop-steps{padding-left:22px;color:var(--muted);line-height:1.65}
+.workshop-steps li{margin:7px 0}
+.workshop-choices{display:flex;gap:8px;flex-wrap:wrap}
+.workshop-choices button{min-width:76px}
+.workshop-choices button.workshop-correct{border-color:var(--green);background:rgba(34,197,94,.12);color:var(--text)}
+.workshop-choices button.workshop-wrong{border-color:var(--red);background:rgba(239,68,68,.10);color:var(--text)}
+.workshop-choices button:disabled{opacity:1}
+.workshop-feedback{min-height:1.5em;margin:10px 0 0;font-size:13px}
+@media(max-width:650px){.lesson-workshop{padding:14px}.workshop-card{padding:13px}.lesson-workshop h3{font-size:20px}.workshop-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.workshop-choices button{min-width:0;padding:9px 6px}}
