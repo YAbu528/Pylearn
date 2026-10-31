@@ -669,6 +669,15 @@ async function syncLearningData() {
       if (!currentCloudUser || currentCloudUser.id !== userId) return;
     }
 
+    // A successful Python run unlocks First Code for signed-in users.
+    // This request is idempotent and does not award XP; failed requests retry
+    // naturally on the next learning-data sync.
+    if (state.runs >= 1) {
+      const { error: codeAchievementError } = await supabaseClient.functions.invoke("award-python-run", { body: {} });
+      if (codeAchievementError) console.warn("PyLearn First Code achievement will retry later:", codeAchievementError);
+      if (!currentCloudUser || currentCloudUser.id !== userId) return;
+    }
+
     const [statsRes, achievementsRes] = await Promise.all([
       supabaseClient.from("user_stats").select("xp,streak,last_active_date").eq("user_id", userId).single(),
       supabaseClient.from("user_achievements").select("achievement_id").eq("user_id", userId)
@@ -685,6 +694,7 @@ async function syncLearningData() {
     state.streak = Number(statsRes.data.streak || 0);
     state.lastDay = statsRes.data.last_active_date || "";
     cloudAchievements = (achievementsRes.data || []).map(row => row.achievement_id);
+    renderBadges();
     xpInitializedUserId = userId;
     if (hadAuthoritativeXp && nextLevel > previousLevel) {
       const levelUp = {
@@ -1188,11 +1198,11 @@ function renderRoadmap(){
 }
 
 function renderBadges(){
-  const earned=badges.filter(b=>currentCloudUser && b.id!=="code" ? cloudAchievements.includes(b.id) : b.test(state)).length;
+  const earned=badges.filter(b=>currentCloudUser ? cloudAchievements.includes(b.id) : b.test(state)).length;
   const summary=$("badgeSummary");
   if(summary) summary.textContent=`${earned}/${badges.length} unlocked`;
   $("badges").innerHTML=badges.map(b=>{
-    const isEarned=currentCloudUser && b.id!=="code" ? cloudAchievements.includes(b.id) : b.test(state);
+    const isEarned=currentCloudUser ? cloudAchievements.includes(b.id) : b.test(state);
     const [value,total]=b.progress(state);
     const pct=Math.round(value/total*100);
     return `<article class="${isEarned?"earned":"locked-badge"}">
