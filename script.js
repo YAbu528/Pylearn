@@ -13,7 +13,7 @@ const foundationPractice = {
     {title:"Fix the type mismatch",prompt:"Fix the program so it prints 18 instead of joining text and a number.",starter:'age_text = "17"\nprint(age_text + 1)',solution:'age_text = "17"\nage = int(age_text)\nprint(age + 1)',hint:"Convert the numeric text with int() before adding."}
   ],
   2: [
-    {title:"Calculate a remainder",prompt:"Use the remainder operator to print the remainder when 23 is divided by 5.",starter:"number = 23\n divisor = 5\n# Calculate the remainder\n",solution:"number = 23\ndivisor = 5\nprint(number % divisor)",hint:"The % operator gives the remainder."},
+    {title:"Calculate a remainder",prompt:"Use the remainder operator to print the remainder when 23 is divided by 5.",starter:"number = 23\ndivisor = 5\n# Calculate the remainder\n",solution:"number = 23\ndivisor = 5\nprint(number % divisor)",hint:"The % operator gives the remainder."},
     {title:"Make a simple calculator",prompt:"Read two whole numbers using input(), add them, and print the result. The playground's Program Input accepts one number per line.",starter:'first = int(input("First number: "))\nsecond = int(input("Second number: "))\n# Print their sum\n',solution:'first = int(input("First number: "))\nsecond = int(input("Second number: "))\nprint(first + second)',hint:"Convert each input with int(), then add the variables."},
     {title:"Explore division",prompt:"Print the results of 17 / 5, 17 // 5, and 17 % 5 on separate lines.",starter:"number = 17\ndivisor = 5\n",solution:"number = 17\ndivisor = 5\nprint(number / divisor)\nprint(number // divisor)\nprint(number % divisor)",hint:"/, //, and % mean division, floor division, and remainder."}
   ],
