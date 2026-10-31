@@ -419,7 +419,7 @@ function showAuthForm(mode) {
   $("authHeading").textContent = mode === "signup" ? "Start your PyLearn account." : "Save your learning journey.";
   $("authDescription").textContent = mode === "signup"
     ? "Create an account with your email and a password."
-    : "Sign in to your PyLearn account. Your existing progress on this device remains safe.";
+    : "Sign in to save your progress, notes, bookmarks, and revision history to the cloud.";
   setAuthMessage("");
 }
 async function startSocialSignIn(provider, button) {
@@ -532,6 +532,7 @@ let cloudAchievements = [];
 let cloudSyncRunning = false;
 let cloudSyncQueued = false;
 let cloudSyncTimer = null;
+let cloudRetryAttempt = 0;
 const NOTE_META_KEY = "pylearn_note_sync_meta";
 const BOOKMARK_DELETIONS_KEY = "pylearn_bookmark_deletions";
 const CLOUD_USER_KEY = "pylearn_cloud_user_id";
@@ -760,12 +761,19 @@ async function syncLearningData() {
     appStorage.setItem("pylearn_current", String(current));
     appStorage.setItem("pylearn_bookmarks", JSON.stringify(bookmarks));
     renderLesson(); renderLessons(); renderStudyTools(); renderLessonReview();
+    cloudRetryAttempt = 0;
     setAuthMessage("Your progress, notes, bookmarks, and study history are synced.", "success");
     const noteStatus=$("noteStatus");
     if(noteStatus) noteStatus.textContent=notes[String(current)]?"Saved to your account":"No note yet";
   } catch (error) {
     console.error("PyLearn cloud sync failed:", error);
-    setAuthMessage("Cloud sync couldn't finish: " + (error.message || "Please check your connection and try again."), "error");
+    setAuthMessage("Cloud save failed: " + (error.message || "Please check your connection.") + " Your unsent changes are only in this open page. Keep it open while PyLearn retries.", "error");
+    if (navigator.onLine && cloudRetryAttempt < 5) {
+      const delay = Math.min(30000, 2000 * (2 ** cloudRetryAttempt));
+      cloudRetryAttempt += 1;
+      clearTimeout(cloudSyncTimer);
+      cloudSyncTimer = setTimeout(() => queueCloudSync(), delay);
+    }
   } finally {
     cloudSyncRunning=false;
     if(cloudSyncQueued){cloudSyncQueued=false;queueCloudSync();}
