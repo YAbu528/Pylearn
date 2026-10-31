@@ -517,11 +517,13 @@ async function initializeAuth() {
   if (error) setAuthMessage(error.message, "error");
   activateCloudUser(session?.user || null);
   currentCloudUser = session?.user || null;
+  loadCosmeticPreference(currentCloudUser);
   renderAuthSession(currentCloudUser);
   if (currentCloudUser) setTimeout(() => syncLearningData(), 0);
   supabaseClient.auth.onAuthStateChange((_event, sessionNow) => {
     activateCloudUser(sessionNow?.user || null);
     currentCloudUser = sessionNow?.user || null;
+    loadCosmeticPreference(currentCloudUser);
     renderAuthSession(currentCloudUser);
     if (currentCloudUser) setTimeout(() => syncLearningData(), 0);
   });
@@ -540,6 +542,61 @@ const NOTE_META_KEY = "pylearn_note_sync_meta";
 const BOOKMARK_DELETIONS_KEY = "pylearn_bookmark_deletions";
 const CLOUD_USER_KEY = "pylearn_cloud_user_id";
 const readMap = key => readLocalJSON(key, {});
+
+const cosmeticPalettes = [
+  {id:"classic",name:"Classic Blue",icon:"🌊",unlock:1,primary:"#2563eb",accent:"#60a5fa",description:"The original PyLearn look."},
+  {id:"violet",name:"Violet Dream",icon:"🔮",unlock:2,primary:"#7c3aed",accent:"#a78bfa",description:"A vivid purple learning space."},
+  {id:"emerald",name:"Emerald Grove",icon:"🌿",unlock:4,primary:"#059669",accent:"#34d399",description:"A calm green workspace."},
+  {id:"sunset",name:"Sunset Glow",icon:"🌅",unlock:7,primary:"#ea580c",accent:"#fb923c",description:"Warm orange and golden-hour energy."}
+];
+let selectedCosmetic = "classic";
+function cosmeticFor(id){return cosmeticPalettes.find(item=>item.id===id)||cosmeticPalettes[0]}
+function applyCosmetic(id){
+  const palette=cosmeticFor(id);
+  selectedCosmetic=palette.id;
+  const root=document.documentElement;
+  root.style.setProperty("--purple",palette.primary);
+  root.style.setProperty("--purple2",palette.accent);
+  renderCosmetics();
+}
+function loadCosmeticPreference(user=currentCloudUser){
+  const saved=user ? (user.user_metadata?.pylearn_cosmetic || "classic") : (uiStorage.getItem("pylearn_cosmetic") || "classic");
+  applyCosmetic(saved);
+}
+async function chooseCosmetic(id){
+  const palette=cosmeticFor(id), level=getLevelInfo().level;
+  if(level<palette.unlock){toast("Reach Level "+palette.unlock+" to unlock this theme.");return}
+  if(currentCloudUser){
+    const button=document.querySelector('[data-cosmetic="'+id+'"]');
+    if(button) button.disabled=true;
+    const {data,error}=await supabaseClient.auth.updateUser({data:{pylearn_cosmetic:id}});
+    if(button) button.disabled=false;
+    if(error){toast("Couldn't save your theme. Please try again.","error");return}
+    currentCloudUser=data.user||currentCloudUser;
+  }else{
+    uiStorage.setItem("pylearn_cosmetic",id);
+  }
+  applyCosmetic(id);
+  toast(palette.name+" applied.","success");
+}
+function renderCosmetics(){
+  const host=$("cosmeticOptions");
+  if(!host)return;
+  const level=getLevelInfo().level;
+  const levelLabel=$("cosmeticLevel");
+  if(levelLabel) levelLabel.textContent="LEVEL "+level;
+  host.innerHTML=cosmeticPalettes.map(palette=>{
+    const unlocked=level>=palette.unlock, active=selectedCosmetic===palette.id;
+    return `<button type="button" class="cosmetic-option ${active?"selected":""} ${unlocked?"":"locked"}" data-cosmetic="${palette.id}" ${unlocked?`onclick="chooseCosmetic('${palette.id}')"`:"disabled"} aria-pressed="${active}" aria-label="${palette.name}, ${unlocked?"unlocked":"unlocks at level "+palette.unlock}">
+      <span class="cosmetic-swatch" style="--swatch-primary:${palette.primary};--swatch-accent:${palette.accent}"><i></i><i></i><i></i></span>
+      <span class="cosmetic-details"><b>${palette.icon} ${palette.name}</b><small>${unlocked?palette.description:"Unlocks at Level "+palette.unlock}</small></span>
+      <span class="cosmetic-state">${active?"✓ ACTIVE":unlocked?"SELECT":"🔒"}</span>
+    </button>`;
+  }).join("");
+  const note=$("cosmeticSaveNote");
+  if(note) note.textContent=currentCloudUser?"Your selected theme is saved to your account and follows you across devices.":"Guest theme choices are saved on this device. Sign in to sync them across devices.";
+}
+
 function activateCloudUser(user) {
   if (!user?.id) return;
   const previousUserId = appStorage.getItem(CLOUD_USER_KEY);
@@ -1232,6 +1289,7 @@ function renderDashboard(){
   }
   renderLearningInsights();
   renderMissions();
+  renderCosmetics();
 }
 
 const learningMapStages = [
@@ -1583,7 +1641,7 @@ if (uiStorage.getItem("pylearn_theme") === "light") {
 }
 
 updateLogoTheme();
-
+loadCosmeticPreference(null);
 
 initializeAuth();
 
