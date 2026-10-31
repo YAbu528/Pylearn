@@ -1211,7 +1211,17 @@ function renderRoadmap(){
 function renderBadges(){
   const earned=badges.filter(b=>currentCloudUser ? cloudAchievements.includes(b.id) : b.test(state)).length;
   const summary=$("badgeSummary");
-  if(summary) summary.textContent=`${earned}/${badges.length} unlocked`;
+  const remaining=badges.length-earned;
+  if(summary) summary.textContent=`${earned} of ${badges.length} badges earned · ${remaining} to go`;
+  const collectionPct=Math.round(earned/badges.length*100);
+  const collectionLabel=$("badgeProgressLabel");
+  const collectionFill=$("badgeCollectionFill");
+  const collectionHint=$("badgeCollectionHint");
+  if(collectionLabel) collectionLabel.textContent=`${earned}/${badges.length} · ${collectionPct}%`;
+  if(collectionFill) collectionFill.style.width=`${collectionPct}%`;
+  if(collectionHint) collectionHint.textContent=earned===badges.length
+    ? "Every achievement collected. Your next chapter is waiting."
+    : `${remaining} achievement${remaining===1?"":"s"} still to discover. Keep learning at your own pace.`;
   $("badges").innerHTML=badges.map(b=>{
     const isEarned=currentCloudUser ? cloudAchievements.includes(b.id) : b.test(state);
     const [value,total]=b.progress(state);
