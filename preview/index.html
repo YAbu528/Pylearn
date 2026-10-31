@@ -10,15 +10,15 @@
   <meta name="description" content="PyLearn is an interactive website for learning Python through lessons, coding challenges, quizzes, and hands-on practice.">
   <link rel="canonical" href="https://yabu528.github.io/Pylearn/">
 <!-- Preload both theme logos so switching themes does not wait for an image download. -->
-<link rel="preload" as="image" href="../assets/pylearn-logo-dark.png">
-<link rel="preload" as="image" href="../assets/pylearn-logo-light.png">
-<link rel="stylesheet" href="style.css?v=pr20-preview">
+<link rel="preload" as="image" href="assets/pylearn-logo-dark.png">
+<link rel="preload" as="image" href="assets/pylearn-logo-light.png">
+<link rel="stylesheet" href="style.css?v=mobile-topbar-alignment-2">
 </head>
 <body>
 <header class="topbar">
 
 <a class="logo" href="#top">
-  <img src="../assets/pylearn-logo-dark.png" alt="PyLearn">
+  <img src="assets/pylearn-logo-dark.png" alt="PyLearn">
 </a>
 
 </a>
@@ -335,7 +335,12 @@ print("2 + 3 =", 2 + 3)</textarea>
 </section>
 
 <section class="section badges-section">
-  <div class="heading"><div><span class="eyebrow">ACHIEVEMENTS</span><h2>Your badges</h2><p class="section-subtitle" id="badgeSummary">0/9 unlocked</p></div></div>
+  <div class="heading"><div><span class="eyebrow">ACHIEVEMENTS</span><h2>Your badges</h2><p class="section-subtitle" id="badgeSummary">0 of 9 badges earned · 9 to go</p></div></div>
+  <div class="badge-collection card" aria-label="Achievement collection progress">
+    <div class="badge-collection-top"><strong>Collection progress</strong><span id="badgeProgressLabel">0/9 · 0%</span></div>
+    <div class="badge-collection-track"><i id="badgeCollectionFill"></i></div>
+    <p id="badgeCollectionHint">Nine achievements to discover. Keep learning at your own pace.</p>
+  </div>
   <div class="badges" id="badges"></div>
 </section>
   
@@ -433,7 +438,7 @@ print("2 + 3 =", 2 + 3)</textarea>
 <div>
  
 <a class="logo" href="#top">
-  <img src="../assets/pylearn-logo-dark.png" alt="PyLearn">
+  <img src="assets/pylearn-logo-dark.png" alt="PyLearn">
 </a>
 
   <p>Learn Python by understanding, practicing and building.</p>
@@ -455,6 +460,6 @@ print("2 + 3 =", 2 + 3)</textarea>
   </section>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="script.js?v=xp-level-preview"></script>
+<script src="script.js"></script>
 </body>
 </html>
