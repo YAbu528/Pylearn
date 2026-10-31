@@ -351,3 +351,9 @@ body.celebration-open{overflow:hidden}
 .cosmetic-option.locked .cosmetic-state{color:var(--muted)}
 .cosmetic-save-note{margin:12px 0 0;color:var(--muted);font-size:11px}
 @media(max-width:650px){.cosmetic-locker{padding:15px}.cosmetic-options{grid-template-columns:1fr}.cosmetic-locker-heading h3{font-size:18px}}
+
+
+/* Apply the selected palette consistently to progress and map accents */
+.progress-ring{background:conic-gradient(var(--purple2) 0deg,var(--purple2) 0deg,var(--line) 0deg)}
+.mini-bar i,.badge-collection-track i,.badge-progress i,.map-overall-track i,.map-stage-progress i,.mission-track i{background:linear-gradient(90deg,var(--purple),var(--purple2))}
+.path-next-card{border-color:color-mix(in srgb,var(--purple2) 24%,transparent)}
