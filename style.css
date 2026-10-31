@@ -357,3 +357,15 @@ body.celebration-open{overflow:hidden}
 .progress-ring{background:conic-gradient(var(--purple2) 0deg,var(--purple2) 0deg,var(--line) 0deg)}
 .mini-bar i,.badge-collection-track i,.badge-progress i,.map-overall-track i,.map-stage-progress i,.mission-track i{background:linear-gradient(90deg,var(--purple),var(--purple2))}
 .path-next-card{border-color:color-mix(in srgb,var(--purple2) 24%,transparent)}
+
+
+.foundation-practice{margin-top:18px;padding:22px;border:1px solid var(--line);border-radius:18px;background:var(--panel)}
+.foundation-practice-head h3{margin:7px 0}.foundation-practice-head p,.foundation-practice-item p{color:var(--muted)}
+.foundation-practice-list{display:grid;gap:12px;margin-top:16px}
+.foundation-practice-item{padding:15px;border:1px solid var(--line);border-radius:13px;background:var(--card)}
+.foundation-practice-item h4{margin:0 0 7px;font-size:15px}
+.foundation-practice-item pre{white-space:pre-wrap;overflow-wrap:anywhere;padding:12px;border-radius:10px;background:#080a10;color:#e5e7eb;font:12px/1.6 "SFMono-Regular",Consolas,monospace}
+.foundation-practice-actions{display:flex;gap:8px;flex-wrap:wrap}
+.foundation-practice-actions button{font-size:12px;padding:8px 11px}
+.foundation-practice-hint{color:var(--muted);font-size:13px;margin:10px 0 0}
+@media(max-width:650px){.foundation-practice{padding:15px}.foundation-practice-item{padding:12px}}
