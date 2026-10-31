@@ -1289,6 +1289,7 @@ function renderDashboard(){
   }
   renderLearningInsights();
   renderMissions();
+  renderCosmetics();
 }
 
 const learningMapStages = [
