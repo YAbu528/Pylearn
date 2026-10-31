@@ -792,7 +792,7 @@ function toggleBookmark(){
   if(!currentCloudUser){toast("Sign in to save bookmarks.");return}
   const i=bookmarks.indexOf(current);
   const deletions=readMap(BOOKMARK_DELETIONS_KEY);
-  if(i===-1){bookmarks.push(current);deletions[String(current)]=-Date.now();toast("🔖 Lesson bookmarked");}
+  if(i===-1){bookmarks.push(current);deletions[String(current)]=-Date.now();toast("Lesson bookmarked","success");}
   else{bookmarks.splice(i,1);deletions[String(current)]=Date.now();toast("Bookmark removed");}
   appStorage.setItem(BOOKMARK_DELETIONS_KEY,JSON.stringify(deletions));
   saveBookmarks(); renderStudyTools(); renderLessonBookmark();
@@ -817,7 +817,7 @@ function saveCurrentNote(show=true){
   if(show){$("noteStatus").textContent=value?"Saving to your account…":"Saving note change…"; toast(value?"📝 Saving note…":"Saving note change…");}
   renderStudyTools();
 }
-function clearCurrentNote(){if(!currentCloudUser){toast("Sign in to manage saved notes.");return} const box=$("lessonNotes"); if(box){box.value="";} delete notes[String(current)]; const meta=readMap(NOTE_META_KEY); meta[String(current)]={updatedAt:Date.now(),deleted:true}; appStorage.setItem(NOTE_META_KEY,JSON.stringify(meta)); saveNotes(); $("noteStatus").textContent="No note yet"; renderStudyTools(); toast("Note cleared");}
+function clearCurrentNote(){if(!currentCloudUser){toast("Sign in to manage saved notes.");return} const box=$("lessonNotes"); if(box){box.value="";} delete notes[String(current)]; const meta=readMap(NOTE_META_KEY); meta[String(current)]={updatedAt:Date.now(),deleted:true}; appStorage.setItem(NOTE_META_KEY,JSON.stringify(meta)); saveNotes(); $("noteStatus").textContent="No note yet"; renderStudyTools(); toast("Note cleared","success");}
 function openStudyLesson(i){selectLesson(i); setTimeout(()=>go("learn"),120)}
 function openInsightLesson(i,tag){selectLesson(i);setTimeout(()=>{go("learn");if(tag==="PRACTISE"||tag==="REVISIT")go("challenge");},120)}
 function searchLessons(){
@@ -843,7 +843,46 @@ function renderStudyTools(){
   if(status) status.textContent=notes[String(current)]?(currentCloudUser?"Saved to your account":"Sign in to save this note"):"No note yet";
 }
 function removeBookmark(i){bookmarks=bookmarks.filter(x=>x!==i);const deletions=readMap(BOOKMARK_DELETIONS_KEY);deletions[String(i)]=Date.now();appStorage.setItem(BOOKMARK_DELETIONS_KEY,JSON.stringify(deletions));saveBookmarks();renderStudyTools();renderLessonBookmark();toast("Bookmark removed");}
-function toast(s){$("toast").textContent=s;$("toast").classList.add("show");clearTimeout(window.__toast);window.__toast=setTimeout(()=>$('toast').classList.remove("show"),2300)}
+function toast(message,type="info"){
+  const el=$("toast"); if(!el) return;
+  const icons={success:"✓",error:"!",warning:"⚠",info:"✦"};
+  const queue=window.__toastQueue||(window.__toastQueue=[]);
+  queue.push({message:String(message),type});
+  if(window.__toastActive) return;
+  const showNext=()=>{
+    const item=queue.shift();
+    if(!item){window.__toastActive=false;return;}
+    window.__toastActive=true;
+    el.dataset.type=item.type;
+    $("toastIcon").textContent=icons[item.type]||icons.info;
+    $("toastMessage").textContent=item.message;
+    el.classList.add("show");
+    clearTimeout(window.__toast);
+    window.__toast=setTimeout(()=>{
+      el.classList.remove("show");
+      window.__toast=setTimeout(showNext,220);
+    },2600);
+  };
+  showNext();
+}
+function celebrate(title,message,xp=0,eyebrow="NICE WORK!"){
+  const modal=$("celebrationModal"); if(!modal) {toast(title,"success");return;}
+  $("celebrationEyebrow").textContent=eyebrow;
+  $("celebrationTitle").textContent=title;
+  $("celebrationMessage").textContent=message;
+  $("celebrationReward").hidden=!(Number(xp)>0);
+  if(Number(xp)>0) $("celebrationXp").textContent="+"+Number(xp)+" XP";
+  modal.hidden=false;
+  requestAnimationFrame(()=>modal.classList.add("show"));
+  document.body.classList.add("celebration-open");
+  $("celebrationDone").focus();
+}
+function closeCelebration(){
+  const modal=$("celebrationModal"); if(!modal)return;
+  modal.classList.remove("show");
+  document.body.classList.remove("celebration-open");
+  setTimeout(()=>{modal.hidden=true;},180);
+}
 
 function makeWorker(){
   const worker=new Worker("python-worker.js", {type:"module"});
@@ -982,7 +1021,7 @@ function closeProjectLab(){ $("projectLab").hidden=true; activeProject=null; }
 function completeProject(id){
   if(projectState[id]) return;
   projectState[id]=true; saveProjects(); save();
-  toast("🎉 Project completed!"); renderProjects(); renderLessons();
+  renderProjects(); renderLessons(); celebrate("Project completed!","You finished "+(projects.find(x=>x.id===id)?.title||"your project")+". That is a real step forward!",0,"PROJECT BUILDER");
   openProject(id);
 }
 function openProjectInPlayground(p){
@@ -1209,9 +1248,9 @@ function answerQuiz(choice){
     $("quizFeedback").textContent="✓ Correct! "+x.quiz.explain;
     $("quizScore").textContent="1/1"; quizAnswered=true;
     if(currentCloudUser){
-      state.quiz.push(current); state.xp+=15; save(); updateStreak(); renderLessons(); toast("+15 XP — quiz mastered!");
+      state.quiz.push(current); state.xp+=15; save(); updateStreak(); renderLessons(); toast("+15 XP — quiz mastered!","success");
     } else {
-      toast("Correct! Sign in to save quiz mastery and earn XP.");
+      toast("Correct! Sign in to save quiz mastery and earn XP.","success");
     }
   }else{
     options[choice].classList.add("wrong"); options[x.quiz.answer].classList.add("correct");
@@ -1224,7 +1263,7 @@ function completeLesson(){
   if(!currentCloudUser){setAuthMessage("Sign in to save lesson completion and earn XP.","info");toast("Sign in to save your progress.");return}
   if(state.done.includes(current)){toast("Lesson already completed.");return}
   if(!quizAnswered){toast("Finish the quick check first.");return}
-  state.done.push(current); state.xp+=20; updateStreak(); save(); renderLessons(); renderLesson(); toast("+20 XP — lesson complete!");
+  state.done.push(current); state.xp+=20; updateStreak(); save(); renderLessons(); renderLesson(); celebrate("Lesson complete!","You mastered "+lessons[current].title+". Keep that momentum going!",20,"LESSON MASTERED");
 }
 
 function nextLesson(){
@@ -1339,10 +1378,10 @@ function handleChallengeResult(result){
   if(result.ok){
     if(currentCloudUser){
       out.textContent="✓ Correct! +30 XP";
-      if(!state.challenges.includes(current)){state.challenges.push(current);state.xp+=30;updateStreak();save();renderLessons();toast("+30 XP — challenge solved!")}
+      if(!state.challenges.includes(current)){state.challenges.push(current);state.xp+=30;updateStreak();save();renderLessons();celebrate("Challenge conquered!","You solved "+lessons[current].challenge.title+". Ready for the next one?",30,"CHALLENGE COMPLETE")}
     } else {
       out.textContent="✓ Correct! Sign in to save this achievement and earn XP.";
-      toast("Challenge solved! Sign in to save your result.");
+      toast("Challenge solved! Sign in to save your result.","success");
     }
   }else{
     out.textContent=result.output.startsWith("ERROR:") ? result.output+"\n\nCheck your code and try again." : "Not quite yet.\n\nYour code ran, but it did not meet the challenge requirements.\nUse the hint if you need help, then try again.";
