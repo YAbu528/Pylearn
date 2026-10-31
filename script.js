@@ -305,17 +305,28 @@ const badges = [
  {id:"explorer", medal:"🧭", name:"Python Explorer", desc:"Reach 500 XP through real learning actions.", goal:"Earn 500 XP", test:s=>s.xp>=500, progress:s=>[Math.min(s.xp,500),500]}
 ];
 
+// Keep preview/test data separate from the live site's app data.
+// Supabase's own auth storage is untouched; only PyLearn-owned keys are namespaced.
+const APP_STORAGE_PREFIX = location.pathname.toLowerCase().includes("/preview/")
+  ? "pylearn_preview_"
+  : "pylearn_prod_";
+const appStorage = {
+  getItem(key) { return localStorage.getItem(APP_STORAGE_PREFIX + String(key).replace(/^pylearn_/, "")); },
+  setItem(key, value) { localStorage.setItem(APP_STORAGE_PREFIX + String(key).replace(/^pylearn_/, ""), value); },
+  removeItem(key) { localStorage.removeItem(APP_STORAGE_PREFIX + String(key).replace(/^pylearn_/, "")); }
+};
+
 function readLocalJSON(key, fallback){
-  try { return JSON.parse(localStorage.getItem(key) ?? JSON.stringify(fallback)); }
+  try { return JSON.parse(appStorage.getItem(key) ?? JSON.stringify(fallback)); }
   catch { return fallback; }
 }
-let current = Number(localStorage.getItem("pylearn_current") || 0);
+let current = Number(appStorage.getItem("pylearn_current") || 0);
 current = Number.isInteger(current) ? Math.max(0, Math.min(current, lessons.length-1)) : 0;
 let state = readLocalJSON("pylearn_state", {done:[],quiz:[],challenges:[],runs:0,xp:0,streak:0,lastDay:""});
 const CHALLENGE_ATTEMPTS_KEY = "pylearn_challenge_attempts";
 const LESSON_REVIEWS_KEY = "pylearn_lesson_reviews";
 function writeEventList(key, items) {
-  localStorage.setItem(key, JSON.stringify(items));
+  appStorage.setItem(key, JSON.stringify(items));
 }
 function readEventList(key) {
   const value = readLocalJSON(key, []);
@@ -374,7 +385,7 @@ secret = random.randint(1, 20)
 `, testText:"Connect Python to real-world data and handle failure safely."}
 ];
 
-let projectState = JSON.parse(localStorage.getItem("pylearn_projects") || '{}');
+let projectState = JSON.parse(appStorage.getItem("pylearn_projects") || '{}');
 let activeProject = null;
 
 
@@ -510,25 +521,25 @@ const CLOUD_USER_KEY = "pylearn_cloud_user_id";
 const readMap = key => readLocalJSON(key, {});
 function activateCloudUser(user) {
   if (!user?.id) return;
-  const previousUserId = localStorage.getItem(CLOUD_USER_KEY);
+  const previousUserId = appStorage.getItem(CLOUD_USER_KEY);
   if (previousUserId && previousUserId !== user.id) {
     // Never carry one account's browser cache into another account.
     state = {done:[],quiz:[],challenges:[],runs:0,xp:0,streak:0,lastDay:""};
     bookmarks = [];
     notes = {};
     current = 0;
-    localStorage.setItem("pylearn_state", JSON.stringify(state));
-    localStorage.setItem("pylearn_current", "0");
-    localStorage.setItem("pylearn_bookmarks", "[]");
-    localStorage.setItem("pylearn_notes", "{}");
-    localStorage.setItem(CHALLENGE_ATTEMPTS_KEY, "[]");
-    localStorage.setItem(LESSON_REVIEWS_KEY, "[]");
-    localStorage.removeItem(NOTE_META_KEY);
-    localStorage.removeItem(BOOKMARK_DELETIONS_KEY);
-    localStorage.removeItem("pylearn_reward_requests");
+    appStorage.setItem("pylearn_state", JSON.stringify(state));
+    appStorage.setItem("pylearn_current", "0");
+    appStorage.setItem("pylearn_bookmarks", "[]");
+    appStorage.setItem("pylearn_notes", "{}");
+    appStorage.setItem(CHALLENGE_ATTEMPTS_KEY, "[]");
+    appStorage.setItem(LESSON_REVIEWS_KEY, "[]");
+    appStorage.removeItem(NOTE_META_KEY);
+    appStorage.removeItem(BOOKMARK_DELETIONS_KEY);
+    appStorage.removeItem("pylearn_reward_requests");
     cloudAchievements = [];
   }
-  localStorage.setItem(CLOUD_USER_KEY, user.id);
+  appStorage.setItem(CLOUD_USER_KEY, user.id);
 }
 function queueCloudSync() {
   if (!currentCloudUser || !supabaseClient) return;
@@ -570,16 +581,16 @@ async function syncLearningData() {
     };
     localReviews = await syncAppendOnlyEvents("lesson_reviews", localReviews);
     localAttempts = await syncAppendOnlyEvents("challenge_attempts", localAttempts);
-    localStorage.setItem(LESSON_REVIEWS_KEY, JSON.stringify(localReviews));
-    localStorage.setItem(CHALLENGE_ATTEMPTS_KEY, JSON.stringify(localAttempts));
+    appStorage.setItem(LESSON_REVIEWS_KEY, JSON.stringify(localReviews));
+    appStorage.setItem(CHALLENGE_ATTEMPTS_KEY, JSON.stringify(localAttempts));
     const reviewIds = new Set(localReviews.map(item => item.id));
     for (const item of (reviewsRes.data || [])) if (!reviewIds.has(item.id)) localReviews.push({...item, synced:true});
     const attemptIds = new Set(localAttempts.map(item => item.id));
     for (const item of (attemptsRes.data || [])) if (!attemptIds.has(item.id)) localAttempts.push({...item, synced:true});
     localReviews = localReviews.slice(-500);
     localAttempts = localAttempts.slice(-1000);
-    localStorage.setItem(LESSON_REVIEWS_KEY, JSON.stringify(localReviews));
-    localStorage.setItem(CHALLENGE_ATTEMPTS_KEY, JSON.stringify(localAttempts));
+    appStorage.setItem(LESSON_REVIEWS_KEY, JSON.stringify(localReviews));
+    appStorage.setItem(CHALLENGE_ATTEMPTS_KEY, JSON.stringify(localAttempts));
 
     const remoteProgress = progressRes.data || [];
     const progressById = new Map(remoteProgress.map(row => [Number(row.lesson_id), row]));
@@ -628,7 +639,7 @@ async function syncLearningData() {
         continue;
       }
       rewardMarkers[eventKey] = true;
-      localStorage.setItem("pylearn_reward_requests", JSON.stringify(rewardMarkers));
+      appStorage.setItem("pylearn_reward_requests", JSON.stringify(rewardMarkers));
       if (!currentCloudUser || currentCloudUser.id !== userId) return;
     }
 
@@ -645,7 +656,7 @@ async function syncLearningData() {
     state.streak = Number(statsRes.data.streak || 0);
     state.lastDay = statsRes.data.last_active_date || "";
     cloudAchievements = (achievementsRes.data || []).map(row => row.achievement_id);
-    localStorage.setItem("pylearn_state", JSON.stringify(state));
+    appStorage.setItem("pylearn_state", JSON.stringify(state));
 
     const noteMeta = readMap(NOTE_META_KEY);
     const remoteNotes = new Map((notesRes.data || []).map(row => [String(row.lesson_id), row]));
@@ -688,8 +699,8 @@ async function syncLearningData() {
         noteMeta[id] = latestMeta;
       }
     }
-    localStorage.setItem("pylearn_notes",JSON.stringify(notes));
-    localStorage.setItem(NOTE_META_KEY,JSON.stringify(noteMeta));
+    appStorage.setItem("pylearn_notes",JSON.stringify(notes));
+    appStorage.setItem(NOTE_META_KEY,JSON.stringify(noteMeta));
 
     const deletedBookmarks=readMap(BOOKMARK_DELETIONS_KEY);
     const remoteBookmarks=new Map((bookmarksRes.data||[]).map(row=>[Number(row.lesson_id),row]));
@@ -724,10 +735,10 @@ async function syncLearningData() {
         delete latestBookmarkMarkers[key];
       }
     }
-    localStorage.setItem(BOOKMARK_DELETIONS_KEY, JSON.stringify(latestBookmarkMarkers));
-    localStorage.setItem("pylearn_state", JSON.stringify(state));
-    localStorage.setItem("pylearn_current", String(current));
-    localStorage.setItem("pylearn_bookmarks", JSON.stringify(bookmarks));
+    appStorage.setItem(BOOKMARK_DELETIONS_KEY, JSON.stringify(latestBookmarkMarkers));
+    appStorage.setItem("pylearn_state", JSON.stringify(state));
+    appStorage.setItem("pylearn_current", String(current));
+    appStorage.setItem("pylearn_bookmarks", JSON.stringify(bookmarks));
     renderLesson(); renderLessons(); renderStudyTools(); renderLessonReview();
     setAuthMessage("Your lessons, notes, and bookmarks are synced.", "success");
   } catch (error) {
@@ -738,16 +749,16 @@ async function syncLearningData() {
     if(cloudSyncQueued){cloudSyncQueued=false;queueCloudSync();}
   }
 }
-function save(){localStorage.setItem("pylearn_state",JSON.stringify(state));localStorage.setItem("pylearn_current",String(current));queueCloudSync()}
+function save(){appStorage.setItem("pylearn_state",JSON.stringify(state));appStorage.setItem("pylearn_current",String(current));queueCloudSync()}
 function go(id){$(id)?.scrollIntoView({behavior:"smooth",block:"start"}); if(id==="playground" && !pythonReady && !pythonLoading) initPython();}
-function saveBookmarks(){localStorage.setItem("pylearn_bookmarks",JSON.stringify(bookmarks));queueCloudSync()}
-function saveNotes(){localStorage.setItem("pylearn_notes",JSON.stringify(notes));queueCloudSync()}
+function saveBookmarks(){appStorage.setItem("pylearn_bookmarks",JSON.stringify(bookmarks));queueCloudSync()}
+function saveNotes(){appStorage.setItem("pylearn_notes",JSON.stringify(notes));queueCloudSync()}
 function toggleBookmark(){
   const i=bookmarks.indexOf(current);
   const deletions=readMap(BOOKMARK_DELETIONS_KEY);
   if(i===-1){bookmarks.push(current);deletions[String(current)]=-Date.now();toast("🔖 Lesson bookmarked");}
   else{bookmarks.splice(i,1);deletions[String(current)]=Date.now();toast("Bookmark removed");}
-  localStorage.setItem(BOOKMARK_DELETIONS_KEY,JSON.stringify(deletions));
+  appStorage.setItem(BOOKMARK_DELETIONS_KEY,JSON.stringify(deletions));
   saveBookmarks(); renderStudyTools(); renderLessonBookmark();
 }
 function renderLessonBookmark(){
@@ -762,12 +773,12 @@ function saveCurrentNote(show=true){
   const meta=readMap(NOTE_META_KEY);
   if(value) notes[String(current)]=value; else delete notes[String(current)];
   meta[String(current)]={updatedAt:Date.now(),deleted:!value};
-  localStorage.setItem(NOTE_META_KEY,JSON.stringify(meta));
+  appStorage.setItem(NOTE_META_KEY,JSON.stringify(meta));
   saveNotes();
   if(show){$("noteStatus").textContent=value?"Saved locally":"No note yet"; toast(value?"📝 Note saved":"Note cleared");}
   renderStudyTools();
 }
-function clearCurrentNote(){const box=$("lessonNotes"); if(box){box.value="";} delete notes[String(current)]; const meta=readMap(NOTE_META_KEY); meta[String(current)]={updatedAt:Date.now(),deleted:true}; localStorage.setItem(NOTE_META_KEY,JSON.stringify(meta)); saveNotes(); $("noteStatus").textContent="No note yet"; renderStudyTools(); toast("Note cleared");}
+function clearCurrentNote(){const box=$("lessonNotes"); if(box){box.value="";} delete notes[String(current)]; const meta=readMap(NOTE_META_KEY); meta[String(current)]={updatedAt:Date.now(),deleted:true}; appStorage.setItem(NOTE_META_KEY,JSON.stringify(meta)); saveNotes(); $("noteStatus").textContent="No note yet"; renderStudyTools(); toast("Note cleared");}
 function openStudyLesson(i){selectLesson(i); setTimeout(()=>go("learn"),120)}
 function openInsightLesson(i,tag){selectLesson(i);setTimeout(()=>{go("learn");if(tag==="PRACTISE"||tag==="REVISIT")go("challenge");},120)}
 function searchLessons(){
@@ -788,7 +799,7 @@ function renderStudyTools(){
   if(note && document.activeElement !== note){note.value=notes[String(current)]||"";}
   if(status) status.textContent=notes[String(current)]?"Saved locally":"No note yet";
 }
-function removeBookmark(i){bookmarks=bookmarks.filter(x=>x!==i);const deletions=readMap(BOOKMARK_DELETIONS_KEY);deletions[String(i)]=Date.now();localStorage.setItem(BOOKMARK_DELETIONS_KEY,JSON.stringify(deletions));saveBookmarks();renderStudyTools();renderLessonBookmark();toast("Bookmark removed");}
+function removeBookmark(i){bookmarks=bookmarks.filter(x=>x!==i);const deletions=readMap(BOOKMARK_DELETIONS_KEY);deletions[String(i)]=Date.now();appStorage.setItem(BOOKMARK_DELETIONS_KEY,JSON.stringify(deletions));saveBookmarks();renderStudyTools();renderLessonBookmark();toast("Bookmark removed");}
 function toast(s){$("toast").textContent=s;$("toast").classList.add("show");clearTimeout(window.__toast);window.__toast=setTimeout(()=>$('toast').classList.remove("show"),2300)}
 
 function makeWorker(){
@@ -897,7 +908,7 @@ function isUnlocked(i){return i===0 || state.done.includes(i-1)}
 function levelName(){const level=Math.floor(state.xp/100)+1;return `Level ${level} · ${level<3?"Beginner":level<6?"Builder":"Python Explorer"}`}
 
 function projectUnlocked(p){ return state.done.length >= p.req; }
-function saveProjects(){ localStorage.setItem("pylearn_projects",JSON.stringify(projectState)); }
+function saveProjects(){ appStorage.setItem("pylearn_projects",JSON.stringify(projectState)); }
 function renderProjects(){
   const grid=$("projectsGrid"), summary=$("projectSummary");
   if(!grid) return;
@@ -932,7 +943,7 @@ function completeProject(id){
   openProject(id);
 }
 function openProjectInPlayground(p){
-  $("editor").value=p.starter; localStorage.setItem("pylearn_editor",p.starter);
+  $("editor").value=p.starter; appStorage.setItem("pylearn_editor",p.starter);
   go("playground"); toast(`${p.title} loaded into the playground.`);
 }
 
@@ -1300,7 +1311,7 @@ $("theme").onclick = () => {
   const isLight = document.body.classList.contains("light");
   $("theme").textContent = isLight ? "🌙" : "☀️";
 
-  localStorage.setItem("pylearn_theme", isLight ? "light" : "dark");
+  appStorage.setItem("pylearn_theme", isLight ? "light" : "dark");
   updateLogoTheme();
 };
 
@@ -1315,7 +1326,7 @@ $("lessonNotes")?.addEventListener("input",()=>{
 $("editor").addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){e.preventDefault();runPython()}});
 
 
-if (localStorage.getItem("pylearn_theme") === "light") {
+if (appStorage.getItem("pylearn_theme") === "light") {
   document.body.classList.add("light");
   $("theme").textContent = "🌙";
 }
