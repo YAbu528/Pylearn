@@ -452,6 +452,7 @@ function renderAuthSession(user) {
     setAuthMessage("You're signed in successfully.", "success");
   } else {
     showAuthForm("signin");
+    xpInitializedUserId = null;
     state = {done:[],quiz:[],challenges:[],runs:0,xp:0,streak:0,lastDay:""};
     bookmarks = [];
     notes = {};
@@ -529,6 +530,7 @@ async function initializeAuth() {
 
 let currentCloudUser = null;
 let cloudAchievements = [];
+let xpInitializedUserId = null;
 let cloudSyncRunning = false;
 let cloudSyncQueued = false;
 let cloudSyncTimer = null;
@@ -541,6 +543,7 @@ function activateCloudUser(user) {
   if (!user?.id) return;
   const previousUserId = appStorage.getItem(CLOUD_USER_KEY);
   if (previousUserId && previousUserId !== user.id) {
+    xpInitializedUserId = null;
     // Never carry one account's browser cache into another account.
     state = {done:[],quiz:[],challenges:[],runs:0,xp:0,streak:0,lastDay:""};
     bookmarks = [];
@@ -572,6 +575,8 @@ async function syncLearningData() {
   if (cloudSyncRunning) { cloudSyncQueued = true; return; }
   cloudSyncRunning = true;
   const userId = currentCloudUser.id;
+  const hadAuthoritativeXp = xpInitializedUserId === userId;
+  const xpBeforeSync = Number(state.xp || 0);
   try {
     const [progressRes, notesRes, bookmarksRes, reviewsRes, attemptsRes] = await Promise.all([
       supabaseClient.from("lesson_progress").select("lesson_id,completed,quiz_best_score,challenge_completed").eq("user_id", userId),
@@ -673,10 +678,24 @@ async function syncLearningData() {
     if (!currentCloudUser || currentCloudUser.id !== userId) return;
     // XP is account-wide and authoritative on the server.
     // Never add browser-local legacy XP: it would make totals differ by device.
-    state.xp = Number(statsRes.data.xp || 0);
+    const authoritativeXp = Number(statsRes.data.xp || 0);
+    const previousLevel = getLevelInfo(xpBeforeSync).level;
+    const nextLevel = getLevelInfo(authoritativeXp).level;
+    state.xp = authoritativeXp;
     state.streak = Number(statsRes.data.streak || 0);
     state.lastDay = statsRes.data.last_active_date || "";
     cloudAchievements = (achievementsRes.data || []).map(row => row.achievement_id);
+    xpInitializedUserId = userId;
+    if (hadAuthoritativeXp && nextLevel > previousLevel) {
+      const levelUp = {
+        title: nextLevel === previousLevel + 1 ? `Level ${nextLevel} reached!` : `${nextLevel - previousLevel} levels gained!`,
+        message: `You advanced from Level ${previousLevel} to Level ${nextLevel}. You are now a ${getLevelInfo(authoritativeXp).title}. Keep learning at your own pace.`,
+        eyebrow: "LEVEL UP"
+      };
+      const modal = $("celebrationModal");
+      if (modal && !modal.hidden) window.__pendingLevelUp = levelUp;
+      else celebrate(levelUp.title, levelUp.message, 0, levelUp.eyebrow);
+    }
     appStorage.setItem("pylearn_state", JSON.stringify(state));
 
     const noteMeta = readMap(NOTE_META_KEY);
@@ -881,7 +900,14 @@ function closeCelebration(){
   const modal=$("celebrationModal"); if(!modal)return;
   modal.classList.remove("show");
   document.body.classList.remove("celebration-open");
-  setTimeout(()=>{modal.hidden=true;},180);
+  setTimeout(()=>{
+    modal.hidden=true;
+    const pending=window.__pendingLevelUp;
+    if(pending){
+      window.__pendingLevelUp=null;
+      setTimeout(()=>celebrate(pending.title,pending.message,0,pending.eyebrow),80);
+    }
+  },180);
 }
 
 function makeWorker(){
@@ -987,7 +1013,22 @@ function updateStreak(){
 }
 
 function isUnlocked(i){return !currentCloudUser || i===0 || state.done.includes(i-1)}
-function levelName(){const level=Math.floor(state.xp/100)+1;return `Level ${level} · ${level<3?"Beginner":level<6?"Builder":"Python Explorer"}`}
+const XP_PER_LEVEL = 100;
+function getLevelInfo(totalXp=state.xp){
+  const xp=Math.max(0,Math.floor(Number(totalXp)||0));
+  const level=Math.floor(xp/XP_PER_LEVEL)+1;
+  const tiers=[
+    {min:1,max:2,title:"Beginner",description:"Building your Python foundations"},
+    {min:3,max:5,title:"Builder",description:"Turning ideas into working code"},
+    {min:6,max:9,title:"Python Explorer",description:"Exploring more powerful Python skills"},
+    {min:10,max:Infinity,title:"Python Creator",description:"Combining skills to create bigger projects"}
+  ];
+  const tier=tiers.find(item=>level>=item.min&&level<=item.max)||tiers[tiers.length-1];
+  const levelStart=(level-1)*XP_PER_LEVEL;
+  const nextLevelXp=level*XP_PER_LEVEL;
+  return {level,title:tier.title,description:tier.description,totalXp:xp,levelStart,nextLevelXp,progress:xp-levelStart,remaining:nextLevelXp-xp};
+}
+function levelName(){const info=getLevelInfo();return `Level ${info.level} · ${info.title}`}
 
 function projectUnlocked(p){ return state.done.length >= p.req; }
 function saveProjects(){ uiStorage.setItem("pylearn_projects",JSON.stringify(projectState)); }
@@ -1098,17 +1139,12 @@ function renderDashboard(){
   $("dashQuizzes").textContent=`${state.quiz.length}/${total}`;
   $("dashChallenges").textContent=`${state.challenges.length}/${total}`;
   $("dashStreak").textContent=`${state.streak} ${state.streak===1?"day":"days"}`;
-  $("dashboardLevel").textContent=levelName();
-  $("dashboardXp").textContent=`${state.xp} XP`;
-  const levelStart=Math.floor(state.xp/100)*100;
-  const levelProgress=state.xp-levelStart;
-  const currentLevel=Math.floor(state.xp/100)+1;
-  const nextLevelXp=(currentLevel)*100;
-  const xpPct=Math.min(100,levelProgress);
-  $("dashboardXpBar").style.width=xpPct+"%";
-  $("dashboardNextXp").textContent=state.xp>=nextLevelXp?"Level ready":"";
-  $("dashboardNextXp").textContent=`${nextLevelXp-state.xp} XP to Level ${currentLevel+1}`;
-  $("dashboardLevelHint").textContent=`${levelProgress}/100 XP earned toward your next level.`;
+  const levelInfo=getLevelInfo();
+  $("dashboardLevel").textContent=`Level ${levelInfo.level} · ${levelInfo.title}`;
+  $("dashboardXp").textContent=`${levelInfo.totalXp} XP`;
+  $("dashboardXpBar").style.width=levelInfo.progress+"%";
+  $("dashboardNextXp").textContent=`${levelInfo.remaining} XP to Level ${levelInfo.level+1}`;
+  $("dashboardLevelHint").textContent=`${levelInfo.progress}/${XP_PER_LEVEL} XP in this level · ${levelInfo.description}.`;
 
   const nextIndex=lessons.findIndex((_,i)=>!state.done.includes(i));
   if(nextIndex===-1){
@@ -1248,7 +1284,7 @@ function answerQuiz(choice){
     $("quizFeedback").textContent="✓ Correct! "+x.quiz.explain;
     $("quizScore").textContent="1/1"; quizAnswered=true;
     if(currentCloudUser){
-      state.quiz.push(current); state.xp+=15; save(); updateStreak(); renderLessons(); toast("+15 XP — quiz mastered!","success");
+      state.quiz.push(current); save(); updateStreak(); renderLessons(); toast("+15 XP — quiz mastered!","success");
     } else {
       toast("Correct! Sign in to save quiz mastery and earn XP.","success");
     }
@@ -1263,7 +1299,7 @@ function completeLesson(){
   if(!currentCloudUser){setAuthMessage("Sign in to save lesson completion and earn XP.","info");toast("Sign in to save your progress.");return}
   if(state.done.includes(current)){toast("Lesson already completed.");return}
   if(!quizAnswered){toast("Finish the quick check first.");return}
-  state.done.push(current); state.xp+=20; updateStreak(); save(); renderLessons(); renderLesson(); celebrate("Lesson complete!","You mastered "+lessons[current].title+". Keep that momentum going!",20,"LESSON MASTERED");
+  state.done.push(current); updateStreak(); save(); renderLessons(); renderLesson(); celebrate("Lesson complete!","You mastered "+lessons[current].title+". Keep that momentum going!",20,"LESSON MASTERED");
 }
 
 function nextLesson(){
@@ -1378,7 +1414,7 @@ function handleChallengeResult(result){
   if(result.ok){
     if(currentCloudUser){
       out.textContent="✓ Correct! +30 XP";
-      if(!state.challenges.includes(current)){state.challenges.push(current);state.xp+=30;updateStreak();save();renderLessons();celebrate("Challenge conquered!","You solved "+lessons[current].challenge.title+". Ready for the next one?",30,"CHALLENGE COMPLETE")}
+      if(!state.challenges.includes(current)){state.challenges.push(current);updateStreak();save();renderLessons();celebrate("Challenge conquered!","You solved "+lessons[current].challenge.title+". Ready for the next one?",30,"CHALLENGE COMPLETE")}
     } else {
       out.textContent="✓ Correct! Sign in to save this achievement and earn XP.";
       toast("Challenge solved! Sign in to save your result.","success");
