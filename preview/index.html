@@ -12,7 +12,7 @@
 <!-- Preload both theme logos so switching themes does not wait for an image download. -->
 <link rel="preload" as="image" href="../assets/pylearn-logo-dark.png">
 <link rel="preload" as="image" href="../assets/pylearn-logo-light.png">
-<link rel="stylesheet" href="style.css?v=phase-2-m2-preview">
+<link rel="stylesheet" href="style.css?v=pr20-preview">
 </head>
 <body>
 <header class="topbar">
@@ -442,8 +442,19 @@ print("2 + 3 =", 2 + 3)</textarea>
   <div><b>Build</b><a href="#projects">Projects</a><a href="#">Certificates</a></div>
   <div><b>Resources</b><a href="https://docs.python.org/3/" target="_blank" rel="noopener">Python docs</a><a href="https://docs.python.org/3/tutorial/" target="_blank" rel="noopener">Python tutorial</a></div>
 </footer>
-<div id="toast" role="status"></div>
+<div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"><span class="toast-icon" id="toastIcon">✦</span><span id="toastMessage"></span></div>
+<div id="celebrationModal" class="celebration-backdrop" hidden>
+  <section class="celebration-card" role="dialog" aria-modal="true" aria-labelledby="celebrationTitle">
+    <button class="celebration-close" id="celebrationClose" type="button" aria-label="Close celebration" onclick="closeCelebration()">×</button>
+    <div class="celebration-art" aria-hidden="true">🎉</div>
+    <p class="celebration-eyebrow" id="celebrationEyebrow">NICE WORK!</p>
+    <h2 id="celebrationTitle">You did it!</h2>
+    <p class="celebration-message" id="celebrationMessage">Every step counts. Keep learning!</p>
+    <div class="celebration-reward" id="celebrationReward"><span>⚡</span><strong id="celebrationXp">+20 XP</strong></div>
+    <button class="primary celebration-done" id="celebrationDone" type="button" onclick="closeCelebration()">Keep going →</button>
+  </section>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="script.js?v=phase-2-m2-preview"></script>
+<script src="script.js"></script>
 </body>
 </html>
