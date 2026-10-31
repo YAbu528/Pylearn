@@ -1176,8 +1176,7 @@ function renderMissions(){
 
 function openMission(id){
   const targets={
-    lessons:()=>state.done.findIndex((_,i)=>false),
-    quizzes:()=>lessons.findIndex((_,i)=>isUnlocked(i)&&!state.quiz.includes(i)),
+      quizzes:()=>lessons.findIndex((_,i)=>isUnlocked(i)&&!state.quiz.includes(i)),
     challenges:()=>lessons.findIndex((_,i)=>isUnlocked(i)&&!state.challenges.includes(i))
   };
   let index;
