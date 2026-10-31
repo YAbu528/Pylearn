@@ -314,8 +314,8 @@ current = Number.isInteger(current) ? Math.max(0, Math.min(current, lessons.leng
 let state = readLocalJSON("pylearn_state", {done:[],quiz:[],challenges:[],runs:0,xp:0,streak:0,lastDay:""});
 const challengeTestMode = new URLSearchParams(window.location.search).get("challenge-test") === "1";
 const CHALLENGE_ATTEMPTS_KEY = "pylearn_challenge_attempts";
-const challengeTestEvents = { [CHALLENGE_ATTEMPTS_KEY]: [], [LESSON_REVIEWS_KEY]: [] };
 const LESSON_REVIEWS_KEY = "pylearn_lesson_reviews";
+const challengeTestEvents = { [CHALLENGE_ATTEMPTS_KEY]: [], [LESSON_REVIEWS_KEY]: [] };
 function writeEventList(key, items) {
   if (challengeTestMode) { challengeTestEvents[key] = items; return; }
   localStorage.setItem(key, JSON.stringify(items));
