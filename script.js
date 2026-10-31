@@ -1293,24 +1293,6 @@ function renderLearningMap(){
 }
 
 function renderRoadmap(){
-  const stage1=$("stage1"), stage2=$("stage2"), stage3=$("stage3"), stage4=$("stage4");
-  if(!stage1) return;
-  const foundationCount=state.done.filter(i=>i>=0&&i<=4).length;
-  const coreCount=state.done.filter(i=>i>=5&&i<=7).length;
-  const intermediateCount=state.done.filter(i=>i>=8&&i<=13).length;
-  const foundationDone=foundationCount===5;
-  const coreDone=coreCount===3;
-  const intermediateDone=intermediateCount===6;
-  stage1.classList.toggle("complete",foundationDone);
-  stage1.querySelector("em").textContent=foundationDone?"✓ Complete":`5 lessons · ${foundationCount}/5`;
-  stage2.classList.toggle("active-stage",foundationDone&&!coreDone);
-  stage2.classList.toggle("complete",coreDone);
-  stage2.querySelector("em").textContent=coreDone?"✓ Complete":foundationDone?`🔓 Unlocked · ${coreCount}/3 lessons`:"🔒 Unlocks after Fundamentals";
-  stage3.classList.toggle("active-stage",coreDone&&!intermediateDone);
-  stage3.classList.toggle("complete",intermediateDone);
-  stage3.querySelector("em").textContent=intermediateDone?"✓ Complete":coreDone?`🔓 Unlocked · ${intermediateCount}/6 lessons`:"🔒 Complete the core path first";
-  stage4.classList.toggle("active-stage",intermediateDone);
-  stage4.querySelector("em").textContent=intermediateDone?"🔓 Ready for projects":"🔒 Unlocks after Intermediate";
   renderLearningMap();
 }
 
