@@ -1234,6 +1234,64 @@ function renderDashboard(){
   renderMissions();
 }
 
+const learningMapStages = [
+  {id:"fundamentals",number:"01",title:"Python foundations",subtitle:"Start with the building blocks of Python.",start:0,end:5},
+  {id:"core",number:"02",title:"Core Python",subtitle:"Turn the basics into reusable skills.",start:5,end:8},
+  {id:"intermediate",number:"03",title:"Explore further",subtitle:"Work with richer data, files, objects and APIs.",start:8,end:14}
+];
+
+function openMapLesson(index){
+  if(!isUnlocked(index)){toast("Complete the previous lesson to unlock this one.");return}
+  selectLesson(index);
+  go("learn");
+}
+
+function renderLearningMap(){
+  const host=$("learningMap");
+  if(!host) return;
+  const completed=state.done.filter(i=>i>=0&&i<lessons.length).length;
+  const overallText=$("mapOverallText"), overallFill=$("mapOverallFill");
+  if(overallText) overallText.textContent=`${completed} of ${lessons.length} lessons completed`;
+  if(overallFill) overallFill.style.width=`${Math.round(completed/lessons.length*100)}%`;
+  const stageMarkup=learningMapStages.map(stage=>{
+    const stageLessons=lessons.slice(stage.start,stage.end);
+    const stageDone=stageLessons.filter((_,offset)=>state.done.includes(stage.start+offset)).length;
+    const stagePct=Math.round(stageDone/stageLessons.length*100);
+    const stageUnlocked=isUnlocked(stage.start);
+    const stageClass=stageDone===stageLessons.length?"map-stage-complete":stageUnlocked?"map-stage-active":"map-stage-locked";
+    const nodes=stageLessons.map((lesson,offset)=>{
+      const index=stage.start+offset, done=state.done.includes(index), unlocked=isUnlocked(index);
+      const currentNode=index===current&&!done;
+      const status=done?"Completed":currentNode?"Current lesson":unlocked?"Available":"Locked";
+      const nodeClass=done?"map-node-done":currentNode?"map-node-current":unlocked?"map-node-open":"map-node-locked";
+      return `<button class="map-node ${nodeClass}" ${unlocked?`onclick="openMapLesson(${index})"`:"disabled"} aria-label="Lesson ${index+1}: ${lesson.title} — ${status}" title="${unlocked?"Open "+lesson.title:"Complete the previous lesson to unlock this"}">
+        <span class="map-node-number">${String(index+1).padStart(2,"0")}</span>
+        <span class="map-node-copy"><b>${lesson.short||lesson.title}</b><small>${status}</small></span>
+        <span class="map-node-status" aria-hidden="true">${done?"✓":currentNode?"▶":unlocked?"→":"🔒"}</span>
+      </button>`;
+    }).join("");
+    return `<section class="map-stage ${stageClass}" aria-labelledby="map-stage-${stage.id}">
+      <div class="map-stage-head"><span class="map-stage-number">${stage.number}</span>
+        <div class="map-stage-title"><h3 id="map-stage-${stage.id}">${stage.title}</h3><p>${stage.subtitle}</p></div>
+        <strong>${stageDone}/${stageLessons.length}</strong>
+      </div>
+      <div class="map-stage-progress"><i style="width:${stagePct}%"></i></div>
+      <div class="map-node-grid">${nodes}</div>
+    </section>`;
+  }).join("");
+  const readyProjects=projects.filter(projectUnlocked).length, totalProjects=projects.length;
+  const completedProjects=projects.filter(project=>!!projectState[project.id]).length;
+  const buildClass=readyProjects===0?"map-stage-locked":completedProjects===totalProjects?"map-stage-complete":"map-stage-active";
+  host.innerHTML=stageMarkup+`<section class="map-stage map-build-stage ${buildClass}">
+    <div class="map-stage-head"><span class="map-stage-number">04</span>
+      <div class="map-stage-title"><h3>Build something real</h3><p>Put your Python skills to work in guided projects.</p></div>
+      <strong>${completedProjects}/${totalProjects}</strong>
+    </div>
+    <div class="map-stage-progress"><i style="width:${totalProjects?Math.round(completedProjects/totalProjects*100):0}%"></i></div>
+    <div class="map-build-summary"><span>🔧 ${readyProjects} of ${totalProjects} projects unlocked</span><button class="ghost" onclick="go('projects')">Explore projects →</button></div>
+  </section>`;
+}
+
 function renderRoadmap(){
   const stage1=$("stage1"), stage2=$("stage2"), stage3=$("stage3"), stage4=$("stage4");
   if(!stage1) return;
@@ -1253,6 +1311,7 @@ function renderRoadmap(){
   stage3.querySelector("em").textContent=intermediateDone?"✓ Complete":coreDone?`🔓 Unlocked · ${intermediateCount}/6 lessons`:"🔒 Complete the core path first";
   stage4.classList.toggle("active-stage",intermediateDone);
   stage4.querySelector("em").textContent=intermediateDone?"🔓 Ready for projects":"🔒 Unlocks after Intermediate";
+  renderLearningMap();
 }
 
 function renderBadges(){
