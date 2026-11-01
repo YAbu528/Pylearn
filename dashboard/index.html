@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#11121b">
+<title>Your Dashboard | PyLearn</title>
+<meta name="description" content="View your saved Python learning progress on PyLearn.">
+<link rel="canonical" href="https://yabu528.github.io/Pylearn/dashboard/">
+<link rel="stylesheet" href="../shared/navigation.css">
+<style>
+.pl-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:28px}
+.pl-metric{padding:22px;border:1px solid var(--pl-line);border-radius:17px;background:var(--pl-card)}
+.pl-metric strong{display:block;font-size:clamp(25px,4vw,34px);letter-spacing:-.04em}
+.pl-metric span{display:block;margin-top:7px;color:var(--pl-muted);font-size:13px}
+.pl-progress-card{margin-top:16px;padding:22px;border:1px solid var(--pl-line);border-radius:17px;background:var(--pl-card)}
+.pl-progress-track{height:10px;margin-top:14px;overflow:hidden;border-radius:20px;background:var(--pl-line)}
+.pl-progress-fill{height:100%;width:0;background:linear-gradient(90deg,#7c3aed,#a78bfa);border-radius:20px;transition:width .25s}
+.pl-status{margin-top:20px;color:var(--pl-muted);font-size:14px;line-height:1.6}
+.pl-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
+.pl-action{display:inline-flex;align-items:center;justify-content:center;padding:12px 16px;border-radius:11px;background:#7c3aed;color:white;text-decoration:none;font-size:13px;font-weight:800}
+.pl-action.secondary{border:1px solid var(--pl-line);background:var(--pl-card);color:var(--pl-text)}
+@media(max-width:600px){.pl-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.pl-metric{padding:17px}}
+</style>
+</head>
+<body class="pl-page" data-page="dashboard">
+<main class="pl-content">
+  <span class="pl-eyebrow">YOUR LEARNING AT A GLANCE</span>
+  <h1 class="pl-page-title">Your dashboard</h1>
+  <p class="pl-lead" id="welcomeText">Your saved learning activity will appear here when your account is ready.</p>
+
+  <section class="pl-summary-grid" aria-label="Learning statistics">
+    <article class="pl-metric"><strong id="xpValue">—</strong><span>Total XP</span></article>
+    <article class="pl-metric"><strong id="lessonValue">—</strong><span>Lessons completed</span></article>
+    <article class="pl-metric"><strong id="quizValue">—</strong><span>Quizzes mastered</span></article>
+    <article class="pl-metric"><strong id="challengeValue">—</strong><span>Challenges completed</span></article>
+    <article class="pl-metric"><strong id="streakValue">—</strong><span>Current streak</span></article>
+  </section>
+
+  <section class="pl-progress-card" aria-labelledby="progressTitle">
+    <span class="pl-eyebrow">PYTHON LEARNING PATH</span>
+    <h2 id="progressTitle">Your lesson progress</h2>
+    <p id="progressText" class="pl-status">Waiting for your account…</p>
+    <div class="pl-progress-track" role="progressbar" aria-label="Lesson completion" aria-valuemin="0" aria-valuemax="14" aria-valuenow="0" id="progressBar">
+      <div class="pl-progress-fill" id="progressFill"></div>
+    </div>
+  </section>
+
+  <p class="pl-status" id="pageStatus" role="status" aria-live="polite">Checking your saved account…</p>
+  <div class="pl-actions">
+    <a class="pl-action" href="../#learn">Continue learning</a>
+    <a class="pl-action secondary" href="../#playground">Open Python playground</a>
+    <button class="pl-action secondary" id="refreshButton" type="button">Refresh progress</button>
+  </div>
+</main>
+<script src="../shared/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../shared/session.js"></script>
+<script src="../shared/navigation.js"></script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const TOTAL_LESSONS = 14;
+  const status = $("pageStatus");
+  const showGuest = () => {
+    $("welcomeText").textContent = "Sign in to see progress saved to your PyLearn account. You can still explore lessons as a guest.";
+    status.textContent = "You are browsing as a guest. Your account progress has not been changed.";
+    ["xpValue","lessonValue","quizValue","challengeValue","streakValue"].forEach(id => $(id).textContent = "—");
+    $("progressText").textContent = "Sign in to load your saved learning path.";
+    $("progressFill").style.width = "0%";
+    $("progressBar").setAttribute("aria-valuenow","0");
+  };
+  async function loadSummary() {
+    const button = $("refreshButton");
+    button.disabled = true;
+    status.textContent = "Loading your saved progress…";
+    try {
+      const user = await window.PyLearnSession.getUser();
+      if (!user) { showGuest(); return; }
+      const summary = await window.PyLearnSession.getLearningSummary();
+      if (!summary) { showGuest(); return; }
+      $("welcomeText").textContent = "Signed in as " + (user.email || "your PyLearn account") + ". These numbers come from your saved account data.";
+      $("xpValue").textContent = summary.xp.toLocaleString();
+      $("lessonValue").textContent = summary.lessonsCompleted + "/" + TOTAL_LESSONS;
+      $("quizValue").textContent = summary.quizzesMastered + "/" + TOTAL_LESSONS;
+      $("challengeValue").textContent = summary.challengesCompleted + "/" + TOTAL_LESSONS;
+      $("streakValue").textContent = summary.streak + (summary.streak === 1 ? " day" : " days");
+      const percent = Math.round(summary.lessonsCompleted / TOTAL_LESSONS * 100);
+      $("progressText").textContent = percent + "% complete · " + summary.lessonsCompleted + " of " + TOTAL_LESSONS + " lessons completed.";
+      $("progressFill").style.width = percent + "%";
+      $("progressBar").setAttribute("aria-valuenow", String(summary.lessonsCompleted));
+      status.textContent = "Your saved progress has loaded.";
+    } catch (error) {
+      console.error("Could not load PyLearn dashboard:", error);
+      status.textContent = "We couldn't load your progress right now. Check your connection and try again.";
+    } finally {
+      button.disabled = false;
+    }
+  }
+  $("refreshButton").addEventListener("click", loadSummary);
+  window.PyLearnSession.ready.then(loadSummary);
+  window.PyLearnSession.subscribe(user => { if (!user) showGuest(); });
+})();
+</script>
+</body>
+</html>
