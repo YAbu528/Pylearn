@@ -527,7 +527,7 @@ async function initializeAuth() {
     const { data, error } = await supabaseClient.auth.signUp({
       email: $("signUpEmail").value.trim(),
       password: $("signUpPassword").value,
-      options: { emailRedirectTo: "https://yabu528.github.io/Pylearn/" }
+      options: { emailRedirectTo: window.PyLearnConfig.homeUrl() }
     });
     button.disabled = false;
     button.textContent = "Create account";
@@ -1020,7 +1020,7 @@ function closeCelebration(){
 }
 
 function makeWorker(){
-  const worker=new Worker("python-worker.js", {type:"module"});
+  const worker=new Worker(window.PyLearnConfig.asset("python-worker.js"), {type:"module"});
   pythonWorker=worker;
   worker.onmessage=(e)=>{
     const m=e.data||{};
