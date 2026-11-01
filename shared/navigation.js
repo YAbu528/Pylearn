@@ -49,11 +49,11 @@
     logo.src = config.asset(value === "light" ? "assets/pylearn-logo-light.png" : "assets/pylearn-logo-dark.png");
   };
   let savedTheme = "dark";
-  try { savedTheme = localStorage.getItem("pylearn_theme") || "dark"; } catch {}
+  try { savedTheme = localStorage.getItem("pylearn_prod_theme") || "dark"; } catch {}
   applyTheme(savedTheme);
   theme.addEventListener("click",() => {
     const next = document.body.classList.contains("light") ? "dark" : "light";
-    try { localStorage.setItem("pylearn_theme",next); } catch {}
+    try { localStorage.setItem("pylearn_prod_theme",next); } catch {}
     applyTheme(next);
   });
   actions.append(theme);
