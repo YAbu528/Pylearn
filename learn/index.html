@@ -14,7 +14,7 @@
 .pl-path-track{height:9px;flex:1;max-width:340px;background:var(--pl-line);border-radius:20px;overflow:hidden}
 .pl-path-track i{display:block;height:100%;width:0;background:#8b5cf6;border-radius:20px;transition:width .25s}
 .pl-lesson-list{display:grid;gap:10px}
-.pl-lesson{display:grid;grid-template-columns:46px minmax(0,1fr) auto;align-items:center;gap:14px;padding:16px;border:1px solid var(--pl-line);border-radius:15px;background:var(--pl-card)}
+.pl-lesson{display:grid;text-decoration:none;color:inherit;transition:border-color .15s}.pl-lesson:hover{border-color:#8b5cf6}.pl-lesson{display:grid;grid-template-columns:46px minmax(0,1fr) auto;align-items:center;gap:14px;padding:16px;border:1px solid var(--pl-line);border-radius:15px;background:var(--pl-card)}
 .pl-lesson-number{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:rgba(139,92,246,.14);color:#a78bfa;font-weight:850}
 .pl-lesson h2{margin:0;font-size:15px;line-height:1.4}.pl-lesson p{margin:5px 0 0;color:var(--pl-muted);font-size:12px;line-height:1.5}
 .pl-lesson-status{font-size:11px;font-weight:800;color:var(--pl-muted);white-space:nowrap}
@@ -71,7 +71,7 @@
       const item = byId.get(index);
       const done = !!item?.completed;
       const state = done ? "Completed" : "Not completed yet";
-      return '<article class="pl-lesson"><span class="pl-lesson-number">'+String(index+1).padStart(2,"0")+'</span><div><h2>'+lesson[0]+'</h2><p>'+lesson[1]+'</p></div><span class="pl-lesson-status '+(done?"done":"")+'">'+(done?"✓ ":"")+state+'</span></article>';
+      return '<a class="pl-lesson" href="../lesson/?id='+(index+1)+'"><span class="pl-lesson-number">'+String(index+1).padStart(2,"0")+'</span><div><h2>'+lesson[0]+'</h2><p>'+lesson[1]+'</p></div><span class="pl-lesson-status '+(done?"done":"")+'">'+(done?"✓ ":"")+state+' · Open →</span></a>';
     }).join("");
     const completed = lessons.filter((_,index) => byId.get(index)?.completed).length;
     document.getElementById("pathCount").textContent = completed+" / "+lessons.length;
