@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#11121b">
+<title>Python Learning Path | PyLearn</title>
+<meta name="description" content="Explore the 14-step PyLearn Python curriculum and see your saved lesson progress.">
+<link rel="canonical" href="https://yabu528.github.io/Pylearn/learn/">
+<link rel="stylesheet" href="../shared/navigation.css">
+<style>
+.pl-path-summary{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:26px 0 20px;padding:19px 21px;border:1px solid var(--pl-line);border-radius:16px;background:var(--pl-card)}
+.pl-path-summary strong{font-size:25px}.pl-path-summary span{display:block;color:var(--pl-muted);font-size:13px;margin-top:4px}
+.pl-path-track{height:9px;flex:1;max-width:340px;background:var(--pl-line);border-radius:20px;overflow:hidden}
+.pl-path-track i{display:block;height:100%;width:0;background:#8b5cf6;border-radius:20px;transition:width .25s}
+.pl-lesson-list{display:grid;gap:10px}
+.pl-lesson{display:grid;grid-template-columns:46px minmax(0,1fr) auto;align-items:center;gap:14px;padding:16px;border:1px solid var(--pl-line);border-radius:15px;background:var(--pl-card)}
+.pl-lesson-number{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:rgba(139,92,246,.14);color:#a78bfa;font-weight:850}
+.pl-lesson h2{margin:0;font-size:15px;line-height:1.4}.pl-lesson p{margin:5px 0 0;color:var(--pl-muted);font-size:12px;line-height:1.5}
+.pl-lesson-status{font-size:11px;font-weight:800;color:var(--pl-muted);white-space:nowrap}
+.pl-lesson-status.done{color:#22c55e}
+.pl-path-note{margin-top:20px;padding:16px;border-radius:14px;background:var(--pl-card);border:1px solid var(--pl-line);color:var(--pl-muted);font-size:13px;line-height:1.6}
+.pl-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.pl-action{display:inline-flex;align-items:center;padding:12px 16px;border-radius:11px;background:#7c3aed;color:white;text-decoration:none;font-size:13px;font-weight:800}
+.pl-action.secondary{border:1px solid var(--pl-line);background:var(--pl-card);color:var(--pl-text)}
+@media(max-width:600px){.pl-path-summary{align-items:flex-start;flex-direction:column}.pl-path-track{width:100%;max-width:none}.pl-lesson{grid-template-columns:38px minmax(0,1fr);gap:11px;padding:13px}.pl-lesson-number{width:36px;height:36px}.pl-lesson-status{grid-column:2}}
+</style>
+</head>
+<body class="pl-page" data-page="learn">
+<main class="pl-content">
+  <span class="pl-eyebrow">YOUR PYTHON CURRICULUM</span>
+  <h1 class="pl-page-title">Learning path</h1>
+  <p class="pl-lead">Fourteen lessons take you from your first Python variables to working with APIs and JSON. Your saved completion marks are shown when you sign in.</p>
+  <section class="pl-path-summary" aria-label="Overall lesson progress">
+    <div><strong id="pathCount">— / 14</strong><span id="pathCaption">Checking saved progress…</span></div>
+    <div class="pl-path-track" role="progressbar" aria-label="Curriculum completion" aria-valuemin="0" aria-valuemax="14" aria-valuenow="0" id="pathBar"><i id="pathFill"></i></div>
+  </section>
+  <section class="pl-lesson-list" id="lessonList" aria-label="Fourteen Python lessons"></section>
+  <p class="pl-path-note" id="pathStatus" role="status" aria-live="polite">Checking your account…</p>
+  <div class="pl-actions">
+    <a class="pl-action" href="../#learn">Open the existing lesson library</a>
+    <a class="pl-action secondary" href="../dashboard/">View dashboard</a>
+  </div>
+</main>
+<script src="../shared/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../shared/session.js"></script>
+<script src="../shared/navigation.js"></script>
+<script>
+(() => {
+  const lessons = [
+    ["Python Basics: Variables and print()","Name values with variables and display information using print()."],
+    ["Data Types: Strings, Integers and Floats","Understand text, whole numbers, decimal numbers, and type()."],
+    ["Operators and input()","Use arithmetic operators, receive input, and convert values."],
+    ["Conditions: if, elif and else","Make decisions with conditions and comparison operators."],
+    ["Loops: for and while","Repeat instructions with for, while, and range()."],
+    ["Functions: Reusable Code","Create functions with parameters, arguments, and return values."],
+    ["Lists and Dictionaries","Store collections and access values by index or key."],
+    ["Errors and Modules","Recognize common errors, import modules, and handle exceptions."],
+    ["String Skills","Use indexing, slicing, string methods, and f-strings."],
+    ["Tuples and Sets","Work with ordered immutable data and unique values."],
+    ["List Comprehensions","Build lists with concise expressions and optional filters."],
+    ["File Handling","Read and write files with open() and safe context management."],
+    ["Object-Oriented Python","Understand classes, objects, methods, __init__, and self."],
+    ["APIs and JSON","Understand API data and parse JSON into Python structures."]
+  ];
+  const list = document.getElementById("lessonList");
+  const render = progress => {
+    const byId = new Map((progress || []).map(item => [item.lessonId,item]));
+    list.innerHTML = lessons.map((lesson,index) => {
+      const item = byId.get(index);
+      const done = !!item?.completed;
+      const state = done ? "Completed" : "Not completed yet";
+      return '<article class="pl-lesson"><span class="pl-lesson-number">'+String(index+1).padStart(2,"0")+'</span><div><h2>'+lesson[0]+'</h2><p>'+lesson[1]+'</p></div><span class="pl-lesson-status '+(done?"done":"")+'">'+(done?"✓ ":"")+state+'</span></article>';
+    }).join("");
+    const completed = lessons.filter((_,index) => byId.get(index)?.completed).length;
+    document.getElementById("pathCount").textContent = completed+" / "+lessons.length;
+    document.getElementById("pathCaption").textContent = Math.round(completed/lessons.length*100)+"% of lessons completed";
+    document.getElementById("pathFill").style.width = (completed/lessons.length*100)+"%";
+    document.getElementById("pathBar").setAttribute("aria-valuenow",String(completed));
+  };
+  async function load() {
+    const status = document.getElementById("pathStatus");
+    try {
+      const user = await window.PyLearnSession.getUser();
+      if (!user) {
+        render([]);
+        status.textContent = "You are browsing as a guest. Sign in to see completion saved to your account.";
+        return;
+      }
+      const progress = await window.PyLearnSession.getLearningPath();
+      render(progress || []);
+      status.textContent = "Showing lesson completion saved to your PyLearn account. Quiz and challenge details remain available in the existing lesson experience.";
+    } catch(error) {
+      console.error("Could not load learning path:",error);
+      status.textContent = "We couldn't load saved progress. Check your connection and refresh the page.";
+    }
+  }
+  window.PyLearnSession.ready.then(load);
+  window.PyLearnSession.subscribe(user => { if (!user) load(); });
+})();
+</script>
+</body>
+</html>
