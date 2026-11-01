@@ -47,6 +47,20 @@
       if (initialized) listener(currentUser);
       return () => listeners.delete(listener);
     },
+    getLearningPath: async () => {
+      const user = await window.PyLearnSession.getUser();
+      if (!user?.id) return null;
+      const { data, error } = await client.from("lesson_progress")
+        .select("lesson_id,completed,quiz_best_score,challenge_completed")
+        .eq("user_id", user.id);
+      if (error) throw error;
+      return (data || []).map(row => ({
+        lessonId: Number(row.lesson_id),
+        completed: !!row.completed,
+        quizMastered: Number(row.quiz_best_score || 0) >= 100,
+        challengeCompleted: !!row.challenge_completed
+      })).filter(row => Number.isInteger(row.lessonId) && row.lessonId >= 0 && row.lessonId < 14);
+    },
     getLearningSummary: async () => {
       const user = await window.PyLearnSession.getUser();
       if (!user?.id) return null;
