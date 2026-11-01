@@ -39,6 +39,10 @@
   items.forEach(item => nav.append(makeLink(item)));
   const actions = document.createElement("div");
   actions.className = "pl-header-actions";
+  const account = document.createElement("span");
+  account.className = "pl-account-status";
+  account.textContent = "Checking account…";
+  account.setAttribute("aria-live", "polite");
   const theme = document.createElement("button");
   theme.className = "pl-theme-toggle";
   theme.type = "button";
@@ -56,7 +60,7 @@
     try { localStorage.setItem("pylearn_prod_theme",next); } catch {}
     applyTheme(next);
   });
-  actions.append(theme);
+  actions.append(account, theme);
   header.append(brand,nav,actions);
   shell.append(header);
 
@@ -78,4 +82,13 @@
   });
   shell.append(mobile);
   document.body.prepend(shell);
+
+  if (window.PyLearnSession) {
+    window.PyLearnSession.subscribe(user => {
+      account.textContent = user ? "Signed in" : "Guest";
+      account.title = user?.email || "Browsing without an account";
+    });
+  } else {
+    account.textContent = "Guest";
+  }
 })();
