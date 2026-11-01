@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#11121b">
+<title>Python Lesson | PyLearn</title>
+<meta name="description" content="Learn Python step by step with explanations, examples, quick checks, and practical challenges.">
+<link rel="canonical" href="https://yabu528.github.io/Pylearn/lesson/">
+<link rel="stylesheet" href="../shared/navigation.css">
+<style>
+.lesson-layout{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:22px;align-items:start}
+.lesson-main{min-width:0}.lesson-panel{padding:clamp(20px,4vw,32px);border:1px solid var(--pl-line);border-radius:18px;background:var(--pl-card)}
+.lesson-meta{display:flex;gap:9px;flex-wrap:wrap;align-items:center;color:var(--pl-muted);font-size:11px;font-weight:850;letter-spacing:.08em}
+.lesson-chip{padding:6px 9px;border-radius:20px;background:rgba(139,92,246,.14);color:#a78bfa}
+.lesson-panel h1{font-size:clamp(27px,4vw,39px);line-height:1.12;letter-spacing:-.035em;margin:16px 0 12px}
+.lesson-intro{color:var(--pl-muted);font-size:15px;line-height:1.75}
+.lesson-section{margin-top:25px}.lesson-section h2{font-size:17px;margin:0 0 10px}.lesson-section p{color:var(--pl-muted);font-size:14px;line-height:1.75}
+.lesson-code{overflow:auto;padding:17px;border-radius:12px;background:#0b0c13;color:#e5e7eb;font:13px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre}
+.lesson-objectives{padding-left:20px;color:var(--pl-muted);font-size:14px;line-height:1.9}
+.lesson-side{position:sticky;top:88px;padding:18px;border:1px solid var(--pl-line);border-radius:16px;background:var(--pl-card)}
+.lesson-side h2{font-size:14px;margin:0 0 12px}.lesson-side a{display:block;padding:9px 10px;border-radius:9px;color:var(--pl-muted);font-size:12px;text-decoration:none}.lesson-side a.active{background:rgba(139,92,246,.14);color:#c4b5fd;font-weight:800}
+.quiz-option{display:block;width:100%;text-align:left;margin:8px 0;padding:12px;border:1px solid var(--pl-line);border-radius:10px;background:transparent;color:var(--pl-text);font:inherit;font-size:13px}
+.quiz-option:focus,.quiz-option:hover{border-color:#8b5cf6}.quiz-feedback{min-height:42px;color:var(--pl-muted);font-size:13px;line-height:1.6}
+.lesson-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:25px}.pl-action{display:inline-flex;padding:11px 15px;border-radius:10px;background:#7c3aed;color:white;text-decoration:none;font-size:13px;font-weight:800}.pl-action.secondary{background:transparent;border:1px solid var(--pl-line);color:var(--pl-text)}
+.challenge-box{padding:17px;border:1px solid var(--pl-line);border-radius:13px;background:rgba(139,92,246,.06)}
+@media(max-width:760px){.lesson-layout{grid-template-columns:1fr}.lesson-side{position:static;order:-1}.lesson-side nav{display:flex;overflow-x:auto;gap:5px}.lesson-side a{white-space:nowrap}}
+</style>
+</head>
+<body class="pl-page" data-page="lesson">
+<main class="pl-content">
+  <span class="pl-eyebrow">LESSON WORKSPACE</span>
+  <div class="lesson-layout">
+    <article class="lesson-main lesson-panel">
+      <div class="lesson-meta"><span id="lessonNumber">LESSON —</span><span class="lesson-chip" id="lessonLevel">LEVEL</span></div>
+      <h1 id="lessonTitle">Loading lesson…</h1>
+      <p class="lesson-intro" id="lessonIntro"></p>
+      <section class="lesson-section"><h2>💡 The core idea</h2><p id="lessonIdea"></p></section>
+      <section class="lesson-section"><h2>🌱 Think of it this way</h2><p id="lessonAnalogy"></p></section>
+      <section class="lesson-section"><h2>⌨️ Worked example</h2><pre class="lesson-code" id="lessonCode"></pre></section>
+      <section class="lesson-section"><h2>🎯 What you will learn</h2><ul class="lesson-objectives" id="lessonObjectives"></ul></section>
+      <section class="lesson-section"><h2>🧠 Quick understanding check</h2><p id="quizQuestion"></p><div id="quizOptions"></div><p class="quiz-feedback" id="quizFeedback" role="status" aria-live="polite"></p></section>
+      <section class="lesson-section challenge-box"><h2>⚡ Practical challenge</h2><h3 id="challengeTitle"></h3><p id="challengePrompt"></p><p><strong>Hint:</strong> <span id="challengeHint"></span></p><pre class="lesson-code" id="challengeStarter"></pre></section>
+      <div class="lesson-actions"><a class="pl-action secondary" href="../learn/">← Learning path</a><a class="pl-action" id="nextLesson" href="#">Next lesson →</a><a class="pl-action secondary" href="../#playground">Open Python playground</a></div>
+      <p class="quiz-feedback" id="workspaceStatus">This new workspace is currently a read-only lesson view. Saved progress, quiz mastery, notes, bookmarks, and Python execution still use the original lesson experience.</p>
+    </article>
+    <aside class="lesson-side"><h2>YOUR LEARNING PATH</h2><nav id="lessonNav" aria-label="Lesson navigation"></nav></aside>
+  </div>
+</main>
+<script src="../shared/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../shared/session.js"></script>
+<script src="../shared/navigation.js"></script>
+<script type="module">
+import { lessons } from "../shared/curriculum.js";
+const params=new URLSearchParams(location.search);
+const requested=Number(params.get("id")||1);
+const index=Number.isInteger(requested)?Math.min(lessons.length-1,Math.max(1,requested))-1:0;
+const lesson=lessons[index];
+const byId=new Map();
+const $=id=>document.getElementById(id);
+$("lessonNumber").textContent="LESSON "+String(index+1).padStart(2,"0")+" / "+String(lessons.length).padStart(2,"0");
+$("lessonLevel").textContent=lesson.level;
+$("lessonTitle").textContent=lesson.title;
+$("lessonIntro").textContent=lesson.intro;
+$("lessonIdea").textContent=lesson.idea;
+$("lessonAnalogy").textContent=lesson.analogy;
+$("lessonCode").textContent=lesson.code;
+$("lessonObjectives").replaceChildren(...lesson.objectives.map(value=>{const li=document.createElement("li");li.textContent=value;return li;}));
+$("quizQuestion").textContent=lesson.quiz.q;
+lesson.quiz.options.forEach((option,i)=>{const button=document.createElement("button");button.className="quiz-option";button.type="button";button.textContent=option;button.addEventListener("click",()=>{$("quizFeedback").textContent=i===lesson.quiz.answer?"✓ Correct. "+lesson.quiz.explain:"Not quite. "+lesson.quiz.explain;});$("quizOptions").append(button);});
+$("challengeTitle").textContent=lesson.challenge.title;
+$("challengePrompt").textContent=lesson.challenge.prompt;
+$("challengeHint").textContent=lesson.challenge.hint;
+$("challengeStarter").textContent=lesson.challenge.starter||"No starter code is required for this challenge.";
+$("nextLesson").href=index<lessons.length-1?"?id="+(index+2):"../#projects";
+$("nextLesson").textContent=index<lessons.length-1?"Next lesson →":"Explore projects →";
+$("lessonNav").innerHTML=lessons.map((item,i)=>'<a class="'+(i===index?"active":"")+'" href="?id='+(i+1)+'">'+String(i+1).padStart(2,"0")+" · "+item.short+"</a>").join("");
+try {
+ const user=await window.PyLearnSession.getUser();
+ if(user){const progress=await window.PyLearnSession.getLearningPath();const item=(progress||[]).find(row=>row.lessonId===index);if(item?.completed)$("workspaceStatus").textContent="This lesson is marked complete in your account. The original lesson experience still handles editing notes, bookmarks, quiz/challenge records, and Python execution.";}
+} catch(error){console.warn("Lesson progress lookup failed:",error);}
+</script>
+</body>
+</html>
