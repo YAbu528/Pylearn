@@ -166,6 +166,27 @@
       if (reward.error) throw reward.error;
       return true;
     },
+    recordChallengeCompletion: async lessonId => {
+      const user = await window.PyLearnSession.getUser();
+      if (!user?.id) throw new Error("Sign in to save challenge completion.");
+      const id = String(lessonId);
+      const { data: existing, error: readError } = await client.from("lesson_progress")
+        .select("completed,quiz_best_score,challenge_completed")
+        .eq("user_id", user.id).eq("lesson_id", id).maybeSingle();
+      if (readError) throw readError;
+      if (existing?.challenge_completed) return { alreadyCompleted: true };
+      const { error } = await client.from("lesson_progress").upsert({
+        user_id: user.id, lesson_id: id, completed: !!existing?.completed,
+        quiz_best_score: Number(existing?.quiz_best_score || 0),
+        challenge_completed: true
+      }, { onConflict: "user_id,lesson_id" });
+      if (error) throw error;
+      const reward = await client.functions.invoke("award-learning-reward", {
+        body: { lesson_id: id, event_type: "challenge" }
+      });
+      if (reward.error) throw reward.error;
+      return { alreadyCompleted: false };
+    },
     signOut: async () => {
       const { error } = await client.auth.signOut();
       if (error) throw error;
