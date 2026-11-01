@@ -9,7 +9,7 @@
     {id:"home",label:"Home",icon:"⌂",href:home},
     {id:"discover",label:"Discover",icon:"✦",href:config.url("discover")},
     {id:"dashboard",label:"Dashboard",icon:"▦",href:config.url("dashboard")},
-    {id:"learn",label:"Learn",icon:"▤",href:home+"#learn"},
+    {id:"learn",label:"Learn",icon:"▤",href:config.url("learn")},
     {id:"code",label:"Code",icon:"⌘",href:home+"#playground"},
     {id:"projects",label:"Projects",icon:"◇",href:home+"#projects"}
   ];
