@@ -174,7 +174,6 @@
         .select("completed,quiz_best_score,challenge_completed")
         .eq("user_id", user.id).eq("lesson_id", id).maybeSingle();
       if (readError) throw readError;
-      if (existing?.challenge_completed) return { alreadyCompleted: true };
       const { error } = await client.from("lesson_progress").upsert({
         user_id: user.id, lesson_id: id, completed: !!existing?.completed,
         quiz_best_score: Number(existing?.quiz_best_score || 0),
@@ -185,7 +184,7 @@
         body: { lesson_id: id, event_type: "challenge" }
       });
       if (reward.error) throw reward.error;
-      return { alreadyCompleted: false };
+      return { alreadyCompleted: !!existing?.challenge_completed };
     },
     signOut: async () => {
       const { error } = await client.auth.signOut();
