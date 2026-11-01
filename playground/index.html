@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101827"><title>Python Playground · PyLearn</title>
+<link rel="stylesheet" href="../shared/navigation.css">
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#131f32;--panel2:#18283e;--line:#2a3b54;--txt:#edf4ff;--muted:#a9b8cc;--accent:#75e0b3;--blue:#8eb7ff;--danger:#ff9c9c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.55 system-ui,sans-serif}.wrap{max-width:1100px;margin:auto;padding:26px 18px 70px}.eyebrow{color:var(--accent);font-size:.78rem;font-weight:800;letter-spacing:.13em}.intro h1{font-size:clamp(2rem,6vw,3.2rem);line-height:1.1;margin:.35rem 0}.intro p,.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(270px,.8fr);gap:18px;margin-top:24px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;min-width:0}.panel h2{font-size:1.15rem;margin:0 0 12px}.toolbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:12px 0}button,select{font:inherit;border:1px solid var(--line);border-radius:10px;padding:10px 13px;background:var(--panel2);color:var(--txt)}button{cursor:pointer}button.primary{background:var(--accent);color:#082017;border-color:var(--accent);font-weight:800}button:disabled{opacity:.55;cursor:not-allowed}select{max-width:100%}textarea,pre{width:100%;border:1px solid var(--line);border-radius:12px;background:#08101c;color:#e8f1ff;padding:14px;font:14px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere}textarea{resize:vertical;min-height:260px;tab-size:4}#output{min-height:90px;max-height:240px;overflow:auto}.status{font-size:.9rem;color:var(--muted)}.challenge-prompt{color:var(--muted)}.choice{display:block;width:100%;text-align:left;margin:8px 0}.choice.selected{border-color:var(--accent);outline:1px solid var(--accent)}.feedback{min-height:52px;padding:12px;border-radius:10px;background:var(--panel2);white-space:pre-wrap;overflow-wrap:anywhere}.feedback.good{color:var(--accent)}.feedback.bad{color:var(--danger)}.hidden{display:none!important}.field-label{display:block;margin:12px 0 6px;font-weight:700}.small-code{min-height:110px}.navline{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}.navline a{color:var(--blue)}@media(max-width:760px){.grid{grid-template-columns:1fr}.wrap{padding:20px 13px 50px}.panel{padding:15px}textarea{min-height:220px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header class="intro"><div class="eyebrow">PYTHON PLAYGROUND</div><h1>Write code. Run it. Learn by doing.</h1><p>A real Python environment powered by Pyodide, running in a separate browser worker.</p></header>
+<div class="grid">
+<section class="panel">
+<h2>⌨️ Code editor</h2>
+<div class="toolbar"><button class="primary" id="run" type="button">▶ Run Python</button><button id="starter" type="button">Load example</button><button id="clear" type="button">Clear</button><span class="status" id="engineStatus">Python engine not loaded</span></div>
+<textarea id="editor" spellcheck="false" aria-label="Python code editor">name = "PyLearn"
+print(f"Hello, {name}!")
+print("2 + 3 =", 2 + 3)</textarea>
+<label class="field-label" for="stdin">Program input (one line for each input() call)</label>
+<textarea id="stdin" class="small-code" rows="3" placeholder="Example: Kaleb"></textarea>
+<h2 style="margin-top:18px">Output</h2><pre id="output" aria-live="polite">Press Run Python to execute your code.</pre>
+<div class="toolbar"><button id="retry" type="button">Retry Python engine</button><span class="status">Tip: Ctrl + Enter runs your code.</span></div>
+</section>
+<section class="panel">
+<h2>🎯 Lesson challenge</h2>
+<p class="muted">Choose a lesson to load its original challenge and validator.</p>
+<label class="field-label" for="lessonSelect">Choose lesson</label><select id="lessonSelect" style="width:100%"></select>
+<div class="eyebrow" id="challengeMode" style="margin-top:18px">CHALLENGE</div>
+<h3 id="challengeTitle">Select a lesson</h3><p id="challengePrompt" class="challenge-prompt"></p>
+<pre id="challengePreview" class="hidden"></pre>
+<div id="challengeInput"></div>
+<div id="challengeChoices"></div>
+<div class="toolbar"><button id="hint" type="button">💡 Show hint</button><button class="primary" id="check" type="button">Check solution</button></div>
+<p id="hintText" class="muted"></p><div id="challengeResult" class="feedback" role="status" aria-live="polite">Choose a lesson and try its challenge.</div>
+<p id="saveStatus" class="status">Sign in to save challenge completion and XP.</p>
+</section>
+</div>
+<nav class="navline" aria-label="Playground navigation"><a href="../learn/">← Learning path</a><a href="../dashboard/">Dashboard</a><a href="../">Home</a></nav>
+</main>
+<script src="../shared/config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="../shared/session.js"></script><script src="../shared/navigation.js"></script>
+<script type="module">
+import {lessons} from "../shared/curriculum.js";
+const $=id=>document.getElementById(id);
+let worker=null,ready=false,loading=null,runTimer=null,selected=0,choice=null,user=null,progress=[];
+const esc=s=>String(s??"");
+lessons.forEach((l,i)=>{const o=document.createElement("option");o.value=String(i);o.textContent=(i+1)+". "+l.title;$("lessonSelect").append(o);});
+function setStatus(t){$("engineStatus").textContent=t;}
+function createWorker(){
+ worker=new Worker("../python-worker.js",{type:"module"});
+ worker.onmessage=e=>{const m=e.data||{};
+  if(m.type==="ready"){ready=true;loading=null;setStatus("● Python ready");$("output").textContent="Python is ready. Run your code whenever you're ready.";}
+  else if(m.type==="stdout"){$("output").textContent+=m.text||"";}
+  else if(m.type==="run-result"){clearTimeout(runTimer);$("output").textContent=m.output?.trim()?m.output:"Program finished with no printed output.";finishRun();}
+  else if(m.type==="run-error"){clearTimeout(runTimer);$("output").textContent=m.error||"Python error.";finishRun();}
+  else if(m.type==="check-result"&&window.__checkResolve){const done=window.__checkResolve;window.__checkResolve=null;done(m.result);}
+  else if(m.type==="error"){setStatus("Python engine error");$("output").textContent=m.error||"Python engine error.";if(window.__checkResolve){const done=window.__checkResolve;window.__checkResolve=null;done({ok:false,output:"ERROR: "+m.error});}}
+ };
+ worker.onerror=()=>{ready=false;loading=null;setStatus("Python worker failed");if(window.__checkResolve){const done=window.__checkResolve;window.__checkResolve=null;done({ok:false,output:"ERROR: Python worker failed."});}};
+ return worker;
+}
+async function initPython(retry=false){
+ if(retry){worker?.terminate();worker=null;ready=false;loading=null;clearTimeout(runTimer);}
+ if(ready)return true;if(loading)return loading;
+ setStatus("Loading Python engine…");$("output").textContent="Downloading the Python engine. This may take a little while the first time.";
+ const w=createWorker();
+ loading=new Promise(resolve=>{const timeout=setTimeout(()=>{if(worker===w){w.terminate();worker=null;}ready=false;loading=null;setStatus("Python load timed out. Check your connection and retry.");resolve(false);},60000);
+  const old=w.onmessage;w.onmessage=e=>{old(e);if(e.data?.type==="ready"){clearTimeout(timeout);resolve(true);}else if(e.data?.type==="error"){clearTimeout(timeout);resolve(false);}};
+ }).finally(()=>{if(!ready)loading=null;});
+ w.postMessage({type:"init"});return loading;
+}
+function finishRun(){$("run").disabled=false;$("run").textContent="▶ Run Python";}
+async function runCode(){
+ $("run").disabled=true;$("run").textContent="Running…";
+ if(!await initPython()){finishRun();return;}
+ $("output").textContent="";
+ const code=$("editor").value,inputs=$("stdin").value.split(/\r?\n/);
+ worker.postMessage({type:"run",code,inputs});
+ clearTimeout(runTimer);runTimer=setTimeout(()=>{worker?.terminate();worker=null;ready=false;loading=null;$("output").textContent="Execution took longer than 8 seconds and was stopped. Restarting Python…";finishRun();initPython();},8000);
+}
+function renderChallenge(){
+ selected=Number($("lessonSelect").value)||0;choice=null;const l=lessons[selected],c=l.challenge,mode=c.mode||"code";
+ $("challengeMode").textContent=({code:"✏️ CODE IT",debug:"🐛 FIX IT",predict:"🔮 PREDICT",fill:"🧩 FILL THE GAP",mcq:"🎯 CHOOSE ONE"})[mode]||"CHALLENGE";
+ $("challengeTitle").textContent=c.title;$("challengePrompt").textContent=c.prompt;$("hintText").textContent="";
+ $("challengeResult").textContent="Try the challenge, then check your answer.";$("challengeResult").className="feedback";
+ $("challengePreview").classList.toggle("hidden",mode!=="predict");$("challengePreview").textContent=mode==="predict"?(c.previewCode||c.starter||""):"";
+ $("challengeInput").replaceChildren();$("challengeChoices").replaceChildren();
+ if(mode==="mcq"){(c.options||[]).forEach((v,i)=>{const b=document.createElement("button");b.type="button";b.className="choice";b.textContent=v;b.addEventListener("click",()=>{choice=i;document.querySelectorAll(".choice").forEach((x,j)=>x.classList.toggle("selected",j===i));});$("challengeChoices").append(b);});}
+ else if(mode==="predict"){const input=document.createElement("input");input.id="answer";input.placeholder="Type the exact output you predict…";input.style.cssText="width:100%;padding:12px;border-radius:10px;background:#08101c;color:white;border:1px solid var(--line)";$("challengeInput").append(input);}
+ else if(mode==="fill"){const label=document.createElement("label");label.className="field-label";label.textContent="Your missing Python line";const area=document.createElement("textarea");area.id="fillAnswer";area.rows=3;area.placeholder="Write the missing line…";area.style.minHeight="100px";$("challengeInput").append(label,area);}
+ else {const area=document.createElement("textarea");area.id="challengeCode";area.rows=7;area.value=c.starter||"";area.setAttribute("aria-label","Challenge Python code");$("challengeInput").append(area);}
+ const completed=progress.find(p=>p.lessonId===selected)?.challengeCompleted;
+ $("saveStatus").textContent=completed?"✓ This challenge is already saved as completed.":user?"Signed in. A correct result can be saved to your account.":"Sign in to save challenge completion and XP.";
+}
+$("lessonSelect").addEventListener("change",renderChallenge);
+$("hint").addEventListener("click",()=>{$("hintText").textContent="💡 "+lessons[selected].challenge.hint;});
+async function checkChallenge(){
+ const c=lessons[selected].challenge,mode=c.mode||"code";let result={ok:false,output:""};
+ $("check").disabled=true;$("challengeResult").textContent="Checking…";
+ try{
+  if(mode==="mcq"){if(choice===null)throw new Error("Choose an answer first.");result=choice===c.answer?{ok:true,output:c.options[choice]}:{ok:false,output:"That is not the correct answer yet."};}
+  else if(mode==="predict"){const a=$("answer").value.trim();if(!a)throw new Error("Type your predicted output first.");result=a.toLowerCase()===String(c.solution).trim().toLowerCase()?{ok:true,output:a}:{ok:false,output:"The predicted output does not match yet."};}
+  else {
+   const code=mode==="fill"?(c.starter||"").replace("{{answer}}",$("fillAnswer").value.trim()):$("challengeCode").value;
+   if(!code.trim()||(mode==="fill"&&!$("fillAnswer").value.trim()))throw new Error("Write your solution first.");
+   if(!await initPython())throw new Error("Python engine is not ready. Retry the engine and try again.");
+   result=await new Promise(resolve=>{window.__checkResolve=resolve;worker.postMessage({type:"check",code,validatorIndex:selected});setTimeout(()=>{if(window.__checkResolve===resolve){window.__checkResolve=null;resolve({ok:false,output:"ERROR: Challenge check timed out."});}},10000);});
+  }
+  $("challengeResult").textContent=result.ok?"✓ Correct! "+(result.output||"Your solution passed."):(result.output||"Not quite. Try again, or use the hint.");
+  $("challengeResult").className="feedback "+(result.ok?"good":"bad");
+  if(result.ok&&user&&!progress.find(p=>p.lessonId===selected)?.challengeCompleted){
+   try{await window.PyLearnSession.recordChallengeCompletion(selected);progress.push({lessonId:selected,challengeCompleted:true});$("saveStatus").textContent="✓ Challenge completion saved to your account.";}
+   catch(error){$("saveStatus").textContent="Your answer is correct, but saving the reward failed: "+error.message+". You can retry by checking again.";}
+  }else if(result.ok&&!user){$("saveStatus").textContent="Correct! Sign in to save this achievement and earn XP.";}
+ }catch(error){$("challengeResult").textContent=error.message;$("challengeResult").className="feedback bad";}
+ finally{$("check").disabled=false;}
+}
+$("check").addEventListener("click",checkChallenge);
+$("run").addEventListener("click",runCode);$("starter").addEventListener("click",()=>{$("editor").value=lessons[selected].code;});$("clear").addEventListener("click",()=>{$("editor").value="";});
+$("retry").addEventListener("click",()=>initPython(true));
+$("editor").addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){e.preventDefault();runCode();}});
+try{user=await window.PyLearnSession.getUser();if(user)progress=await window.PyLearnSession.getLearningPath()||[];}catch(e){console.warn("Could not load learning progress",e);}
+renderChallenge();
+</script>
+</body></html>
