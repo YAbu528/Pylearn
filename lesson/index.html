@@ -40,9 +40,11 @@
       <section class="lesson-section"><h2>⌨️ Worked example</h2><pre class="lesson-code" id="lessonCode"></pre></section>
       <section class="lesson-section"><h2>🎯 What you will learn</h2><ul class="lesson-objectives" id="lessonObjectives"></ul></section>
       <section class="lesson-section"><h2>🧠 Quick understanding check</h2><p id="quizQuestion"></p><div id="quizOptions"></div><p class="quiz-feedback" id="quizFeedback" role="status" aria-live="polite"></p></section>
+      <section class="lesson-section"><h2>📝 Your lesson notes</h2><p>Private notes saved to your signed-in PyLearn account.</p><textarea id="lessonNote" rows="5" placeholder="Write what you want to remember…" style="width:100%;box-sizing:border-box;padding:13px;border:1px solid var(--pl-line);border-radius:12px;background:var(--pl-bg);color:var(--pl-text);font:inherit;resize:vertical"></textarea><div class="lesson-actions"><button class="pl-action" id="saveNote" type="button">Save note</button><button class="pl-action secondary" id="clearNote" type="button">Clear note</button><button class="pl-action secondary" id="bookmarkLesson" type="button">☆ Bookmark lesson</button></div><p class="quiz-feedback" id="toolsStatus" role="status" aria-live="polite">Sign in to save notes and bookmarks.</p></section>
+      <section class="lesson-section"><h2>🏁 Lesson progress</h2><p id="completionStatus">Complete the quick check correctly, then mark this lesson complete.</p><button class="pl-action" id="completeLesson" type="button" disabled>Mark lesson complete</button></section>
       <section class="lesson-section challenge-box"><h2>⚡ Practical challenge</h2><h3 id="challengeTitle"></h3><p id="challengePrompt"></p><p><strong>Hint:</strong> <span id="challengeHint"></span></p><pre class="lesson-code" id="challengeStarter"></pre></section>
       <div class="lesson-actions"><a class="pl-action secondary" href="../learn/">← Learning path</a><a class="pl-action" id="nextLesson" href="#">Next lesson →</a><a class="pl-action secondary" href="../#playground">Open Python playground</a></div>
-      <p class="quiz-feedback" id="workspaceStatus">This new workspace is currently a read-only lesson view. Saved progress, quiz mastery, notes, bookmarks, and Python execution still use the original lesson experience.</p>
+      <p class="quiz-feedback" id="workspaceStatus">Your lesson progress, quiz mastery, notes, and bookmarks can now sync here. Python execution and challenge verification remain in the original experience.</p>
     </article>
     <aside class="lesson-side"><h2>YOUR LEARNING PATH</h2><nav id="lessonNav" aria-label="Lesson navigation"></nav></aside>
   </div>
@@ -57,7 +59,6 @@ const params=new URLSearchParams(location.search);
 const requested=Number(params.get("id")||1);
 const index=Number.isInteger(requested)?Math.min(lessons.length-1,Math.max(1,requested))-1:0;
 const lesson=lessons[index];
-const byId=new Map();
 const $=id=>document.getElementById(id);
 $("lessonNumber").textContent="LESSON "+String(index+1).padStart(2,"0")+" / "+String(lessons.length).padStart(2,"0");
 $("lessonLevel").textContent=lesson.level;
@@ -68,7 +69,47 @@ $("lessonAnalogy").textContent=lesson.analogy;
 $("lessonCode").textContent=lesson.code;
 $("lessonObjectives").replaceChildren(...lesson.objectives.map(value=>{const li=document.createElement("li");li.textContent=value;return li;}));
 $("quizQuestion").textContent=lesson.quiz.q;
-lesson.quiz.options.forEach((option,i)=>{const button=document.createElement("button");button.className="quiz-option";button.type="button";button.textContent=option;button.addEventListener("click",()=>{$("quizFeedback").textContent=i===lesson.quiz.answer?"✓ Correct. "+lesson.quiz.explain:"Not quite. "+lesson.quiz.explain;});$("quizOptions").append(button);});
+let quizCorrect=false;
+let lessonTools=null;
+const setToolsStatus=message=>{$("toolsStatus").textContent=message;};
+const refreshProgressControls=()=>{
+ $("completeLesson").disabled=!lessonTools?.quizMastered||!!lessonTools?.completed;
+ $("completeLesson").textContent=lessonTools?.completed?"✓ Lesson completed":"Mark lesson complete";
+ $("completionStatus").textContent=lessonTools?.completed?"This lesson is completed and saved to your account.":lessonTools?.quizMastered?"Quick check mastered. You can now mark this lesson complete.":"Complete the quick check correctly, then mark this lesson complete.";
+ $("bookmarkLesson").textContent=lessonTools?.bookmarked?"★ Bookmarked":"☆ Bookmark lesson";
+};
+lesson.quiz.options.forEach((option,i)=>{const button=document.createElement("button");button.className="quiz-option";button.type="button";button.textContent=option;button.addEventListener("click",async()=>{
+ if(quizCorrect)return;
+ if(i===lesson.quiz.answer){
+  quizCorrect=true;
+  $("quizFeedback").textContent="✓ Correct. "+lesson.quiz.explain;
+  if(lessonTools){
+   try{await window.PyLearnSession.recordQuizMastery(index);lessonTools.quizMastered=true;setToolsStatus("Quiz mastery saved to your account.");}
+   catch(error){setToolsStatus("Could not save quiz mastery: "+error.message);}
+  } else {$("quizFeedback").textContent+=" Sign in to save mastery and earn XP.";}
+  refreshProgressControls();
+ } else {$("quizFeedback").textContent="Not quite. "+lesson.quiz.explain;}
+ });$("quizOptions").append(button);});
+$("saveNote").addEventListener("click",async()=>{
+ try{await window.PyLearnSession.saveLessonNote(index,$("lessonNote").value);setToolsStatus("Note saved to your account.");}
+ catch(error){setToolsStatus(error.message||"Could not save note.");}
+});
+$("clearNote").addEventListener("click",async()=>{
+ $("lessonNote").value="";
+ try{await window.PyLearnSession.saveLessonNote(index,"");setToolsStatus("Note cleared from your account.");}
+ catch(error){setToolsStatus(error.message||"Could not clear note.");}
+});
+$("bookmarkLesson").addEventListener("click",async()=>{
+ if(!lessonTools){setToolsStatus("Sign in to save bookmarks.");return;}
+ const next=!lessonTools.bookmarked;
+ try{await window.PyLearnSession.setLessonBookmark(index,next);lessonTools.bookmarked=next;refreshProgressControls();setToolsStatus(next?"Lesson bookmarked.":"Bookmark removed.");}
+ catch(error){setToolsStatus(error.message||"Could not update bookmark.");}
+});
+$("completeLesson").addEventListener("click",async()=>{
+ $("completeLesson").disabled=true;
+ try{await window.PyLearnSession.completeLesson(index);lessonTools.completed=true;refreshProgressControls();setToolsStatus("Lesson completion saved.");}
+ catch(error){setToolsStatus(error.message||"Could not save completion.");refreshProgressControls();}
+});
 $("challengeTitle").textContent=lesson.challenge.title;
 $("challengePrompt").textContent=lesson.challenge.prompt;
 $("challengeHint").textContent=lesson.challenge.hint;
@@ -78,8 +119,17 @@ $("nextLesson").textContent=index<lessons.length-1?"Next lesson →":"Explore pr
 $("lessonNav").innerHTML=lessons.map((item,i)=>'<a class="'+(i===index?"active":"")+'" href="?id='+(i+1)+'">'+String(i+1).padStart(2,"0")+" · "+item.short+"</a>").join("");
 try {
  const user=await window.PyLearnSession.getUser();
- if(user){const progress=await window.PyLearnSession.getLearningPath();const item=(progress||[]).find(row=>row.lessonId===index);if(item?.completed)$("workspaceStatus").textContent="This lesson is marked complete in your account. The original lesson experience still handles editing notes, bookmarks, quiz/challenge records, and Python execution.";}
-} catch(error){console.warn("Lesson progress lookup failed:",error);}
+ if(user){
+  lessonTools=await window.PyLearnSession.getLessonTools(index);
+  $("lessonNote").value=lessonTools?.note||"";
+  if(lessonTools?.quizMastered){quizCorrect=true;$("quizFeedback").textContent="✓ Your account has already mastered this quick check.";}
+  refreshProgressControls();
+  setToolsStatus("Signed in. Notes, bookmarks, and progress are connected to your account.");
+ } else {
+  $("saveNote").disabled=true;$("clearNote").disabled=true;
+  $("toolsStatus").textContent="Guest mode: you can read and answer, but sign in to save notes, bookmarks, or progress.";
+ }
+} catch(error){console.warn("Lesson account data could not be loaded:",error);setToolsStatus("Could not load saved lesson data: "+error.message);}
 </script>
 </body>
 </html>
