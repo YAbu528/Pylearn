@@ -47,6 +47,29 @@
       if (initialized) listener(currentUser);
       return () => listeners.delete(listener);
     },
+    getLearningSummary: async () => {
+      const user = await window.PyLearnSession.getUser();
+      if (!user?.id) return null;
+      const [progressResult, statsResult] = await Promise.all([
+        client.from("lesson_progress")
+          .select("lesson_id,completed,quiz_best_score,challenge_completed")
+          .eq("user_id", user.id),
+        client.from("user_stats")
+          .select("xp,streak,last_active_date")
+          .eq("user_id", user.id)
+          .maybeSingle()
+      ]);
+      if (progressResult.error) throw progressResult.error;
+      if (statsResult.error) throw statsResult.error;
+      const rows = progressResult.data || [];
+      return {
+        lessonsCompleted: rows.filter(row => row.completed).length,
+        quizzesMastered: rows.filter(row => Number(row.quiz_best_score || 0) >= 100).length,
+        challengesCompleted: rows.filter(row => row.challenge_completed).length,
+        xp: Number(statsResult.data?.xp || 0),
+        streak: Number(statsResult.data?.streak || 0)
+      };
+    },
     signOut: async () => {
       const { error } = await client.auth.signOut();
       if (error) throw error;
