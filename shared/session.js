@@ -186,6 +186,52 @@
       if (reward.error) throw reward.error;
       return { alreadyCompleted: !!existing?.challenge_completed };
     },
+    signIn: async (email, password) => {
+      const { data, error } = await client.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      return data;
+    },
+    signUp: async (email, password) => {
+      const { data, error } = await client.auth.signUp({
+        email, password,
+        options: { emailRedirectTo: config.homeUrl() + "welcome/" }
+      });
+      if (error) throw error;
+      return data;
+    },
+    signInWithProvider: async provider => {
+      const { data, error } = await client.auth.signInWithOAuth({
+        provider,
+        options: { redirectTo: config.homeUrl() + "dashboard/" }
+      });
+      if (error) throw error;
+      return data;
+    },
+    resetPassword: async email => {
+      const { error } = await client.auth.resetPasswordForEmail(email, {
+        redirectTo: config.homeUrl() + "welcome/"
+      });
+      if (error) throw error;
+      return true;
+    },
+    getProfile: async () => {
+      const user = await window.PyLearnSession.getUser();
+      if (!user?.id) return null;
+      const { data, error } = await client.from("profiles")
+        .select("display_name,avatar_url").eq("id", user.id).maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    updateProfile: async displayName => {
+      const user = await window.PyLearnSession.getUser();
+      if (!user?.id) throw new Error("Sign in to update your profile.");
+      const { error } = await client.from("profiles").upsert({
+        id: user.id, display_name: String(displayName || "").trim().slice(0, 60),
+        updated_at: new Date().toISOString()
+      }, { onConflict: "id" });
+      if (error) throw error;
+      return true;
+    },
     signOut: async () => {
       const { error } = await client.auth.signOut();
       if (error) throw error;
