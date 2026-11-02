@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#11121b"><title>Projects · PyLearn</title>
+<link rel="stylesheet" href="../shared/navigation.css">
+<style>
+.project-intro{padding:44px 0 24px}.project-intro h1{font-size:clamp(32px,6vw,48px);letter-spacing:-.045em;margin:10px 0}.project-intro p{max-width:680px;color:var(--pl-muted);line-height:1.7}
+.project-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:20px 0 32px}
+.project-card{padding:21px;border:1px solid var(--pl-line);border-radius:17px;background:var(--pl-card);display:flex;flex-direction:column;gap:10px}
+.project-card .tag{font-size:10px;letter-spacing:.1em;color:#a78bfa;font-weight:850}.project-card h2{font-size:19px;margin:0}.project-card p{font-size:13px;line-height:1.65;color:var(--pl-muted);margin:0}.project-card a{align-self:flex-start;margin-top:auto;padding-top:8px;color:#a78bfa;font-weight:800;text-decoration:none;font-size:13px}
+.project-note{padding:17px;border:1px solid var(--pl-line);border-radius:14px;color:var(--pl-muted);font-size:13px;line-height:1.6}
+@media(max-width:600px){.project-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body class="pl-page" data-page="projects">
+<main class="pl-content">
+<header class="project-intro"><span class="pl-eyebrow">LEARN BY BUILDING</span><h1>Projects</h1><p>Use Python to make useful little programs. Start with a small idea, practise the skills, then improve it step by step.</p></header>
+<section class="project-grid" aria-label="Python project ideas">
+<article class="project-card"><span class="tag">BEGINNER · INPUT & OUTPUT</span><h2>Personal greeting app</h2><p>Ask for a person's name and favourite activity, then print a friendly, formatted message.</p><a href="../playground/">Build in the playground →</a></article>
+<article class="project-card"><span class="tag">BEGINNER · CONDITIONS</span><h2>Number checker</h2><p>Ask for a number and report whether it is positive, negative or zero. Extend it to check even and odd numbers.</p><a href="../playground/">Build in the playground →</a></article>
+<article class="project-card"><span class="tag">BEGINNER · LOOPS</span><h2>Multiplication trainer</h2><p>Use a loop to display a multiplication table for a number entered by the learner.</p><a href="../playground/">Build in the playground →</a></article>
+<article class="project-card"><span class="tag">INTERMEDIATE · LISTS</span><h2>Simple task list</h2><p>Store tasks in a list, show them, add new tasks and remove completed ones.</p><a href="../playground/">Build in the playground →</a></article>
+<article class="project-card"><span class="tag">INTERMEDIATE · FUNCTIONS</span><h2>Quiz game</h2><p>Organize questions into reusable functions, collect answers and calculate a score.</p><a href="../playground/">Build in the playground →</a></article>
+<article class="project-card"><span class="tag">INTERMEDIATE · DICTIONARIES</span><h2>Mini contact book</h2><p>Use a dictionary to connect names with contact details and practise searching by key.</p><a href="../playground/">Build in the playground →</a></article>
+</section>
+<p class="project-note">These are guided project ideas. The standalone project tracker and saved project completion are not connected yet; for now, open the playground to build and test your code. Your existing full project lab remains available in the <a href="../legacy.html">classic learning space</a>.</p>
+<div class="pl-actions"><a class="pl-action" href="../learn/">Go to learning path</a><a class="pl-action secondary" href="../playground/">Open playground</a></div>
+</main>
+<script src="../shared/config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="../shared/session.js"></script><script src="../shared/navigation.js"></script>
+</body></html>
