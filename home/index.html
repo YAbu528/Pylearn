@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#11121b">
+<title>PyLearn — Learn Python by doing</title>
+<meta name="description" content="Learn Python step by step, practise in a real browser playground, and build projects with PyLearn.">
+<link rel="stylesheet" href="../shared/navigation.css">
+<style>
+.pl-home-hero{display:grid;grid-template-columns:1.2fr .8fr;gap:28px;align-items:center;padding:34px 0 18px}
+.pl-home-hero h1{font-size:clamp(38px,7vw,66px);line-height:1.02;letter-spacing:-.055em;margin:12px 0}
+.pl-home-hero p{max-width:620px;color:var(--pl-muted);font-size:16px;line-height:1.75}
+.pl-home-actions{display:flex;gap:11px;flex-wrap:wrap;margin-top:24px}
+.pl-home-button{display:inline-flex;padding:13px 17px;border-radius:11px;background:#7c3aed;color:white;text-decoration:none;font-weight:800;font-size:14px}
+.pl-home-button.secondary{background:var(--pl-card);border:1px solid var(--pl-line);color:var(--pl-text)}
+.pl-code-card{padding:22px;border:1px solid var(--pl-line);border-radius:18px;background:var(--pl-card);font:13px/1.9 ui-monospace,monospace;white-space:pre-wrap;color:var(--pl-muted)}
+.pl-code-card strong{color:#a78bfa}
+@media(max-width:700px){.pl-home-hero{grid-template-columns:1fr;padding-top:12px}.pl-code-card{font-size:12px}}
+</style>
+</head>
+<body class="pl-page" data-page="home">
+<main class="pl-content">
+<section class="pl-home-hero">
+<div>
+<span class="pl-eyebrow">INTERACTIVE PYTHON SCHOOL</span>
+<h1>Learn Python.<br><span style="color:#a78bfa">Actually write it.</span></h1>
+<p>Build your understanding one step at a time. Follow a structured learning path, practise with real Python code, track your progress, and turn what you learn into projects.</p>
+<div class="pl-home-actions">
+<a class="pl-home-button" href="../learn/">Start learning</a>
+<a class="pl-home-button secondary" href="../playground/">Open Python playground</a>
+</div>
+</div>
+<div class="pl-code-card"><span style="color:#8b91a5"># Your first Python program</span>
+name = <strong>"PyLearn"</strong>
+print(f"Hello, {name}!")
+
+<span style="color:#8b91a5"># Learn → Practise → Build</span></div>
+</section>
+<h2 class="pl-section-heading">Your learning workspace</h2>
+<section class="pl-card-grid">
+<article class="pl-card"><span class="pl-card-icon">🧭</span><h2>Discover</h2><p>See how PyLearn works and choose your next step.</p><a href="../discover/">Explore Discover →</a></article>
+<article class="pl-card"><span class="pl-card-icon">📚</span><h2>Learning path</h2><p>Move through Python lessons in a clear, beginner-friendly order.</p><a href="../learn/">View lessons →</a></article>
+<article class="pl-card"><span class="pl-card-icon">📊</span><h2>Dashboard</h2><p>Review your saved XP, lesson completion, and learning activity.</p><a href="../dashboard/">View dashboard →</a></article>
+<article class="pl-card"><span class="pl-card-icon">⌨️</span><h2>Python playground</h2><p>Write, run, and experiment with Python in your browser.</p><a href="../playground/">Start coding →</a></article>
+<article class="pl-card"><span class="pl-card-icon">🛠️</span><h2>Projects</h2><p>Explore practical ways to apply the Python concepts you learn.</p><a href="../projects/">Explore projects →</a></article>
+<article class="pl-card"><span class="pl-card-icon">👤</span><h2>Your profile</h2><p>Account and personal learning settings will have a dedicated home as the migration continues.</p><a href="../dashboard/">View your progress →</a></article>
+</section>
+<aside class="pl-callout">This preview is the new PyLearn workspace. The existing live website remains unchanged while these pages are tested.</aside>
+</main>
+<script src="../shared/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../shared/session.js"></script>
+<script src="../shared/navigation.js"></script>
+</body>
+</html>
