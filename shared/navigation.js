@@ -52,7 +52,9 @@
   const applyTheme = value => {
     document.body.classList.toggle("light",value === "light");
     theme.textContent = value === "light" ? "☾" : "☀";
-    logo.src = config.asset(value === "light" ? "assets/pylearn-logo-light.png" : "assets/pylearn-logo-dark.png");
+    logo.src = config.asset(value === "light" ? "assets/pylearn-logo-dark.png" : "assets/pylearn-logo-light.png");
+    const footerLogo = document.querySelector(".pl-footer-brand img");
+    if (footerLogo) footerLogo.src = logo.src;
   };
   let savedTheme = "dark";
   try { savedTheme = localStorage.getItem("pylearn_prod_theme") || "dark"; } catch {}
@@ -84,6 +86,41 @@
   });
   shell.append(mobile);
   document.body.prepend(shell);
+
+  if (!document.querySelector("[data-pylearn-footer]")) {
+    const footer = document.createElement("footer");
+    footer.className = "pl-footer";
+    footer.dataset.pylearnFooter = "true";
+    const inner = document.createElement("div");
+    inner.className = "pl-footer-inner";
+    const footerBrand = document.createElement("a");
+    footerBrand.className = "pl-footer-brand";
+    footerBrand.href = home;
+    const footerLogo = document.createElement("img");
+    footerLogo.src = config.asset("assets/pylearn-logo-dark.png");
+    footerLogo.alt = "PyLearn";
+    const tagline = document.createElement("p");
+    tagline.textContent = "Understand Python. Practise with purpose. Build something real.";
+    footerBrand.append(footerLogo, tagline);
+    const footerLinks = document.createElement("nav");
+    footerLinks.className = "pl-footer-links";
+    footerLinks.setAttribute("aria-label", "Footer navigation");
+    [
+      {label:"Discover",href:config.url("discover")},
+      {label:"Learning path",href:config.url("learn")},
+      {label:"Playground",href:config.url("playground")},
+      {label:"Projects",href:config.url("projects")},
+      {label:"Profile",href:config.url("profile")}
+    ].forEach(item => {
+      const link = document.createElement("a");
+      link.href = item.href;
+      link.textContent = item.label;
+      footerLinks.append(link);
+    });
+    inner.append(footerBrand, footerLinks);
+    footer.append(inner);
+    document.body.append(footer);
+  }
 
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register(config.url("service-worker.js"), { scope: config.basePath }).catch(error => console.warn("PyLearn offline cache could not be registered:", error));
