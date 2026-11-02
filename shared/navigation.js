@@ -41,8 +41,11 @@
   items.forEach(item => nav.append(makeLink(item)));
   const actions = document.createElement("div");
   actions.className = "pl-header-actions";
-  const account = document.createElement("span");
+  const account = document.createElement("a");
   account.className = "pl-account-status";
+  account.href = config.url("welcome");
+  account.style.textDecoration = "none";
+  account.setAttribute("aria-label", "Sign in or manage your PyLearn account");
   account.textContent = "Checking account…";
   account.setAttribute("aria-live", "polite");
   const theme = document.createElement("button");
@@ -110,7 +113,8 @@
       {label:"Learning path",href:config.url("learn")},
       {label:"Playground",href:config.url("playground")},
       {label:"Projects",href:config.url("projects")},
-      {label:"Profile",href:config.url("profile")}
+      {label:"Profile",href:config.url("profile")},
+      {label:"Classic learning lab",href:config.url("legacy.html")}
     ].forEach(item => {
       const link = document.createElement("a");
       link.href = item.href;
@@ -128,8 +132,9 @@
 
   if (window.PyLearnSession) {
     window.PyLearnSession.ready.then(() => window.PyLearnSession.subscribe(user => {
-      account.textContent = user ? "Signed in" : "Guest";
-      account.title = user?.email || "Browsing without an account";
+      account.textContent = user ? "My account" : "Sign in";
+      account.href = config.url(user ? "profile" : "welcome");
+      account.title = user?.email || "Sign in to save your learning progress";
     }));
   } else {
     account.textContent = "Guest";
