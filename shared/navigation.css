@@ -19,17 +19,33 @@ body.pl-page.light{--pl-header-bg:#fff;--pl-bg:#f5f6fb;--pl-card:#fff;--pl-text:
 .pl-card a,.pl-text-link{display:inline-flex;margin-top:9px;color:#60a5fa;text-decoration:none;font-size:13px;font-weight:800}
 .pl-card a:hover,.pl-text-link:hover{text-decoration:underline}
 .pl-section-heading{margin:42px 0 12px;font-size:22px}.pl-callout{margin-top:24px;padding:20px;border:1px solid var(--pl-line);border-radius:16px;background:var(--pl-card);color:var(--pl-muted);line-height:1.65}
-@media(max-width:760px){.pl-header{min-height:64px;padding:8px 16px;justify-content:space-between;gap:10px}.pl-brand{flex:0 0 116px;min-width:116px;max-width:116px}.pl-brand img{width:112px;height:44px;max-height:44px}.pl-desktop-nav{display:none}.pl-brand img{width:105px}.pl-content{width:calc(100% - 32px);padding:34px 0 105px}.pl-card-grid{grid-template-columns:1fr;gap:11px}.pl-card{padding:17px}.pl-mobile-nav{position:fixed;z-index:60;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));padding:7px 5px max(8px,env(safe-area-inset-bottom));border-top:1px solid var(--pl-line);background:var(--pl-header-bg);backdrop-filter:blur(16px)}.pl-mobile-link{display:flex;min-width:0;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;color:var(--pl-muted);text-decoration:none}.pl-mobile-link span{font-size:19px;line-height:1.1}.pl-mobile-link small{font-size:8px;font-weight:750}.pl-mobile-link.is-active{color:#60a5fa}}
+@media(max-width:760px){
+  .pl-header{min-height:66px;padding:8px 12px;justify-content:space-between;gap:8px;overflow:visible}
+  .pl-brand{display:flex!important;flex:0 0 120px!important;width:120px!important;min-width:120px!important;max-width:120px!important;height:48px;visibility:visible!important;opacity:1!important}
+  .pl-brand img{display:block!important;flex:0 0 116px!important;width:116px!important;min-width:116px!important;max-width:116px!important;height:46px!important;max-height:46px!important;object-fit:contain;visibility:visible!important;opacity:1!important}
+  .pl-desktop-nav{display:none}
+  .pl-header-actions{flex:0 0 auto;gap:7px}
+  .pl-theme-toggle{width:36px;height:36px;flex:0 0 36px}
+  .pl-content{width:calc(100% - 32px);padding:34px 0 105px}
+  .pl-card-grid{grid-template-columns:1fr;gap:11px}
+  .pl-card{padding:17px}
+  .pl-mobile-nav{position:fixed;z-index:60;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));padding:7px 5px max(8px,env(safe-area-inset-bottom));border-top:1px solid var(--pl-line);background:var(--pl-header-bg);backdrop-filter:blur(16px)}
+  .pl-mobile-link{display:flex;min-width:0;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;color:var(--pl-muted);text-decoration:none}
+  .pl-mobile-link span{font-size:19px;line-height:1.1}
+  .pl-mobile-link small{font-size:8px;font-weight:750}
+  .pl-mobile-link.is-active{color:#60a5fa}
+}
+
 
 .pl-account-status{font-size:.78rem;color:var(--pl-muted);white-space:nowrap;padding:0 .35rem}
-@media(max-width:520px){.pl-account-status{font-size:.7rem}}}
+@media(max-width:520px){.pl-account-status{font-size:.7rem}}
 /* Consistent PyLearn footer on every migrated page. */
 .pl-footer{border-top:1px solid var(--pl-line);background:var(--pl-header-bg);color:var(--pl-text);margin-top:50px}
 .pl-footer-inner{width:min(1180px,calc(100% - 40px));margin:0 auto;padding:30px 0 26px;display:flex;align-items:center;justify-content:space-between;gap:24px}
-.pl-footer-brand{display:flex;align-items:center;gap:14px;min-width:0}
-.pl-footer-brand img{display:block;width:116px;height:48px;object-fit:contain;object-position:left center}
+.pl-footer-brand{display:flex;align-items:center;gap:14px;min-width:0;line-height:0}
+.pl-footer-brand img{display:block;width:116px;height:48px;flex:0 0 auto;object-fit:contain;object-position:left center;margin:0}
 .pl-footer-brand p{margin:0;color:var(--pl-muted);font-size:12px;line-height:1.5}
 .pl-footer-links{display:flex;flex-wrap:wrap;gap:10px 18px}
 .pl-footer-links a{color:var(--pl-muted);font-size:12px;font-weight:700;text-decoration:none}
 .pl-footer-links a:hover{color:var(--pl-text)}
-@media(max-width:760px){.pl-footer-inner{width:calc(100% - 32px);padding:24px 0 95px;align-items:flex-start;flex-direction:column;gap:17px}.pl-footer-brand img{width:105px;height:44px}}
+@media(max-width:760px){.pl-footer-inner{width:calc(100% - 32px);padding:20px 0 95px;align-items:flex-start;flex-direction:column;gap:12px}.pl-footer-brand{align-items:center;gap:12px}.pl-footer-brand img{width:105px;height:44px;flex:0 0 105px}.pl-footer-brand p{line-height:1.45}}
