@@ -11,7 +11,8 @@
     {id:"dashboard",label:"Dashboard",icon:"▦",href:config.url("dashboard")},
     {id:"learn",label:"Learn",icon:"▤",href:config.url("learn")},
     {id:"code",label:"Code",icon:"⌘",href:config.url("playground")},
-    {id:"projects",label:"Projects",icon:"◇",href:config.url("projects")}
+    {id:"projects",label:"Projects",icon:"◇",href:config.url("projects")},
+    {id:"profile",label:"Profile",icon:"●",href:config.url("profile")}
   ];
 
   const shell = document.createElement("div");
@@ -83,6 +84,10 @@
   });
   shell.append(mobile);
   document.body.prepend(shell);
+
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register(config.url("service-worker.js"), { scope: config.basePath }).catch(error => console.warn("PyLearn offline cache could not be registered:", error));
+  }
 
   if (window.PyLearnSession) {
     window.PyLearnSession.subscribe(user => {
