@@ -99,7 +99,7 @@
   }
   $("refreshButton").addEventListener("click", loadSummary);
   window.PyLearnSession.ready.then(loadSummary);
-  window.PyLearnSession.subscribe(user => { if (!user) showGuest(); });
+  window.PyLearnSession.subscribe(() => loadSummary());
 })();
 </script>
 </body>
