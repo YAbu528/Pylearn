@@ -96,7 +96,7 @@
       status.textContent = "We couldn't load saved progress. Check your connection and refresh the page.";
     }
   }
-  window.PyLearnSession.subscribe(() => load());
+  window.PyLearnSession.ready.then(() => window.PyLearnSession.subscribe(() => load()));
 })();
 </script>
 </body>
