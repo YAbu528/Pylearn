@@ -97,7 +97,7 @@
     }
   }
   window.PyLearnSession.ready.then(load);
-  window.PyLearnSession.subscribe(user => { if (!user) load(); });
+  window.PyLearnSession.subscribe(() => load());
 })();
 </script>
 </body>
