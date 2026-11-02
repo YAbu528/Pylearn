@@ -90,10 +90,10 @@
   }
 
   if (window.PyLearnSession) {
-    window.PyLearnSession.subscribe(user => {
+    window.PyLearnSession.ready.then(() => window.PyLearnSession.subscribe(user => {
       account.textContent = user ? "Signed in" : "Guest";
       account.title = user?.email || "Browsing without an account";
-    });
+    }));
   } else {
     account.textContent = "Guest";
   }
