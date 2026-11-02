@@ -47,6 +47,8 @@ const $=id=>document.getElementById(id);
 let worker=null,ready=false,loading=null,runTimer=null,selected=0,choice=null,user=null,progress=[];
 const esc=s=>String(s??"");
 lessons.forEach((l,i)=>{const o=document.createElement("option");o.value=String(i);o.textContent=(i+1)+". "+l.title;$("lessonSelect").append(o);});
+const requestedLesson=Number(new URLSearchParams(location.search).get("lesson"));
+if(Number.isInteger(requestedLesson)&&requestedLesson>=1&&requestedLesson<=lessons.length)$("lessonSelect").value=String(requestedLesson-1);
 function setStatus(t){$("engineStatus").textContent=t;}
 function createWorker(){
  worker=new Worker("../python-worker.js",{type:"module"});
