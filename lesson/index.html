@@ -114,8 +114,9 @@ $("challengeTitle").textContent=lesson.challenge.title;
 $("challengePrompt").textContent=lesson.challenge.prompt;
 $("challengeHint").textContent=lesson.challenge.hint;
 $("challengeStarter").textContent=lesson.challenge.starter||"No starter code is required for this challenge.";
-$("nextLesson").href=index<lessons.length-1?"?id="+(index+2):"../#projects";
+$("nextLesson").href=index<lessons.length-1?"?id="+(index+2):"../projects/";
 $("nextLesson").textContent=index<lessons.length-1?"Next lesson →":"Explore projects →";
+document.querySelector('a[href="../playground/"]')?.setAttribute("href","../playground/?lesson="+(index+1));
 $("lessonNav").innerHTML=lessons.map((item,i)=>'<a class="'+(i===index?"active":"")+'" href="?id='+(i+1)+'">'+String(i+1).padStart(2,"0")+" · "+item.short+"</a>").join("");
 let accountLoad=0;
 async function refreshAccountState(user){
