@@ -52,7 +52,7 @@
   const applyTheme = value => {
     document.body.classList.toggle("light",value === "light");
     theme.textContent = value === "light" ? "☾" : "☀";
-    logo.src = config.asset(value === "light" ? "assets/pylearn-logo-dark.png" : "assets/pylearn-logo-light.png");
+    logo.src = config.asset(value === "light" ? "assets/pylearn-logo-light.png" : "assets/pylearn-logo-dark.png");
     const footerLogo = document.querySelector(".pl-footer-brand img");
     if (footerLogo) footerLogo.src = logo.src;
   };
