@@ -98,7 +98,7 @@
     }
   }
   $("refreshButton").addEventListener("click", loadSummary);
-  window.PyLearnSession.subscribe(() => loadSummary());
+  window.PyLearnSession.ready.then(() => window.PyLearnSession.subscribe(() => loadSummary()));
 })();
 </script>
 </body>
