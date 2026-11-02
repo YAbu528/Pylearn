@@ -117,19 +117,45 @@ $("challengeStarter").textContent=lesson.challenge.starter||"No starter code is 
 $("nextLesson").href=index<lessons.length-1?"?id="+(index+2):"../#projects";
 $("nextLesson").textContent=index<lessons.length-1?"Next lesson →":"Explore projects →";
 $("lessonNav").innerHTML=lessons.map((item,i)=>'<a class="'+(i===index?"active":"")+'" href="?id='+(i+1)+'">'+String(i+1).padStart(2,"0")+" · "+item.short+"</a>").join("");
-try {
- const user=await window.PyLearnSession.getUser();
- if(user){
-  lessonTools=await window.PyLearnSession.getLessonTools(index);
-  $("lessonNote").value=lessonTools?.note||"";
-  if(lessonTools?.quizMastered){quizCorrect=true;$("quizFeedback").textContent="✓ Your account has already mastered this quick check.";}
+let accountLoad=0;
+async function refreshAccountState(user){
+ const request=++accountLoad;
+ lessonTools=null;
+ quizCorrect=false;
+ $("lessonNote").value="";
+ $("saveNote").disabled=!user;
+ $("clearNote").disabled=!user;
+ $("bookmarkLesson").disabled=!user;
+ if(!user){
+  $("quizFeedback").textContent="";
+  $("toolsStatus").textContent="Guest mode: you can read and answer, but sign in to save notes, bookmarks, or progress.";
+  refreshProgressControls();
+  return;
+ }
+ setToolsStatus("Loading your saved lesson data…");
+ try{
+  const tools=await window.PyLearnSession.getLessonTools(index);
+  if(request!==accountLoad)return;
+  lessonTools=tools;
+  $("lessonNote").value=tools?.note||"";
+  if(tools?.quizMastered){
+   quizCorrect=true;
+   $("quizFeedback").textContent="✓ Your account has already mastered this quick check.";
+  }else{
+   $("quizFeedback").textContent="";
+  }
   refreshProgressControls();
   setToolsStatus("Signed in. Notes, bookmarks, and progress are connected to your account.");
- } else {
-  $("saveNote").disabled=true;$("clearNote").disabled=true;
-  $("toolsStatus").textContent="Guest mode: you can read and answer, but sign in to save notes, bookmarks, or progress.";
+ }catch(error){
+  if(request!==accountLoad)return;
+  console.warn("Lesson account data could not be loaded:",error);
+  refreshProgressControls();
+  setToolsStatus("Could not load saved lesson data: "+error.message);
  }
-} catch(error){console.warn("Lesson account data could not be loaded:",error);setToolsStatus("Could not load saved lesson data: "+error.message);}
+}
+window.PyLearnSession.ready.then(()=>{
+ window.PyLearnSession.subscribe(refreshAccountState);
+});
 </script>
 </body>
 </html>
