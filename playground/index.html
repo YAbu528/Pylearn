@@ -66,7 +66,11 @@ function createWorker(){
 async function initPython(retry=false){
  if(retry){worker?.terminate();worker=null;ready=false;loading=null;clearTimeout(runTimer);clearTimeout(checkTimer);}
  if(ready)return true;if(loading)return loading;
- setStatus("Loading Python engine…");$("output").textContent="Downloading the Python engine. This may take a little while the first time.";
+ // Let the registered service worker activate before the dedicated worker requests Pyodide assets.
+ if ("serviceWorker" in navigator) {
+  try { await Promise.race([navigator.serviceWorker.ready, new Promise(resolve=>setTimeout(resolve,2500))]); } catch {}
+ }
+ setStatus("Starting Python engine…");$("output").textContent="Starting Python. Runtime files are reused from the browser cache when available; the first load may take longer.";
  const w=createWorker();
  loading=new Promise(resolve=>{const timeout=setTimeout(()=>{if(worker===w){w.terminate();worker=null;}ready=false;loading=null;setStatus("Python load timed out. Check your connection and retry.");resolve(false);},60000);
   const old=w.onmessage;w.onmessage=e=>{old(e);if(e.data?.type==="ready"){clearTimeout(timeout);resolve(true);}else if(e.data?.type==="error"){clearTimeout(timeout);resolve(false);}};
