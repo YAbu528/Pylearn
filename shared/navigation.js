@@ -11,7 +11,7 @@
     {id:"dashboard",label:"Dashboard",icon:"▦",href:config.url("dashboard")},
     {id:"learn",label:"Learn",icon:"▤",href:config.url("learn")},
     {id:"code",label:"Code",icon:"⌘",href:config.url("playground")},
-    {id:"projects",label:"Projects",icon:"◇",href:home+"#projects"}
+    {id:"projects",label:"Projects",icon:"◇",href:config.url("projects")}
   ];
 
   const shell = document.createElement("div");
