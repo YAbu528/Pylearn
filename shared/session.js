@@ -103,6 +103,41 @@
         challengeCompleted: !!progressResult.data?.challenge_completed
       };
     },
+    getLessonReview: async lessonId => {
+      const user = await window.PyLearnSession.getUser();
+      if (!user?.id) return null;
+      const { data, error } = await client.from("lesson_reviews")
+        .select("rating,interval_days,reviewed_at,next_review_at")
+        .eq("user_id", user.id).eq("lesson_id", String(lessonId))
+        .order("reviewed_at", { ascending: false }).limit(1).maybeSingle();
+      if (error) throw error;
+      return data || null;
+    },
+    recordLessonReview: async (lessonId, rating) => {
+      const user = await window.PyLearnSession.getUser();
+      if (!user?.id) throw new Error("Sign in to save your revision schedule.");
+      const value = Number(rating);
+      if (![1, 2, 3, 4].includes(value)) throw new Error("Choose a review rating from 1 to 4.");
+      const previous = await window.PyLearnSession.getLessonReview(lessonId);
+      const firstIntervals = { 1: 1, 2: 2, 3: 4, 4: 7 };
+      const multipliers = { 1: 1, 2: 1.5, 3: 2, 4: 2.5 };
+      const interval = !previous?.interval_days || value === 1
+        ? firstIntervals[value]
+        : Math.min(60, Math.max(firstIntervals[value], Math.round(Number(previous.interval_days) * multipliers[value])));
+      const reviewedAt = new Date();
+      const nextReview = new Date(reviewedAt);
+      nextReview.setDate(nextReview.getDate() + interval);
+      const id = globalThis.crypto?.randomUUID?.();
+      const row = {
+        ...(id ? { id } : {}),
+        user_id: user.id, lesson_id: String(lessonId), rating: value,
+        interval_days: interval, reviewed_at: reviewedAt.toISOString(),
+        next_review_at: nextReview.toISOString(), created_at: reviewedAt.toISOString()
+      };
+      const { error } = await client.from("lesson_reviews").insert(row);
+      if (error) throw error;
+      return row;
+    },
     saveLessonNote: async (lessonId, content) => {
       const user = await window.PyLearnSession.getUser();
       if (!user?.id) throw new Error("Sign in to save lesson notes.");
