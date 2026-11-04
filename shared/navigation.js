@@ -114,6 +114,7 @@
       {label:"Playground",href:config.url("playground")},
       {label:"Projects",href:config.url("projects")},
       {label:"Profile",href:config.url("profile")},
+      {label:"Sign in / create account",href:config.url("welcome")},
       {label:"Classic learning lab",href:config.url("legacy.html")}
     ].forEach(item => {
       const link = document.createElement("a");
