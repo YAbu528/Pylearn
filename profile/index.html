@@ -107,7 +107,7 @@
  const $=id=>document.getElementById(id);
  let activeUser=null,activeProfile=null;
  const status=(id,message,kind="")=>{const el=$(id);el.textContent=message;el.dataset.kind=kind;};
- const initials=value=>String(value||"PL").trim().split(/[\\s@._-]+/).filter(Boolean).slice(0,2).map(x=>x[0]).join("").toUpperCase()||"PL";
+ const initials=value=>String(value||"PL").trim().split(/[\s@._-]+/).filter(Boolean).slice(0,2).map(x=>x[0]).join("").toUpperCase()||"PL";
  const providerName=value=>({azure:"Microsoft",google:"Google",email:"Email and password",phone:"Phone",apple:"Apple"}[String(value||"").toLowerCase()]||String(value||"Other").replace(/^./,x=>x.toUpperCase()));
  function renderTheme(){const light=document.body.classList.contains("light");$("themeName").textContent=light?"Light theme":"Dark theme";$("themeDescription").textContent=light?"Bright surfaces and dark text":"Dark surfaces and light text";$("themePreference").textContent=light?"Switch to dark":"Switch to light";}
  function renderAvatar(name,url){const avatar=$("profileAvatar");avatar.replaceChildren();if(url){const img=document.createElement("img");img.alt="Profile image";img.src=url;img.onerror=()=>renderAvatar(name,"");avatar.append(img);}else{const span=document.createElement("span");span.textContent=initials(name);avatar.append(span);}}
