@@ -127,6 +127,9 @@
     document.body.append(footer);
   }
 
+  // The footer is created after the first theme application; sync its logo now.
+  applyTheme(savedTheme);
+
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register(config.url("service-worker.js"), { scope: config.basePath }).catch(error => console.warn("PyLearn offline cache could not be registered:", error));
   }
