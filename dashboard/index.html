@@ -16,7 +16,7 @@
 .pl-progress-card{margin-top:16px;padding:22px;border:1px solid var(--pl-line);border-radius:17px;background:var(--pl-card)}
 .pl-progress-track{height:10px;margin-top:14px;overflow:hidden;border-radius:20px;background:var(--pl-line)}
 .pl-progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--pl-accent),var(--pl-accent-bright));border-radius:20px;transition:width .25s}
-.pl-status{margin-top:20px;color:var(--pl-muted);font-size:14px;line-height:1.6}
+.pl-status{margin-top:20px;color:var(--pl-muted);font-size:14px;line-height:1.6}.classic-tools-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}.classic-tools-grid .pl-action{font-size:12px}
 .pl-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
 .pl-action{display:inline-flex;align-items:center;justify-content:center;padding:12px 16px;border-radius:11px;background:var(--pl-accent);color:white;text-decoration:none;font-size:13px;font-weight:800}
 .pl-action.secondary{border:1px solid var(--pl-line);background:var(--pl-card);color:var(--pl-text)}
@@ -43,6 +43,20 @@
     <p id="progressText" class="pl-status">Waiting for your account…</p>
     <div class="pl-progress-track" role="progressbar" aria-label="Lesson completion" aria-valuemin="0" aria-valuemax="14" aria-valuenow="0" id="progressBar">
       <div class="pl-progress-fill" id="progressFill"></div>
+    </div>
+  </section>
+
+  <section class="pl-progress-card" aria-labelledby="classicToolsTitle">
+    <span class="pl-eyebrow">FEATURE PRESERVATION</span>
+    <h2 id="classicToolsTitle">Original PyLearn tools</h2>
+    <p class="pl-status">These established features remain available in the classic learning space while their multipage versions are being migrated.</p>
+    <div class="classic-tools-grid">
+      <a class="pl-action secondary" href="../legacy.html#missions">Mission board</a>
+      <a class="pl-action secondary" href="../legacy.html#dashboard">Themes & learning insights</a>
+      <a class="pl-action secondary" href="../legacy.html#studyTools">Saved notes & bookmarks</a>
+      <a class="pl-action secondary" href="../legacy.html#projects">Full project lab</a>
+      <a class="pl-action secondary" href="../legacy.html#badgeCollection">Achievements & badges</a>
+      <a class="pl-action secondary" href="../legacy.html#challenge">Coding challenges</a>
     </div>
   </section>
 
