@@ -37,7 +37,7 @@ body.pl-page.light{--pl-header-bg:#eef0f5;--pl-bg:#f6f7fb;--pl-card:#fff;--pl-te
 }
 
 
-.pl-account-status{font-size:.78rem;color:var(--pl-muted);white-space:nowrap;padding:0 .35rem}
+.pl-account-status{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 11px;border:1px solid var(--pl-line);border-radius:10px;background:var(--pl-active-bg);color:var(--pl-accent-bright);font-size:.78rem;font-weight:750;white-space:nowrap;text-decoration:none}
 @media(max-width:520px){.pl-account-status{font-size:.7rem}}
 /* Consistent PyLearn footer on every migrated page. */
 .pl-footer{border-top:1px solid var(--pl-line);background:var(--pl-header-bg);color:var(--pl-text);margin-top:50px}
