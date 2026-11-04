@@ -68,7 +68,7 @@ function createWorker(onInitResult){
   if(m.type==="ready"){ready=true;setStatus("● Python ready");$("output").textContent="Python is ready. Run your code whenever you're ready.";onInitResult?.(null);}
   else if(m.type==="stdout"){$("output").textContent+=m.text||"";}
   else if(m.type==="run-result"){clearTimeout(runTimer);runTimer=null;$("output").textContent=m.output?.trim()?m.output:"Program finished with no printed output.";finishRun();}
-  else if(m.type==="run-error"){clearTimeout(runTimer);runTimer=null;const partial=$("output").textContent;const errorText=m.error||"Python error."; $("output").textContent=(partial&&partial!==" "&&partial!=="Running…" ? partial+"\\n\\n":"")+errorText;finishRun();}
+  else if(m.type==="run-error"){clearTimeout(runTimer);runTimer=null;const partial=$("output").textContent;const errorText=m.error||"Python error."; $("output").textContent=(partial&&partial!==" "&&partial!=="Running…" ? partial+"\n\n":"")+errorText;finishRun();}
   else if(m.type==="check-result"&&window.__checkResolve){clearTimeout(checkTimer);checkTimer=null;const done=window.__checkResolve;window.__checkResolve=null;done(m.result);}
   else if(m.type==="error"){
    clearTimeout(checkTimer);checkTimer=null;ready=false;setStatus("Python engine error");
