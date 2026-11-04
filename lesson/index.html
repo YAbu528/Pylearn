@@ -95,7 +95,8 @@ practiceTasks.forEach((task,taskIndex)=>{
 });
 $("quizQuestion").textContent=lesson.quiz.q;
 let quizCorrect=false;
-let lessonTools=null;\nlet lessonReview=null;
+let lessonTools=null;
+let lessonReview=null;
 const setToolsStatus=message=>{$("toolsStatus").textContent=message;};
 function renderReview(review){lessonReview=review||null;if(!review){$("reviewStatus").textContent="No review saved yet. Choose a rating to schedule your next review.";return;}const reviewed=new Date(review.reviewed_at).toLocaleDateString();const next=new Date(review.next_review_at).toLocaleDateString();$("reviewStatus").textContent="Last reviewed "+reviewed+" · Next review "+next+" ("+review.interval_days+" day"+(Number(review.interval_days)===1?"":"s")+").";}
 const refreshProgressControls=()=>{
@@ -151,10 +152,13 @@ $("nextLesson").href=index<lessons.length-1?"?id="+(index+2):"../projects/";
 $("nextLesson").textContent=index<lessons.length-1?"Next lesson →":"Explore projects →";
 document.querySelector('a[href="../playground/"]')?.setAttribute("href","../playground/?lesson="+(index+1));
 $("lessonNav").innerHTML=lessons.map((item,i)=>'<a class="'+(i===index?"active":"")+'" href="?id='+(i+1)+'">'+String(i+1).padStart(2,"0")+" · "+item.short+"</a>").join("");
-let accountLoad=0;\nlet activeReviewUser=null;
+let accountLoad=0;
+let activeReviewUser=null;
 async function refreshAccountState(user){
  const request=++accountLoad;
+ activeReviewUser=user||null;
  lessonTools=null;
+ lessonReview=null;
  quizCorrect=false;
  $("lessonNote").value="";
  $("saveNote").disabled=!user;
@@ -162,15 +166,19 @@ async function refreshAccountState(user){
  $("bookmarkLesson").disabled=!user;
  if(!user){
   $("quizFeedback").textContent="";
+  $("reviewStatus").textContent="Sign in to save a revision schedule.";
+  document.querySelectorAll("[data-review-rating]").forEach(button=>button.disabled=true);
   $("toolsStatus").textContent="Guest mode: you can read and answer, but sign in to save notes, bookmarks, or progress.";
   refreshProgressControls();
   return;
  }
  setToolsStatus("Loading your saved lesson data…");
+ document.querySelectorAll("[data-review-rating]").forEach(button=>button.disabled=false);
  try{
-  const tools=await window.PyLearnSession.getLessonTools(index);
+  const [tools,review]=await Promise.all([window.PyLearnSession.getLessonTools(index),window.PyLearnSession.getLessonReview(index)]);
   if(request!==accountLoad)return;
   lessonTools=tools;
+  renderReview(review);
   $("lessonNote").value=tools?.note||"";
   if(tools?.quizMastered){
    quizCorrect=true;
