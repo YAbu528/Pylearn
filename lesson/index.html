@@ -24,6 +24,7 @@
 .quiz-option:focus,.quiz-option:hover{border-color:var(--pl-accent)}.quiz-feedback{min-height:42px;color:var(--pl-muted);font-size:13px;line-height:1.6}
 .lesson-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:25px}.pl-action{display:inline-flex;padding:11px 15px;border-radius:10px;background:var(--pl-accent);color:white;text-decoration:none;font-size:13px;font-weight:800}.pl-action.secondary{background:transparent;border:1px solid var(--pl-line);color:var(--pl-text)}
 .challenge-box{padding:17px;border:1px solid var(--pl-line);border-radius:13px;background:rgba(139,92,246,.06)}
+.guidance-list{display:grid;gap:10px}.guidance-item{padding:13px;border:1px solid var(--pl-line);border-radius:12px;background:var(--pl-bg)}.guidance-item h3{margin:0 0 5px;font-size:14px}.guidance-item p{margin:0;color:var(--pl-muted);font-size:13px;line-height:1.7}.recap-box{padding:15px;border-left:3px solid var(--pl-accent);border-radius:8px;background:var(--pl-bg);color:var(--pl-text);font-size:14px;line-height:1.7}.practice-list{display:grid;gap:12px}.practice-card{padding:16px;border:1px solid var(--pl-line);border-radius:13px;background:var(--pl-bg)}.practice-card h3{margin:0 0 7px;font-size:15px}.practice-card p{color:var(--pl-muted);font-size:13px;line-height:1.6}.practice-card pre{white-space:pre-wrap;overflow-wrap:anywhere;padding:12px;border-radius:10px;background:#080a10;color:#e5e7eb;font:12px/1.6 ui-monospace,monospace}.practice-actions{display:flex;flex-wrap:wrap;gap:8px}.practice-actions a,.practice-actions button,.review-ratings button{padding:9px 11px;border:1px solid var(--pl-line);border-radius:9px;background:transparent;color:var(--pl-text);font:inherit;font-size:12px;font-weight:750;text-decoration:none;cursor:pointer}.practice-solution{margin-top:10px}.review-ratings{display:flex;flex-wrap:wrap;gap:8px}.review-status{margin-top:12px;color:var(--pl-muted);font-size:12px;line-height:1.6}
 @media(max-width:760px){.lesson-layout{grid-template-columns:minmax(0,1fr)}.lesson-main,.lesson-side{min-width:0;width:100%}.lesson-side{position:static;order:-1}.lesson-side nav{display:flex;overflow-x:auto;gap:5px}.lesson-side a{white-space:nowrap}}
 </style>
 </head>
@@ -39,10 +40,15 @@
       <section class="lesson-section"><h2>🌱 Think of it this way</h2><p id="lessonAnalogy"></p></section>
       <section class="lesson-section"><h2>⌨️ Worked example</h2><pre class="lesson-code" id="lessonCode"></pre></section>
       <section class="lesson-section"><h2>🎯 What you will learn</h2><ul class="lesson-objectives" id="lessonObjectives"></ul></section>
+      <section class="lesson-section"><h2>🔎 Step by step</h2><div class="guidance-list" id="lessonSteps"></div></section>
+      <section class="lesson-section"><h2>⚠️ Common mistakes</h2><div class="guidance-list" id="lessonMistakes"></div></section>
+      <section class="lesson-section"><h2>Quick recap</h2><div class="recap-box" id="lessonRecap"></div></section>
+      <section class="lesson-section" id="foundationPractice" hidden><h2>✏️ Extra practice</h2><p>Optional tasks to help you apply the lesson. They do not affect your XP or saved progress.</p><div class="practice-list" id="foundationPracticeList"></div></section>
       <section class="lesson-section"><h2>🧠 Quick understanding check</h2><p id="quizQuestion"></p><div id="quizOptions"></div><p class="quiz-feedback" id="quizFeedback" role="status" aria-live="polite"></p></section>
       <section class="lesson-section"><h2>📝 Your lesson notes</h2><p>Private notes saved to your signed-in PyLearn account.</p><textarea id="lessonNote" rows="5" placeholder="Write what you want to remember…" style="width:100%;box-sizing:border-box;padding:13px;border:1px solid var(--pl-line);border-radius:12px;background:var(--pl-bg);color:var(--pl-text);font:inherit;resize:vertical"></textarea><div class="lesson-actions"><button class="pl-action" id="saveNote" type="button">Save note</button><button class="pl-action secondary" id="clearNote" type="button">Clear note</button><button class="pl-action secondary" id="bookmarkLesson" type="button">☆ Bookmark lesson</button></div><p class="quiz-feedback" id="toolsStatus" role="status" aria-live="polite">Sign in to save notes and bookmarks.</p></section>
       <section class="lesson-section"><h2>🏁 Lesson progress</h2><p id="completionStatus">Complete the quick check correctly, then mark this lesson complete.</p><button class="pl-action" id="completeLesson" type="button" disabled>Mark lesson complete</button></section>
       <section class="lesson-section challenge-box"><h2>⚡ Practical challenge</h2><h3 id="challengeTitle"></h3><p id="challengePrompt"></p><p><strong>Hint:</strong> <span id="challengeHint"></span></p><pre class="lesson-code" id="challengeStarter"></pre></section>
+      <section class="lesson-section"><h2>📅 Review this lesson</h2><p>Rate how confident you feel. PyLearn will suggest when to review it again.</p><div class="review-ratings"><button type="button" data-review-rating="1">1 · Not yet</button><button type="button" data-review-rating="2">2 · Need practice</button><button type="button" data-review-rating="3">3 · Mostly</button><button type="button" data-review-rating="4">4 · Confident</button></div><p class="review-status" id="reviewStatus" role="status" aria-live="polite">Sign in to save a revision schedule.</p></section>
       <div class="lesson-actions"><a class="pl-action secondary" href="../learn/">← Learning path</a><a class="pl-action" id="nextLesson" href="#">Next lesson →</a><a class="pl-action secondary" href="../playground/">Open Python playground</a></div>
       <p class="quiz-feedback" id="workspaceStatus">Your lesson progress, quiz mastery, notes, and bookmarks can now sync here. Python execution and challenge verification remain in the original experience.</p>
     </article>
@@ -54,7 +60,7 @@
 <script src="../shared/session.js"></script>
 <script src="../shared/navigation.js"></script>
 <script type="module">
-import { lessons } from "../shared/curriculum.js";
+import { lessons, foundationPractice } from "../shared/curriculum.js";
 const params=new URLSearchParams(location.search);
 const requested=Number(params.get("id")||1);
 const index=Number.isInteger(requested)?Math.min(lessons.length-1,Math.max(1,requested))-1:0;
@@ -68,10 +74,30 @@ $("lessonIdea").textContent=lesson.idea;
 $("lessonAnalogy").textContent=lesson.analogy;
 $("lessonCode").textContent=lesson.code;
 $("lessonObjectives").replaceChildren(...lesson.objectives.map(value=>{const li=document.createElement("li");li.textContent=value;return li;}));
+function renderGuidance(items,targetId){const target=$(targetId);target.replaceChildren();(items||[]).forEach(item=>{const card=document.createElement("article");card.className="guidance-item";const heading=document.createElement("h3");heading.textContent=item[0]+". "+item[1];const detail=document.createElement("p");detail.textContent=item[2];card.append(heading,detail);target.append(card);});}
+renderGuidance(lesson.steps,"lessonSteps");
+renderGuidance(lesson.mistakes,"lessonMistakes");
+$("lessonRecap").textContent=lesson.recap||"Review the key idea and example above.";
+const practiceTasks=foundationPractice[index]||[];
+$("foundationPractice").hidden=!practiceTasks.length;
+practiceTasks.forEach((task,taskIndex)=>{
+ const card=document.createElement("article");card.className="practice-card";
+ const heading=document.createElement("h3");heading.textContent=(taskIndex+1)+". "+task.title;
+ const prompt=document.createElement("p");prompt.textContent=task.prompt;
+ const starter=document.createElement("pre");starter.textContent=task.starter||"# Start writing your solution here";
+ const actions=document.createElement("div");actions.className="practice-actions";
+ const open=document.createElement("a");open.href="../playground/?lesson="+(index+1)+"&practice="+taskIndex;open.textContent="Open starter in playground";
+ const reveal=document.createElement("button");reveal.type="button";reveal.textContent="Show example solution";
+ const solution=document.createElement("pre");solution.className="practice-solution";solution.hidden=true;solution.textContent=task.solution;
+ reveal.addEventListener("click",()=>{solution.hidden=!solution.hidden;reveal.textContent=solution.hidden?"Show example solution":"Hide example solution";});
+ const hint=document.createElement("p");hint.textContent="Hint: "+task.hint;
+ actions.append(open,reveal);card.append(heading,prompt,starter,actions,solution,hint);$("foundationPracticeList").append(card);
+});
 $("quizQuestion").textContent=lesson.quiz.q;
 let quizCorrect=false;
-let lessonTools=null;
+let lessonTools=null;\nlet lessonReview=null;
 const setToolsStatus=message=>{$("toolsStatus").textContent=message;};
+function renderReview(review){lessonReview=review||null;if(!review){$("reviewStatus").textContent="No review saved yet. Choose a rating to schedule your next review.";return;}const reviewed=new Date(review.reviewed_at).toLocaleDateString();const next=new Date(review.next_review_at).toLocaleDateString();$("reviewStatus").textContent="Last reviewed "+reviewed+" · Next review "+next+" ("+review.interval_days+" day"+(Number(review.interval_days)===1?"":"s")+").";}
 const refreshProgressControls=()=>{
  $("completeLesson").disabled=!lessonTools?.quizMastered||!!lessonTools?.completed;
  $("completeLesson").textContent=lessonTools?.completed?"✓ Lesson completed":"Mark lesson complete";
@@ -114,11 +140,18 @@ $("challengeTitle").textContent=lesson.challenge.title;
 $("challengePrompt").textContent=lesson.challenge.prompt;
 $("challengeHint").textContent=lesson.challenge.hint;
 $("challengeStarter").textContent=lesson.challenge.starter||"No starter code is required for this challenge.";
+document.querySelectorAll("[data-review-rating]").forEach(button=>button.addEventListener("click",async()=>{
+ if(!activeReviewUser){$("reviewStatus").textContent="Sign in to save a revision schedule.";return;}
+ button.disabled=true;
+ try{const saved=await window.PyLearnSession.recordLessonReview(index,Number(button.dataset.reviewRating));renderReview(saved);}
+ catch(error){$("reviewStatus").textContent=error.message||"Could not save your review.";}
+ finally{button.disabled=false;}
+}));
 $("nextLesson").href=index<lessons.length-1?"?id="+(index+2):"../projects/";
 $("nextLesson").textContent=index<lessons.length-1?"Next lesson →":"Explore projects →";
 document.querySelector('a[href="../playground/"]')?.setAttribute("href","../playground/?lesson="+(index+1));
 $("lessonNav").innerHTML=lessons.map((item,i)=>'<a class="'+(i===index?"active":"")+'" href="?id='+(i+1)+'">'+String(i+1).padStart(2,"0")+" · "+item.short+"</a>").join("");
-let accountLoad=0;
+let accountLoad=0;\nlet activeReviewUser=null;
 async function refreshAccountState(user){
  const request=++accountLoad;
  lessonTools=null;
