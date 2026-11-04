@@ -222,18 +222,65 @@
       if (error) throw error;
       return data;
     },
-    updateProfile: async displayName => {
+    getIdentities: async () => {
+      const user = await window.PyLearnSession.getUser();
+      if (!user?.id) return [];
+      const { data, error } = await client.auth.getUserIdentities();
+      if (error) throw error;
+      return data?.identities || [];
+    },
+    getPersonalDataCounts: async () => {
+      const user = await window.PyLearnSession.getUser();
+      if (!user?.id) return { notes: 0, bookmarks: 0 };
+      const [notes, bookmarks] = await Promise.all([
+        client.from("user_notes").select("lesson_id", { count: "exact", head: true })
+          .eq("user_id", user.id).is("deleted_at", null),
+        client.from("user_bookmarks").select("lesson_id", { count: "exact", head: true })
+          .eq("user_id", user.id).is("deleted_at", null)
+      ]);
+      if (notes.error) throw notes.error;
+      if (bookmarks.error) throw bookmarks.error;
+      return { notes: Number(notes.count || 0), bookmarks: Number(bookmarks.count || 0) };
+    },
+    updateProfile: async profile => {
       const user = await window.PyLearnSession.getUser();
       if (!user?.id) throw new Error("Sign in to update your profile.");
+      const values = typeof profile === "string" ? { displayName: profile } : (profile || {});
+      const displayName = String(values.displayName || "").trim().slice(0, 60);
+      const avatarUrl = String(values.avatarUrl || "").trim();
+      if (avatarUrl && !/^https:\/\//i.test(avatarUrl)) {
+        throw new Error("Profile image links must start with https://.");
+      }
       const { error } = await client.from("profiles").upsert({
-        id: user.id, display_name: String(displayName || "").trim().slice(0, 60),
+        id: user.id, display_name: displayName, avatar_url: avatarUrl || null,
         updated_at: new Date().toISOString()
       }, { onConflict: "id" });
       if (error) throw error;
       return true;
     },
+    updateEmail: async email => {
+      const user = await window.PyLearnSession.getUser();
+      if (!user?.id) throw new Error("Sign in to change your email address.");
+      const nextEmail = String(email || "").trim();
+      if (!nextEmail) throw new Error("Enter a new email address.");
+      const { data, error } = await client.auth.updateUser({ email: nextEmail });
+      if (error) throw error;
+      return data?.user || true;
+    },
+    updatePassword: async password => {
+      const user = await window.PyLearnSession.getUser();
+      if (!user?.id) throw new Error("Sign in to change your password.");
+      if (String(password || "").length < 8) throw new Error("Use at least 8 characters for your new password.");
+      const { data, error } = await client.auth.updateUser({ password: String(password) });
+      if (error) throw error;
+      return data?.user || true;
+    },
     signOut: async () => {
-      const { error } = await client.auth.signOut();
+      const { error } = await client.auth.signOut({ scope: "local" });
+      if (error) throw error;
+    },
+    signOutAllDevices: async () => {
+      const { error } = await client.auth.signOut({ scope: "global" });
       if (error) throw error;
     }
   });
