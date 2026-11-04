@@ -143,4 +143,181 @@ const lessons = [
 
 ];
 
-export { lessons };
+const foundationPractice = {
+  0: [
+    {title:"Update a score",prompt:"Create score = 10, add 5 to it, then print the updated score.",starter:"score = 10\n# Update the score below\n\nprint(score)",solution:"score = 10\nscore = score + 5\nprint(score)",hint:"Assign score + 5 back to the score variable."},
+    {title:"Build a short introduction",prompt:"Store your name and a favorite subject in two variables. Print one sentence using both.",starter:'name = "Alex"\nsubject = "Science"\n# Write your print() line below\n',solution:'name = "Alex"\nsubject = "Science"\nprint("My name is", name, "and I like", subject)',hint:"print() can display several comma-separated values."},
+    {title:"Predict a variable change",prompt:"Before running the code, predict the final value of total. Then try it in the playground.",starter:"total = 4\ntotal = total + 3\ntotal = total * 2\nprint(total)",solution:"total = 14",hint:"Follow each assignment in order: first add, then multiply."}
+  ],
+  1: [
+    {title:"Convert text to a number",prompt:"Convert the text value price_text into a float, then print the number plus 2.",starter:'price_text = "12.5"\n# Convert and calculate\n',solution:'price_text = "12.5"\nprice = float(price_text)\nprint(price + 2)',hint:"Use float(price_text) to convert decimal text."},
+    {title:"Check the types",prompt:"Create a string, an integer, and a float. Print type() for each one.",starter:'city = "Addis Ababa"\npopulation = 500\naverage = 2.5\n',solution:'city = "Addis Ababa"\npopulation = 500\naverage = 2.5\nprint(type(city))\nprint(type(population))\nprint(type(average))',hint:"Call type(variable) inside print()."},
+    {title:"Fix the type mismatch",prompt:"Fix the program so it prints 18 instead of joining text and a number.",starter:'age_text = "17"\nprint(age_text + 1)',solution:'age_text = "17"\nage = int(age_text)\nprint(age + 1)',hint:"Convert the numeric text with int() before adding."}
+  ],
+  2: [
+    {title:"Calculate a remainder",prompt:"Use the remainder operator to print the remainder when 23 is divided by 5.",starter:"number = 23\ndivisor = 5\n# Calculate the remainder\n",solution:"number = 23\ndivisor = 5\nprint(number % divisor)",hint:"The % operator gives the remainder."},
+    {title:"Make a simple calculator",prompt:"Read two whole numbers using input(), add them, and print the result. The playground's Program Input accepts one number per line.",starter:'first = int(input("First number: "))\nsecond = int(input("Second number: "))\n# Print their sum\n',solution:'first = int(input("First number: "))\nsecond = int(input("Second number: "))\nprint(first + second)',hint:"Convert each input with int(), then add the variables."},
+    {title:"Explore division",prompt:"Print the results of 17 / 5, 17 // 5, and 17 % 5 on separate lines.",starter:"number = 17\ndivisor = 5\n",solution:"number = 17\ndivisor = 5\nprint(number / divisor)\nprint(number // divisor)\nprint(number % divisor)",hint:"/, //, and % mean division, floor division, and remainder."}
+  ],
+  3: [
+    {title:"Check a pass mark",prompt:"If score is at least 50, print Passed. Otherwise print Keep practicing.",starter:"score = 46\n# Add your if/else here\n",solution:'score = 46\nif score >= 50:\n    print("Passed")\nelse:\n    print("Keep practicing")',hint:"Use if score >= 50: and an indented else block."},
+    {title:"Combine two rules",prompt:"Print Eligible only when age is at least 15 AND has_permission is True.",starter:"age = 16\nhas_permission = True\n",solution:'age = 16\nhas_permission = True\nif age >= 15 and has_permission:\n    print("Eligible")\nelse:\n    print("Not eligible")',hint:"The and operator requires both conditions to be true."},
+    {title:"Choose a category",prompt:"Print Small for numbers below 10, Medium for numbers from 10 to 19, and Large for 20 or more.",starter:"number = 14\n",solution:'number = 14\nif number < 10:\n    print("Small")\nelif number < 20:\n    print("Medium")\nelse:\n    print("Large")',hint:"Check the smaller range first with if, then use elif and else."}
+  ],
+  4: [
+    {title:"Count by twos",prompt:"Use a for loop and range() to print 2, 4, 6, 8, and 10.",starter:"# Write your loop below\n",solution:"for number in range(2, 11, 2):\n    print(number)",hint:"range(start, stop, step) can count by twos."},
+    {title:"Add numbers with a loop",prompt:"Use a loop to calculate the total of the numbers from 1 through 5, then print the total.",starter:"total = 0\n# Add your loop below\nprint(total)",solution:"total = 0\nfor number in range(1, 6):\n    total += number\nprint(total)",hint:"Start total at 0 and add each number inside the loop."},
+    {title:"Repeat until finished",prompt:"Use a while loop to print 3, 2, 1, then print Go!",starter:"count = 3\n",solution:'count = 3\nwhile count > 0:\n    print(count)\n    count -= 1\nprint("Go!")',hint:"Decrease count by 1 each time so the condition eventually becomes false."}
+  ]
+};
+
+const deepData = [
+  {
+    steps:[
+      ["1","Give a value a name","Write a clear variable name, then use = to assign a value: score = 10. The name now refers to the value 10."],
+      ["2","Display the value","print(score) asks Python to display the current value stored under score. It does not change the variable."],
+      ["3","Update the value","score = score + 5 means: read the old score (10), add 5, then store the result (15) back in score."],
+      ["4","Use the updated value","After that assignment, print(score) displays 15. Later lines see the new value, not the old one."],
+      ["5","Keep text and numbers clear","Text needs quotation marks, such as name = \"Mika\". A number such as age = 15 does not need quotes."]
+    ],
+    mistakes:[
+      ["Using == when assigning","Use one = to assign a value. Two equals signs (==) ask whether two values are equal."],
+      ["Forgetting quotes around text","name = Mika makes Python look for a variable named Mika. Write name = \"Mika\" for text."],
+      ["Thinking assignment is an equation","score = score + 5 is an instruction to update a value, not a claim that both sides are mathematically equal."],
+      ["Changing capitalization","Python treats score, Score, and SCORE as three different names."]
+    ],
+    recap:"A variable is a name connected to a value. = assigns or updates that value, and print() displays it. When you assign to the same variable again, the new value replaces the old one."
+  },
+  {
+    steps:[
+      ["1","Read the value, not just how it looks","\"17\" is a string (text), while 17 is an integer. They may look similar on screen, but Python treats them differently."],
+      ["2","Recognize the three common types","str stores text, int stores whole numbers, and float stores numbers with decimal parts."],
+      ["3","Use quotes for strings","city = \"Addis Ababa\" is text. The quotation marks tell Python to treat the characters as a string."],
+      ["4","Inspect a value with type()","type(age) reports the kind of value stored in age. For example, type(17) is int and type(17.0) is float."],
+      ["5","Convert when the operation needs it","int(\"17\") converts numeric text to 17. float(\"2.5\") converts numeric text to 2.5. The text must contain a valid number."],
+      ["6","Choose the type that matches the task","Use a string for a name, an integer for a whole-number count, and a float when a decimal value is useful."]
+    ],
+    mistakes:[
+      ["Putting a number in quotes by accident","\"15\" is text, not an integer. Convert it with int() before integer arithmetic."],
+      ["Expecting int() to keep a decimal part","int(4.8) becomes 4. Use float() when you need to keep the decimal value."],
+      ["Confusing a value with its type","17 is the value; int is its type. type(17) lets you inspect the type."],
+      ["Trying to convert ordinary words into numbers","int(\"hello\") cannot work because \"hello\" does not represent a whole number."]
+    ],
+    recap:"str is for text, int is for whole numbers, and float is for decimal numbers. Use type() to inspect a value and int() or float() to convert valid numeric text."
+  },
+  {
+    steps:[
+      ["1","Choose the operation","Use + to add, - to subtract, * to multiply, / for division, // for floor division, % for a remainder, and ** for a power."],
+      ["2","Follow the order of calculation","Parentheses are handled first, then powers, then multiplication/division, then addition/subtraction. Use parentheses when you want to make the order obvious."],
+      ["3","Read input from the user","input(\"Your age: \") displays a prompt and waits for typing. Whatever the user types is returned as a string."],
+      ["4","Convert before doing number work","age_text = input(...) gives text. age = int(age_text) converts valid whole-number text so age + 1 performs addition."],
+      ["5","Store and use the result","next_age = age + 1 calculates a new value. print(next_age) displays it; the calculation itself does not ask the user for more input."],
+      ["6","Compare the division operators","For 17 and 5, 17 / 5 is 3.4, 17 // 5 is 3, and 17 % 5 is 2."]
+    ],
+    mistakes:[
+      ["Assuming input() returns a number","input() always returns text. Convert it with int() or float() before numeric calculations."],
+      ["Joining text instead of adding numbers","\"17\" + \"2\" produces \"172\". int(\"17\") + int(\"2\") produces 19."],
+      ["Mixing up /, //, and %","/ gives ordinary division, // gives floor division, and % gives the remainder."],
+      ["Forgetting operator order","2 + 3 * 4 is 14 because multiplication happens first. Use (2 + 3) * 4 if you want 20."]
+    ],
+    recap:"Operators perform calculations. input() reads text, so convert numeric input before calculating. /, //, and % have different jobs: division, floor division, and remainder."
+  },
+  {
+    steps:[
+      ["1","Understand the condition","An expression such as score >= 50 is checked as either True or False. Here, 72 >= 50 is True."],
+      ["2","Start a decision with if","Write if followed by the condition and a colon: if score >= 50:. The colon marks the start of the block."],
+      ["3","Indent the instructions","The indented lines underneath if run only when its condition is True. Consistent indentation shows which instructions belong to the block."],
+      ["4","Add another path with else","else runs when the if condition is False. It does not need another condition."],
+      ["5","Check several possibilities with elif","Python checks an elif condition only if the earlier if/elif conditions were false. It runs the first matching block and then skips the remaining branches."],
+      ["6","Combine conditions when needed","and requires both conditions to be true; or requires at least one. not reverses a Boolean value."]
+    ],
+    mistakes:[
+      ["Using = instead of ==","Use = to assign a value, and == to compare two values. For example, score == 50 asks whether score equals 50."],
+      ["Forgetting the colon","An if, elif, or else header must end with a colon."],
+      ["Indenting the block incorrectly","The statements controlled by a condition must be indented underneath it."],
+      ["Putting a broad elif before a narrow one","Python stops at the first matching branch. Check more specific ranges before broader ones."]
+    ],
+    recap:"Conditions let a program choose what to do. if checks the first rule, elif checks another rule when earlier ones fail, and else handles the remaining case."
+  },
+  {
+    steps:[
+      ["1","Identify the repeated instruction","Move the instruction you want repeated into the indented body of a loop."],
+      ["2","Use for when you have a sequence","for number in range(1, 6): repeats once for each number produced by range()."],
+      ["3","Understand range() boundaries","range(1, 6) produces 1, 2, 3, 4, 5. The start is included, but the stop value (6) is not."],
+      ["4","Follow one iteration at a time","On each pass, number gets the next value. The indented print(number) runs once for that value."],
+      ["5","Use while for a condition-controlled loop","while count > 0: repeats as long as the condition is True. If count starts at 3 and decreases by 1 each time, the loop stops after 3, 2, and 1."],
+      ["6","Make sure the loop can finish","Change the value that controls a while condition, or provide another clear way for the condition to become False."]
+    ],
+    mistakes:[
+      ["Expecting range() to include its stop value","range(1, 6) ends at 5. To include 6, use range(1, 7)."],
+      ["Forgetting to indent the loop body","Only indented statements belong to the loop and repeat."],
+      ["Never updating a while-loop condition","If count stays 3 in while count > 0, the condition remains True and the loop does not finish."],
+      ["Changing a loop variable unexpectedly","Update the variable deliberately so the sequence and stopping condition are easy to follow."]
+    ],
+    recap:"Loops repeat instructions. Use for to process a sequence or range, and while to repeat as long as a condition is true. Remember that range() stops before its end value and that while loops need a way to finish."
+  },
+  {
+    steps:[
+      ["1","Create a list","Use square brackets and separate items with commas."],
+      ["2","Use an index","Python starts list indexes at 0, so the first item is items[0]."],
+      ["3","Create a dictionary","Use key:value pairs inside curly braces."],
+      ["4","Read and process data","Use keys for dictionaries and indexes or loops for lists."]
+    ],
+    mistakes:[
+      ["Using index 1 for the first list item","Python uses zero-based indexing."],
+      ["Using a list index on a dictionary","Dictionaries are normally accessed by their keys."],
+      ["Mixing up [] and {}","Lists use []; dictionaries use {}."]
+    ],
+    recap:"Lists store ordered items, while dictionaries store key-value pairs."
+  },
+  {
+    steps:[
+      ["1","Read the error","The exception type and message often tell you what went wrong."],
+      ["2","Import a module","Use import followed by the module name, such as import math."],
+      ["3","Call module functionality","Access functions with the module name, such as math.sqrt(49)."],
+      ["4","Handle expected problems","try/except can keep a known error from stopping the whole program."]
+    ],
+    mistakes:[
+      ["Ignoring the traceback","Read the last part of the error message for useful clues."],
+      ["Forgetting to import a module","Python needs import math before using math.sqrt()."],
+      ["Catching the wrong exception","Handle the specific error your code can reasonably produce."]
+    ],
+    recap:"Errors provide clues, modules add reusable functionality, and try/except handles expected exceptions."
+  }
+
+  ,{
+    steps:[["1","Treat text as a sequence","Strings contain characters that you can index and slice."],["2","Use string methods","Methods such as upper(), lower(), and strip() transform or inspect text."],["3","Build readable messages","f-strings let you insert values directly into text."],["4","Practice slicing","A slice starts at one index and stops before the end index."]],
+    mistakes:[["Forgetting zero-based indexing","The first character is at index 0."],["Expecting the end index to be included","text[0:3] stops before index 3."],["Mixing quotes and f-string syntax","An f-string needs an f before the opening quote."]],
+    recap:"Strings are sequences of text, and Python provides powerful tools for indexing, slicing, formatting, and transforming them."
+  },
+  {
+    steps:[["1","Create a tuple","Use parentheses and commas for ordered fixed data."],["2","Read tuple items","Use indexes just like with lists."],["3","Create a set","Use curly braces when you need unique values."],["4","Choose the right collection","Use tuples for fixed ordered data and sets for uniqueness."]],
+    mistakes:[["Trying to change a tuple","Tuples are immutable."],["Expecting set order","Sets are not used for reliable positional order."],["Using an empty set with {}","{} creates an empty dictionary; use set() for an empty set."]],
+    recap:"Tuples keep ordered immutable data, while sets keep unique values."
+  },
+  {
+    steps:[["1","Choose the source","Start with an iterable such as range(1, 6)."],["2","Write the expression","Decide what each item should become."],["3","Add the loop","Use for to produce one result per source item."],["4","Add a condition if needed","An if at the end can filter the items."]],
+    mistakes:[["Reading the order incorrectly","The expression comes before the for part."],["Forgetting brackets","A list comprehension uses square brackets."],["Making it too complicated","Use a normal loop when a comprehension becomes hard to read."]],
+    recap:"List comprehensions create lists compactly by combining an expression, a loop, and optionally a condition."
+  },
+  {
+    steps:[["1","Open the file","Use with open(filename, mode) as file."],["2","Choose a mode","r reads, w writes, and a appends."],["3","Read or write","Use read(), write(), or other file methods."],["4","Let with close it","The with block handles closing the file for you."]],
+    mistakes:[["Using the wrong mode","w replaces old contents; a adds to the end."],["Forgetting the with block indentation","File operations belong inside the block."],["Using an unavailable file path","Make sure the file location is correct."]],
+    recap:"with open() makes file access safer and clearer by handling the file lifecycle automatically."
+  },
+  {
+    steps:[["1","Define a class","Use class followed by the class name and a colon."],["2","Initialize objects","__init__ runs when a new object is created."],["3","Store instance data","Use self.name or similar attributes."],["4","Add methods","Methods describe behavior that objects can perform."]],
+    mistakes:[["Forgetting self","Instance methods need self as their first parameter."],["Confusing class and object","The class is the blueprint; the object is an instance."],["Calling a method without an object","Usually call object.method() so self is supplied automatically."]],
+    recap:"Classes define blueprints for objects, which combine data and behavior in reusable structures."
+  },
+  {
+    steps:[["1","Understand the request","An API exposes data or actions that another program can use."],["2","Recognize JSON","JSON commonly represents objects as key-value pairs and arrays as lists."],["3","Parse JSON","json.loads() turns JSON text into Python data."],["4","Use the data","Access dictionary keys and list items just like normal Python values."]],
+    mistakes:[["Confusing JSON with a Python dictionary","JSON is text until you parse it."],["Forgetting to import json","Use import json before json.loads()."],["Using the wrong key","The key must match the JSON data exactly."]],
+    recap:"APIs let programs communicate, and JSON is a common format for structured data exchanged between them."
+  }
+
+];
+
+lessons.forEach((lesson,index)=>Object.assign(lesson,deepData[index]||{}));
+
+export { lessons, foundationPractice };
