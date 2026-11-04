@@ -62,7 +62,7 @@ async function runCode(code, inputs) {
 const validators = [
   `valid = isinstance(ns.get("name"), str) and bool(ns.get("name", "").strip()) and f"hello, {ns['name']}".lower() in output.lower()`,
   `valid = isinstance(ns.get("name"), str) and isinstance(ns.get("age"), int) and isinstance(ns.get("height"), (int, float)) and all(str(v) in output for v in [ns.get("name"), ns.get("age"), ns.get("height")])`,
-  `valid = ns.get("age") == 15 and "16" in output`,
+  `valid = ns.get("score") == 65 and "passed" in output.lower()`,
   `valid = ns.get("score") == 65 and "passed" in output.lower()`,
   `valid = output_lines == ["1", "2", "3", "4", "5"]`,
   `valid = callable(ns.get("double")) and ns["double"](6) == 12 and "12" in output`,

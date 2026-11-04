@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090b12"><title>Profile & Account · PyLearn</title>
+<link rel="stylesheet" href="../shared/navigation.css">
+<style>
+.profile-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.profile-hero{display:flex;align-items:center;gap:18px;margin:26px 0 20px;padding:22px;border:1px solid var(--pl-line);border-radius:20px;background:linear-gradient(135deg,var(--pl-card),color-mix(in srgb,var(--pl-accent) 9%,var(--pl-card)))}
+.profile-avatar{width:76px;height:76px;flex:0 0 76px;display:grid;place-items:center;overflow:hidden;border:1px solid var(--pl-line);border-radius:22px;background:var(--pl-active-bg);color:var(--pl-accent-bright);font-size:25px;font-weight:850}
+.profile-avatar img{width:100%;height:100%;object-fit:cover}
+.profile-hero-copy{min-width:0;flex:1}.profile-hero-copy h2{margin:0 0 4px;font-size:23px;overflow-wrap:anywhere}.profile-hero-copy p{margin:0;color:var(--pl-muted);overflow-wrap:anywhere}
+.profile-member{color:var(--pl-muted);font-size:12px;white-space:nowrap}
+.profile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+.profile-card{min-width:0;padding:22px;border:1px solid var(--pl-line);border-radius:18px;background:var(--pl-card)}
+.profile-card h2{margin:0 0 7px;font-size:18px}.profile-card>p{margin:0 0 16px;color:var(--pl-muted);font-size:13px;line-height:1.6}
+.profile-field{display:block;margin:15px 0 6px;font-size:13px;font-weight:750}
+.profile-input{width:100%;box-sizing:border-box;padding:12px 13px;border:1px solid var(--pl-line);border-radius:10px;background:var(--pl-bg);color:var(--pl-text);font:inherit}
+.profile-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:17px}
+.profile-actions button,.profile-actions a{display:inline-flex;align-items:center;justify-content:center;padding:11px 14px;border:1px solid var(--pl-accent);border-radius:10px;background:var(--pl-accent);color:#fff;text-decoration:none;font:inherit;font-size:13px;font-weight:800;cursor:pointer}
+.profile-actions .secondary{background:transparent;border-color:var(--pl-line);color:var(--pl-text)}
+.profile-actions .danger{background:transparent;border-color:#b42335;color:#e87983}
+.profile-status{min-height:22px;margin:13px 0 0;color:var(--pl-muted);font-size:12px;line-height:1.6}
+.profile-status[data-kind="error"]{color:#e87983}.profile-status[data-kind="success"]{color:#34d399}
+.profile-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:16px}
+.profile-stat{padding:13px;border:1px solid var(--pl-line);border-radius:12px;background:var(--pl-bg)}
+.profile-stat strong{display:block;font-size:21px;letter-spacing:-.03em}.profile-stat span{display:block;margin-top:3px;color:var(--pl-muted);font-size:11px}
+.identity-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.identity-chip{display:inline-flex;align-items:center;gap:7px;padding:8px 11px;border:1px solid var(--pl-line);border-radius:999px;color:var(--pl-text);font-size:12px;font-weight:750}
+.identity-dot{width:7px;height:7px;border-radius:50%;background:var(--pl-accent-bright)}
+.profile-inline-note{color:var(--pl-muted);font-size:12px;line-height:1.6;margin-top:12px}
+.profile-auth-gate{margin-top:24px;padding:26px;border:1px solid var(--pl-line);border-radius:18px;background:var(--pl-card)}
+.profile-auth-gate[hidden],.profile-management[hidden]{display:none}
+.theme-choice{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px;border:1px solid var(--pl-line);border-radius:12px;background:var(--pl-bg)}
+.theme-choice strong{font-size:13px}.theme-choice span{display:block;color:var(--pl-muted);font-size:11px;margin-top:3px} .theme-choice button{padding:10px 13px;border:1px solid var(--pl-line);border-radius:10px;background:var(--pl-card);color:var(--pl-text);font:inherit;font-size:12px;font-weight:750;cursor:pointer;white-space:nowrap}
+@media(max-width:760px){.profile-grid{grid-template-columns:1fr}.profile-hero{align-items:flex-start;padding:17px;gap:13px}.profile-avatar{width:62px;height:62px;flex-basis:62px;border-radius:18px}.profile-member{white-space:normal}.profile-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.profile-card{padding:18px}}
+</style>
+</head>
+<body class="pl-page" data-page="profile">
+<main class="pl-content">
+<header class="profile-heading"><div><span class="pl-eyebrow">YOUR ACCOUNT</span><h1 class="pl-page-title">Profile & account</h1><p class="pl-lead">Manage your profile, sign-in details, learning overview and preferences in one place.</p></div></header>
+<section class="profile-auth-gate" id="authGate" hidden><h2>Sign in to manage your account</h2><p class="pl-lead">Your profile settings and synced learning information are available after you sign in.</p><div class="profile-actions"><a href="../welcome/">Sign in or create account →</a></div></section>
+<section class="profile-management" id="profileManagement" hidden>
+ <section class="profile-hero" aria-label="Account overview">
+  <div class="profile-avatar" id="profileAvatar"><span id="avatarInitials">PL</span></div>
+  <div class="profile-hero-copy"><h2 id="heroName">Your PyLearn account</h2><p id="heroEmail"></p></div>
+  <div class="profile-member" id="memberSince"></div>
+ </section>
+ <div class="profile-grid">
+  <section class="profile-card">
+   <h2>Personal profile</h2><p>Choose the name and profile image address shown in PyLearn.</p>
+   <label class="profile-field" for="displayName">Display name</label><input class="profile-input" id="displayName" maxlength="60" autocomplete="nickname" placeholder="Your display name">
+   <label class="profile-field" for="avatarUrl">Profile image URL <span style="font-weight:400;color:var(--pl-muted)">(optional)</span></label><input class="profile-input" id="avatarUrl" type="url" inputmode="url" placeholder="https://example.com/photo.png">
+   <div class="profile-actions"><button id="saveProfile" type="button">Save profile</button></div>
+   <p class="profile-status" id="profileStatus" role="status" aria-live="polite"></p>
+  </section>
+  <section class="profile-card">
+   <h2>Learning overview</h2><p>Your saved progress from lessons and practice.</p>
+   <div class="profile-stat-grid">
+    <div class="profile-stat"><strong id="statXp">—</strong><span>Total XP</span></div>
+    <div class="profile-stat"><strong id="statStreak">—</strong><span>Day streak</span></div>
+    <div class="profile-stat"><strong id="statLessons">—</strong><span>Lessons completed</span></div>
+    <div class="profile-stat"><strong id="statQuizzes">—</strong><span>Quizzes mastered</span></div>
+    <div class="profile-stat"><strong id="statChallenges">—</strong><span>Challenges solved</span></div>
+    <div class="profile-stat"><strong id="statBookmarks">—</strong><span>Saved bookmarks</span></div>
+    <div class="profile-stat"><strong id="statNotes">—</strong><span>Saved notes</span></div>
+   </div>
+   <div class="profile-actions"><a href="../dashboard/">Open dashboard</a><a class="secondary" href="../learn/">Learning path</a></div>
+   <p class="profile-status" id="learningStatus" role="status" aria-live="polite"></p>
+  </section>
+  <section class="profile-card">
+   <h2>Email address</h2><p>Update the email used for account sign-in. Supabase may ask you to confirm the change through email.</p>
+   <label class="profile-field" for="currentEmail">Current email</label><input class="profile-input" id="currentEmail" type="email" readonly>
+   <label class="profile-field" for="newEmail">New email address</label><input class="profile-input" id="newEmail" type="email" autocomplete="email" placeholder="name@example.com">
+   <div class="profile-actions"><button id="updateEmail" type="button">Request email change</button></div>
+   <p class="profile-status" id="emailStatus" role="status" aria-live="polite"></p>
+  </section>
+  <section class="profile-card">
+   <h2>Password & security</h2><p>Set a new password for your PyLearn account. Use at least 8 characters.</p>
+   <label class="profile-field" for="newPassword">New password</label><input class="profile-input" id="newPassword" type="password" autocomplete="new-password" minlength="8">
+   <label class="profile-field" for="confirmPassword">Confirm new password</label><input class="profile-input" id="confirmPassword" type="password" autocomplete="new-password" minlength="8">
+   <div class="profile-actions"><button id="updatePassword" type="button">Update password</button><button id="sendReset" class="secondary" type="button">Email a reset link</button></div>
+   <p class="profile-status" id="passwordStatus" role="status" aria-live="polite"></p>
+  </section>
+  <section class="profile-card">
+   <h2>Connected sign-in methods</h2><p>These are the sign-in identities currently associated with your account.</p>
+   <div class="identity-list" id="identityList"></div>
+   <p class="profile-inline-note" id="identityNote">Your available sign-in methods are read from your account. Linking or unlinking providers is not changed from this page.</p>
+   <p class="profile-status" id="identityStatus" role="status" aria-live="polite"></p>
+  </section>
+  <section class="profile-card">
+   <h2>Appearance</h2><p>Choose the colour mode used on this browser. The header theme control uses the same preference.</p>
+   <div class="theme-choice"><div><strong id="themeName">Dark theme</strong><span id="themeDescription">Your current appearance</span></div><button id="themePreference" class="secondary" type="button">Switch theme</button></div>
+   <p class="profile-inline-note">Appearance is saved on this browser. Your learning progress remains stored separately in your account.</p>
+  </section>
+  <section class="profile-card">
+   <h2>Sessions</h2><p>Choose whether to sign out only here or revoke refresh sessions on your other devices too.</p>
+   <div class="profile-actions"><button id="signOut" class="secondary" type="button">Sign out on this device</button><button id="signOutEverywhere" class="danger" type="button">Sign out everywhere</button></div>
+   <p class="profile-status" id="sessionStatus" role="status" aria-live="polite"></p>
+  </section>
+ </div>
+</section>
+</main>
+<script src="../shared/config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="../shared/session.js"></script><script src="../shared/navigation.js"></script>
+<script>
+(()=> {
+ const $=id=>document.getElementById(id);
+ let activeUser=null,activeProfile=null;
+ const status=(id,message,kind="")=>{const el=$(id);el.textContent=message;el.dataset.kind=kind;};
+ const initials=value=>String(value||"PL").trim().split(/[\s@._-]+/).filter(Boolean).slice(0,2).map(x=>x[0]).join("").toUpperCase()||"PL";
+ const providerName=value=>({azure:"Microsoft",google:"Google",email:"Email and password",phone:"Phone",apple:"Apple"}[String(value||"").toLowerCase()]||String(value||"Other").replace(/^./,x=>x.toUpperCase()));
+ function renderTheme(){const light=document.body.classList.contains("light");$("themeName").textContent=light?"Light theme":"Dark theme";$("themeDescription").textContent=light?"Bright surfaces and dark text":"Dark surfaces and light text";$("themePreference").textContent=light?"Switch to dark":"Switch to light";}
+ function renderAvatar(name,url){const avatar=$("profileAvatar");avatar.replaceChildren();if(url){const img=document.createElement("img");img.alt="Profile image";img.src=url;img.onerror=()=>renderAvatar(name,"");avatar.append(img);}else{const span=document.createElement("span");span.textContent=initials(name);avatar.append(span);}}
+ function renderIdentities(identities,user){const providers=[...new Set((identities||[]).map(item=>item.provider).filter(Boolean))];const fallback=user?.app_metadata?.providers||[user?.app_metadata?.provider||"email"];const list=providers.length?providers:fallback;$("identityList").replaceChildren();list.forEach(provider=>{const chip=document.createElement("span");chip.className="identity-chip";const dot=document.createElement("i");dot.className="identity-dot";const label=document.createElement("span");label.textContent=providerName(provider);chip.append(dot,label);$("identityList").append(chip);});if(!list.length){$("identityList").textContent="No sign-in methods were returned.";} }
+ async function loadAccount(user){
+  activeUser=user||null;
+  $("authGate").hidden=!!activeUser;
+  $("profileManagement").hidden=!activeUser;
+  if(!activeUser)return;
+  const fallbackName=activeUser.user_metadata?.full_name||activeUser.user_metadata?.name||"PyLearn learner";
+  $("heroEmail").textContent=activeUser.email||"Signed-in account";
+  $("currentEmail").value=activeUser.email||"";
+  $("memberSince").textContent=activeUser.created_at?"Member since "+new Date(activeUser.created_at).toLocaleDateString():"";
+  try{
+   const profile=await window.PyLearnSession.getProfile();
+   activeProfile=profile||{};
+   const name=activeProfile.display_name||fallbackName;
+   $("heroName").textContent=name;$("displayName").value=activeProfile.display_name||"";
+   $("avatarUrl").value=activeProfile.avatar_url||"";
+   renderAvatar(name,activeProfile.avatar_url||"");
+  }catch(error){status("profileStatus","Profile details could not be loaded: "+error.message,"error");$("heroName").textContent=fallbackName;renderAvatar(fallbackName,"");}
+  const tasks=await Promise.allSettled([
+   window.PyLearnSession.getLearningSummary(),
+   window.PyLearnSession.getPersonalDataCounts(),
+   window.PyLearnSession.getIdentities()
+  ]);
+  const summary=tasks[0].status==="fulfilled"?tasks[0].value:null;
+  const counts=tasks[1].status==="fulfilled"?tasks[1].value:null;
+  const identities=tasks[2].status==="fulfilled"?tasks[2].value:[];
+  if(summary){
+   $("statXp").textContent=summary.xp;$("statStreak").textContent=summary.streak;
+   $("statLessons").textContent=summary.lessonsCompleted+"/14";
+   $("statQuizzes").textContent=summary.quizzesMastered+"/14";
+   $("statChallenges").textContent=summary.challengesCompleted+"/14";
+   status("learningStatus","Learning statistics are synced from your saved account progress.","success");
+  }else{["statXp","statStreak","statLessons","statQuizzes","statChallenges"].forEach(id=>$(id).textContent="—");status("learningStatus","Learning statistics are temporarily unavailable. "+(tasks[0].reason?.message||""),"error");}
+  $("statBookmarks").textContent=counts?counts.bookmarks:"—";$("statNotes").textContent=counts?counts.notes:"—";
+  if(!counts)status("learningStatus","Some saved-item counts could not be loaded. Your notes and bookmarks have not been changed.","error");
+  renderIdentities(identities,activeUser);
+  if(tasks[2].status==="rejected")status("identityStatus","Connected sign-in methods could not be loaded: "+tasks[2].reason.message,"error");
+  renderTheme();
+ }
+ $("saveProfile").addEventListener("click",async()=>{
+  try{await window.PyLearnSession.updateProfile({displayName:$("displayName").value,avatarUrl:$("avatarUrl").value});const name=$("displayName").value.trim()||activeUser?.user_metadata?.full_name||"PyLearn learner";$("heroName").textContent=name;renderAvatar(name,$("avatarUrl").value.trim());status("profileStatus","Your profile has been saved.","success");}
+  catch(error){status("profileStatus",error.message||"Could not save your profile.","error");}
+ });
+ $("updateEmail").addEventListener("click",async()=>{
+  const next=$("newEmail").value.trim();if(!next){status("emailStatus","Enter the new email address first.","error");return;}
+  if(next.toLowerCase()===(activeUser?.email||"").toLowerCase()){status("emailStatus","That is already your current email address.","error");return;}
+  try{await window.PyLearnSession.updateEmail(next);status("emailStatus","Email change requested. Check the confirmation messages sent by Supabase before using the new address.","success");}
+  catch(error){status("emailStatus",error.message||"Could not request the email change.","error");}
+ });
+ $("updatePassword").addEventListener("click",async()=>{
+  const password=$("newPassword").value,confirm=$("confirmPassword").value;
+  if(password.length<8){status("passwordStatus","Use at least 8 characters for the new password.","error");return;}
+  if(password!==confirm){status("passwordStatus","The two passwords do not match.","error");return;}
+  try{await window.PyLearnSession.updatePassword(password);$("newPassword").value="";$("confirmPassword").value="";status("passwordStatus","Your password has been updated.","success");}
+  catch(error){status("passwordStatus",error.message||"Could not update the password.","error");}
+ });
+ $("sendReset").addEventListener("click",async()=>{
+  if(!activeUser?.email){status("passwordStatus","No account email address is available.","error");return;}
+  try{await window.PyLearnSession.resetPassword(activeUser.email);status("passwordStatus","If your account can receive a reset email, a password-reset link has been sent.","success");}
+  catch(error){status("passwordStatus",error.message||"Could not send the reset link.","error");}
+ });
+ $("themePreference").addEventListener("click",()=>{const toggle=document.querySelector(".pl-theme-toggle");if(toggle)toggle.click();else{const next=document.body.classList.contains("light")?"dark":"light";document.body.classList.toggle("light",next==="light");try{localStorage.setItem("pylearn_prod_theme",next);}catch{}}renderTheme();});
+ $("signOut").addEventListener("click",async()=>{try{await window.PyLearnSession.signOut();location.href=window.PyLearnConfig.url("welcome");}catch(error){status("sessionStatus",error.message||"Could not sign out.","error");}});
+ $("signOutEverywhere").addEventListener("click",async()=>{if(!confirm("Sign out of PyLearn on all devices?"))return;try{await window.PyLearnSession.signOutAllDevices();location.href=window.PyLearnConfig.url("welcome");}catch(error){status("sessionStatus",error.message||"Could not sign out everywhere.","error");}});
+ window.PyLearnSession.ready.then(()=>window.PyLearnSession.subscribe(loadAccount));
+ renderTheme();
+})();
+</script>
+</body></html>
