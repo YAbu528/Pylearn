@@ -52,7 +52,7 @@ const searchParams=new URLSearchParams(location.search);
 const requestedLesson=Number(searchParams.get("lesson"));
 if(Number.isInteger(requestedLesson)&&requestedLesson>=1&&requestedLesson<=lessons.length)$("lessonSelect").value=String(requestedLesson-1);
 const requestedPractice=Number(searchParams.get("practice"));
-if(Number.isInteger(requestedLesson)&&requestedLesson>=1&&requestedLesson<=lessons.length&&Number.isInteger(requestedPractice)){
+if(searchParams.has("practice")&&Number.isInteger(requestedLesson)&&requestedLesson>=1&&requestedLesson<=lessons.length&&Number.isInteger(requestedPractice)){
  const practice=foundationPractice[requestedLesson-1]?.[requestedPractice];
  if(practice){
   $("editor").value=practice.starter||"";
