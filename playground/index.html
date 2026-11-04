@@ -50,32 +50,76 @@ lessons.forEach((l,i)=>{const o=document.createElement("option");o.value=String(
 const requestedLesson=Number(new URLSearchParams(location.search).get("lesson"));
 if(Number.isInteger(requestedLesson)&&requestedLesson>=1&&requestedLesson<=lessons.length)$("lessonSelect").value=String(requestedLesson-1);
 function setStatus(t){$("engineStatus").textContent=t;}
-function createWorker(){
- worker=new Worker("../python-worker.js",{type:"module"});
- worker.onmessage=e=>{const m=e.data||{};
-  if(m.type==="ready"){ready=true;loading=null;setStatus("● Python ready");$("output").textContent="Python is ready. Run your code whenever you're ready.";}
+function createWorker(onInitResult){
+ const instance=new Worker(new URL("../python-worker.js",document.baseURI),{type:"module"});
+ worker=instance;
+ instance.onmessage=e=>{const m=e.data||{};
+  if(m.type==="ready"){ready=true;setStatus("● Python ready");$("output").textContent="Python is ready. Run your code whenever you're ready.";onInitResult?.(null);}
   else if(m.type==="stdout"){$("output").textContent+=m.text||"";}
-  else if(m.type==="run-result"){clearTimeout(runTimer);$("output").textContent=m.output?.trim()?m.output:"Program finished with no printed output.";finishRun();}
-  else if(m.type==="run-error"){clearTimeout(runTimer);$("output").textContent=m.error||"Python error.";finishRun();}
-  else if(m.type==="check-result"&&window.__checkResolve){clearTimeout(checkTimer);const done=window.__checkResolve;window.__checkResolve=null;done(m.result);}
-  else if(m.type==="error"){clearTimeout(checkTimer);setStatus("Python engine error");$("output").textContent=m.error||"Python engine error.";if(window.__checkResolve){const done=window.__checkResolve;window.__checkResolve=null;done({ok:false,output:"ERROR: "+m.error});}}
+  else if(m.type==="run-result"){clearTimeout(runTimer);runTimer=null;$("output").textContent=m.output?.trim()?m.output:"Program finished with no printed output.";finishRun();}
+  else if(m.type==="run-error"){clearTimeout(runTimer);runTimer=null;$("output").textContent=m.error||"Python error.";finishRun();}
+  else if(m.type==="check-result"&&window.__checkResolve){clearTimeout(checkTimer);checkTimer=null;const done=window.__checkResolve;window.__checkResolve=null;done(m.result);}
+  else if(m.type==="error"){
+   clearTimeout(checkTimer);checkTimer=null;ready=false;setStatus("Python engine error");
+   const message=m.error||"The Python worker reported an error.";
+   $("output").textContent=message;
+   if(window.__checkResolve){const done=window.__checkResolve;window.__checkResolve=null;done({ok:false,output:"ERROR: "+message});}
+   onInitResult?.(new Error(message));
+  }
  };
- worker.onerror=()=>{clearTimeout(checkTimer);ready=false;loading=null;setStatus("Python worker failed");if(window.__checkResolve){const done=window.__checkResolve;window.__checkResolve=null;done({ok:false,output:"ERROR: Python worker failed."});}};
- return worker;
+ const fail=event=>{
+  clearTimeout(runTimer);runTimer=null;clearTimeout(checkTimer);checkTimer=null;
+  ready=false;loading=null;
+  if(worker===instance)worker=null;
+  setStatus("Python worker failed");
+  const message=event?.message||"The browser could not start the Python worker. Check the connection or browser support, then retry.";
+  $("output").textContent=message;
+  finishRun();
+  if(window.__checkResolve){const done=window.__checkResolve;window.__checkResolve=null;done({ok:false,output:"ERROR: "+message});}
+  onInitResult?.(new Error(message));
+ };
+ instance.onerror=fail;
+ instance.onmessageerror=()=>fail({message:"The browser could not read a message from the Python worker. Please retry."});
+ return instance;
 }
 async function initPython(retry=false){
- if(retry){worker?.terminate();worker=null;ready=false;loading=null;clearTimeout(runTimer);clearTimeout(checkTimer);}
- if(ready)return true;if(loading)return loading;
- // Let the registered service worker activate before the dedicated worker requests Pyodide assets.
- if ("serviceWorker" in navigator) {
-  try { await Promise.race([navigator.serviceWorker.ready, new Promise(resolve=>setTimeout(resolve,2500))]); } catch {}
+ if(retry){
+  window.__engineInitCancel?.("The previous Python startup was stopped. Starting a fresh attempt…");
+  worker?.terminate();worker=null;ready=false;loading=null;
+  clearTimeout(runTimer);runTimer=null;clearTimeout(checkTimer);checkTimer=null;
+  if(window.__checkResolve){const done=window.__checkResolve;window.__checkResolve=null;done({ok:false,output:"Python engine restarted. Please check the challenge again."});}
  }
- setStatus("Starting Python engine…");$("output").textContent="Starting Python. Runtime files are reused from the browser cache when available; the first load may take longer.";
- const w=createWorker();
- loading=new Promise(resolve=>{const timeout=setTimeout(()=>{if(worker===w){w.terminate();worker=null;}ready=false;loading=null;setStatus("Python load timed out. Check your connection and retry.");resolve(false);},60000);
-  const old=w.onmessage;w.onmessage=e=>{old(e);if(e.data?.type==="ready"){clearTimeout(timeout);resolve(true);}else if(e.data?.type==="error"){clearTimeout(timeout);resolve(false);}};
- }).finally(()=>{if(!ready)loading=null;});
- w.postMessage({type:"init"});return loading;
+ if(ready)return true;
+ if(loading)return loading;
+ setStatus("Starting Python engine…");
+ $("retry").disabled=true;
+ $("output").textContent="Starting Python. The first download may take a little longer; if startup fails, the Retry button will be available.";
+ let resolveStartup;
+ const startup=new Promise(resolve=>{resolveStartup=resolve;});
+ loading=startup;
+ let settled=false,timeout=null,w=null;
+ const finish=(ok,errorText)=>{
+  if(settled)return;
+  settled=true;clearTimeout(timeout);
+  if(!ok){
+   ready=false;
+   if(worker===w){w?.terminate();worker=null;}
+   setStatus("Python engine failed to start");
+   $("output").textContent=errorText||"Python could not start. Check your connection and press Retry Python engine.";
+  }
+  if(loading===startup)loading=null;
+  if(window.__engineInitCancel===cancel)window.__engineInitCancel=null;
+  $("retry").disabled=false;
+  resolveStartup(ok);
+ };
+ const cancel=message=>finish(false,message||"Python startup was interrupted. Press Retry Python engine.");
+ window.__engineInitCancel=cancel;
+ try{
+  w=createWorker(error=>finish(!error,error?.message));
+  timeout=setTimeout(()=>finish(false,"Python startup timed out after 45 seconds. Check your connection and retry."),45000);
+  w.postMessage({type:"init"});
+ }catch(error){finish(false,error?.message||"The Python worker could not be created.");}
+ return startup;
 }
 function finishRun(){$("run").disabled=false;$("run").textContent="▶ Run Python";}
 async function runCode(){
