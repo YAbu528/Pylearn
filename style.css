@@ -400,3 +400,41 @@ body.light .curriculum-overview{background:linear-gradient(110deg,rgba(59,130,24
 body.light .curriculum-card{background:linear-gradient(155deg,#fff,var(--card))}
 @media(max-width:950px){.curriculum-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.curriculum-heading{align-items:flex-start;flex-direction:column}.curriculum-cta{align-self:flex-start}}
 @media(max-width:650px){.curriculum-section{padding:55px 5% 62px}.curriculum-heading h2{font-size:30px}.curriculum-heading p{font-size:13px}.curriculum-overview{grid-template-columns:1fr;gap:10px;padding:13px}.curriculum-overview>div{padding:5px 8px;border-right:0;border-bottom:1px solid var(--line)}.curriculum-overview>div:last-child{border-bottom:0}.curriculum-grid{grid-template-columns:1fr;gap:11px}.curriculum-card{padding:17px}.curriculum-footer{align-items:stretch;flex-direction:column;padding:19px}.curriculum-bottom-cta{justify-content:center;width:100%}}
+
+
+/* Complete feature navigation menu */
+.topbar{position:sticky}
+.topbar .menu-trigger{font-size:27px;line-height:1;padding:4px 8px;letter-spacing:1px}
+.topbar nav.navigation-menu{display:none;position:absolute;top:calc(100% + 9px);right:5%;left:auto;width:min(850px,90vw);margin:0;padding:0;gap:0;flex-direction:column;align-items:stretch;background:var(--panel);border:1px solid var(--line);border-radius:20px;box-shadow:0 24px 70px rgba(0,0,0,.34);overflow:hidden;z-index:40}
+.topbar nav.navigation-menu.open{display:flex}
+.navigation-menu-head{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:19px 22px 15px;border-bottom:1px solid var(--line);background:linear-gradient(110deg,rgba(59,130,246,.11),transparent 70%)}
+.navigation-menu-head>div{display:flex;flex-direction:column;gap:3px}
+.navigation-menu-head strong{font-size:17px;letter-spacing:-.3px}
+.navigation-menu-count{padding:6px 9px;border:1px solid var(--line);border-radius:99px;color:var(--muted);font-size:10px;font-weight:850;white-space:nowrap}
+.navigation-menu-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;padding:16px}
+.navigation-group{min-width:0;padding:5px 10px}
+.navigation-group h3{margin:0 0 10px;padding:0 7px;color:var(--purple2);font-size:10px;font-weight:950;letter-spacing:.12em;text-transform:uppercase}
+.topbar nav.navigation-menu .navigation-group a{display:flex;align-items:flex-start;gap:9px;padding:9px 7px;margin:2px 0;border-radius:10px;color:var(--text);font-weight:500;line-height:1.3;transition:background .15s ease}
+.topbar nav.navigation-menu .navigation-group a:hover{background:var(--card2);color:var(--text)}
+.navigation-icon{display:grid;place-items:center;width:29px;height:29px;flex:0 0 29px;border-radius:9px;background:rgba(96,165,250,.11);color:var(--purple2);font-size:16px;font-weight:900}
+.navigation-group a>span:last-child{min-width:0}
+.navigation-group b,.navigation-group small{display:block}
+.navigation-group b{font-size:11px;font-weight:850}
+.navigation-group small{margin-top:3px;color:var(--muted);font-size:9px;line-height:1.4}
+.navigation-menu-foot{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:13px 22px;border-top:1px solid var(--line);background:var(--card);color:var(--muted);font-size:10px}
+.topbar nav.navigation-menu .navigation-menu-foot a{display:inline-flex;align-items:center;gap:10px;color:var(--purple2);font-size:11px;font-weight:900;white-space:nowrap}
+@media(max-width:900px){.navigation-menu-grid{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:12px}.topbar nav.navigation-menu{width:min(680px,92vw);right:4%}}
+@media(max-width:650px){
+ .topbar nav.navigation-menu{display:none;top:calc(100% + 1px);left:0;right:0;width:100%;max-height:calc(100dvh - 70px);overflow-y:auto;border-radius:0 0 17px 17px;border-left:0;border-right:0}
+ .topbar nav.navigation-menu.open{display:flex}
+ .navigation-menu-head{padding:15px 17px 12px}
+ .navigation-menu-grid{grid-template-columns:1fr 1fr;padding:10px 8px;gap:6px}
+ .navigation-group{padding:5px}
+ .navigation-group h3{font-size:9px;padding:0 5px}
+ .topbar nav.navigation-menu .navigation-group a{gap:7px;padding:8px 5px}
+ .navigation-icon{width:26px;height:26px;flex-basis:26px;font-size:14px}
+ .navigation-group b{font-size:10px}
+ .navigation-group small{font-size:8px}
+ .navigation-menu-foot{align-items:flex-start;flex-direction:column;padding:12px 17px}
+}
+@media(prefers-reduced-motion:reduce){.topbar nav.navigation-menu,.navigation-group a{transition:none}}
