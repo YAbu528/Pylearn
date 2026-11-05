@@ -369,3 +369,34 @@ body.celebration-open{overflow:hidden}
 .foundation-practice-actions button{font-size:12px;padding:8px 11px}
 .foundation-practice-hint{color:var(--muted);font-size:13px;margin:10px 0 0}
 @media(max-width:650px){.foundation-practice{padding:15px}.foundation-practice-item{padding:12px}}
+
+/* Public-facing curriculum showcase */
+.curriculum-section{padding:76px 5% 84px;scroll-margin-top:90px}
+.curriculum-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:28px;margin-bottom:28px}
+.curriculum-heading-copy{max-width:760px}
+.curriculum-heading h2{font-size:clamp(29px,4vw,43px);line-height:1.12;letter-spacing:-1.2px;margin:10px 0 13px;max-width:690px}
+.curriculum-heading p{color:var(--muted);font-size:15px;line-height:1.75;max-width:720px;margin:0}
+.curriculum-cta{flex-shrink:0;display:inline-flex;align-items:center;gap:13px;padding:12px 17px;border:1px solid var(--line);border-radius:12px;color:var(--text);font-size:13px;font-weight:800;background:var(--panel)}
+.curriculum-cta:hover,.curriculum-card a:hover{border-color:var(--purple2);color:var(--purple2)}
+.curriculum-overview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:30px 0 22px;padding:17px;border:1px solid var(--line);border-radius:17px;background:linear-gradient(110deg,rgba(59,130,246,.09),rgba(96,165,250,.025) 58%,transparent)}
+.curriculum-overview>div{display:flex;flex-direction:column;gap:3px;padding:3px 15px;border-right:1px solid var(--line)}
+.curriculum-overview>div:last-child{border-right:0}
+.curriculum-overview strong{font-size:17px;letter-spacing:-.3px}
+.curriculum-overview span{font-size:11px;color:var(--muted);line-height:1.5}
+.curriculum-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.curriculum-card{min-width:0;display:flex;flex-direction:column;padding:19px 19px 17px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(155deg,var(--card),var(--panel));transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.curriculum-card:hover{transform:translateY(-3px);border-color:rgba(96,165,250,.55);box-shadow:0 15px 34px rgba(0,0,0,.16)}
+.curriculum-card-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px}
+.curriculum-number{font-size:12px;font-weight:900;letter-spacing:1px;color:var(--purple2);background:rgba(59,130,246,.12);border:1px solid rgba(96,165,250,.18);border-radius:8px;padding:6px 9px}
+.curriculum-level{font-size:9px;font-weight:900;letter-spacing:1px;color:var(--muted);text-align:right}
+.curriculum-card h3{font-size:16px;line-height:1.4;letter-spacing:-.2px;margin:0 0 9px}
+.curriculum-card p{font-size:12px;line-height:1.7;color:var(--muted);margin:0 0 18px;flex:1}
+.curriculum-card>a{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:12px;border-top:1px solid var(--line);font-size:11px;font-weight:850;color:var(--text);transition:color .18s ease}
+.curriculum-footer{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-top:24px;padding:24px;border:1px solid var(--line);border-radius:17px;background:var(--panel)}
+.curriculum-footer h3{font-size:20px;margin:5px 0;letter-spacing:-.4px}
+.curriculum-footer p{font-size:12px;line-height:1.65;color:var(--muted);margin:0;max-width:590px}
+.curriculum-bottom-cta{flex-shrink:0;display:inline-flex;align-items:center;gap:12px;font-size:12px}
+body.light .curriculum-overview{background:linear-gradient(110deg,rgba(59,130,246,.08),rgba(96,165,250,.025) 58%,transparent)}
+body.light .curriculum-card{background:linear-gradient(155deg,#fff,var(--card))}
+@media(max-width:950px){.curriculum-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.curriculum-heading{align-items:flex-start;flex-direction:column}.curriculum-cta{align-self:flex-start}}
+@media(max-width:650px){.curriculum-section{padding:55px 5% 62px}.curriculum-heading h2{font-size:30px}.curriculum-heading p{font-size:13px}.curriculum-overview{grid-template-columns:1fr;gap:10px;padding:13px}.curriculum-overview>div{padding:5px 8px;border-right:0;border-bottom:1px solid var(--line)}.curriculum-overview>div:last-child{border-bottom:0}.curriculum-grid{grid-template-columns:1fr;gap:11px}.curriculum-card{padding:17px}.curriculum-footer{align-items:stretch;flex-direction:column;padding:19px}.curriculum-bottom-cta{justify-content:center;width:100%}}
