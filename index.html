@@ -22,12 +22,44 @@
 </a>
 
 </a>
-  <nav id="mainNav">
-    <a href="#learn">Learn</a><a href="#challenge">Challenge</a><a href="#playground">Playground</a><a href="#projects">Projects</a>
+  <nav id="mainNav" class="navigation-menu" aria-label="All PyLearn features">
+    <div class="navigation-menu-head">
+      <div><span class="eyebrow">EXPLORE PYLEARN</span><strong>Everything in one place</strong></div>
+      <span class="navigation-menu-count">15 destinations</span>
+    </div>
+    <div class="navigation-menu-grid">
+      <section class="navigation-group" aria-labelledby="nav-start">
+        <h3 id="nav-start">Your space</h3>
+        <a href="#top" data-menu-link><span class="navigation-icon">⌂</span><span><b>Home</b><small>Return to the welcome page</small></span></a>
+        <a href="#account" data-menu-link><span class="navigation-icon">◎</span><span><b>Account</b><small>Sign in or manage your session</small></span></a>
+        <a href="#dashboard" data-menu-link><span class="navigation-icon">▦</span><span><b>Learning dashboard</b><small>Progress, XP and learning insights</small></span></a>
+        <a href="#missions" data-menu-link><span class="navigation-icon">⚑</span><span><b>Missions</b><small>Your current learning goals</small></span></a>
+      </section>
+      <section class="navigation-group" aria-labelledby="nav-learn">
+        <h3 id="nav-learn">Learn Python</h3>
+        <a href="#learn" data-menu-link><span class="navigation-icon">▤</span><span><b>Lessons</b><small>Follow the 14-step Python path</small></span></a>
+        <a href="#python-curriculum" data-menu-link><span class="navigation-icon">☷</span><span><b>Full curriculum</b><small>Browse every lesson and topic</small></span></a>
+        <a href="#roadmap" data-menu-link><span class="navigation-icon">⌁</span><span><b>Learning roadmap</b><small>See your journey and next steps</small></span></a>
+      </section>
+      <section class="navigation-group" aria-labelledby="nav-practice">
+        <h3 id="nav-practice">Practice & build</h3>
+        <a href="#challenge" data-menu-link><span class="navigation-icon">⚔</span><span><b>Coding challenges</b><small>Test your skills and earn XP</small></span></a>
+        <a href="#playground" data-menu-link><span class="navigation-icon">⌘</span><span><b>Python playground</b><small>Write and run Python code</small></span></a>
+        <a href="#projects" data-menu-link><span class="navigation-icon">◇</span><span><b>Projects</b><small>Build practical Python programs</small></span></a>
+      </section>
+      <section class="navigation-group" aria-labelledby="nav-tools">
+        <h3 id="nav-tools">Study & achievements</h3>
+        <a href="#studyTools" data-menu-link><span class="navigation-icon">⌕</span><span><b>Search lessons</b><small>Find topics and concepts quickly</small></span></a>
+        <a href="#studyTools" data-menu-link><span class="navigation-icon">☆</span><span><b>Saved lessons</b><small>Open your bookmarks</small></span></a>
+        <a href="#studyTools" data-menu-link><span class="navigation-icon">✎</span><span><b>My notes</b><small>Review your lesson notes</small></span></a>
+        <a href="#badges" data-menu-link><span class="navigation-icon">✧</span><span><b>Achievements</b><small>View your earned badges</small></span></a>
+      </section>
+    </div>
+    <div class="navigation-menu-foot"><span>Jump straight to any part of your Python journey.</span><a href="#learn" data-menu-link>Continue learning <b>→</b></a></div>
   </nav>
   <div class="top-actions">
     <button class="icon-btn" id="theme" aria-label="Toggle theme">☀️</button>
-    <button class="icon-btn" id="menu" aria-label="Open menu">☰</button>
+    <button class="icon-btn menu-trigger" id="menu" type="button" aria-label="Open all PyLearn features" aria-controls="mainNav" aria-expanded="false">⋯</button>
     <button class="primary small-btn" onclick="go('learn')">Start learning</button>
   </div>
 </header>
@@ -352,7 +384,7 @@ print("2 + 3 =", 2 + 3)</textarea>
   </div>
 </section>
 
-<section class="section badges-section">
+<section class="section badges-section" id="badges">
   <div class="heading"><div><span class="eyebrow">ACHIEVEMENTS</span><h2>Your badges</h2><p class="section-subtitle" id="badgeSummary">0 of 9 badges earned · 9 to go</p></div></div>
   <div class="badge-collection card" aria-label="Achievement collection progress">
     <div class="badge-collection-top"><strong>Collection progress</strong><span id="badgeProgressLabel">0/9 · 0%</span></div>
