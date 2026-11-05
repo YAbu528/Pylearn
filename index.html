@@ -362,92 +362,26 @@ print("2 + 3 =", 2 + 3)</textarea>
   <div class="badges" id="badges"></div>
 </section>
   
-<section class="section" id="python-curriculum">
-  <div class="heading">
-    <div>
-      <span class="eyebrow">PYTHON CURRICULUM</span>
-      <h2>Explore the Python Lessons</h2>
-      <p>PyLearn teaches Python step by step, from your first variables to working with APIs and JSON. Preview the topics covered in these interactive lessons.</p>
-    </div>
+<section class="section curriculum-section" id="python-curriculum" aria-labelledby="curriculumTitle">
+  <div class="curriculum-heading"><div class="curriculum-heading-copy"><span class="eyebrow">THE LEARNING PATH</span><h2 id="curriculumTitle">A clear path from Python beginner to builder.</h2><p>Explore the complete PyLearn curriculum. Each lesson introduces a practical programming skill, explains the ideas, and gives you space to practise with real Python code.</p></div><a class="curriculum-cta" href="#learn">Start learning <span aria-hidden="true">→</span></a></div>
+  <div class="curriculum-overview" aria-label="Curriculum overview"><div><strong>14</strong><span>Structured lessons</span></div><div><strong>Beginner →</strong><span>Progressive learning</span></div><div><strong>Learn by doing</strong><span>Examples, quizzes and coding challenges</span></div></div>
+  <div class="curriculum-grid">
+    <article class="curriculum-card"><div class="curriculum-card-top"><span class="curriculum-number">01</span><span class="curriculum-level">FOUNDATIONS</span></div><h3>Python Basics: Variables and print()</h3><p>Give values meaningful names, understand assignment, and display information with Python's print() function.</p><a href="#learn" onclick="selectLesson(0)">Explore lesson <span aria-hidden="true">↗</span></a></article>
+    <article class="curriculum-card"><div class="curriculum-card-top"><span class="curriculum-number">02</span><span class="curriculum-level">FOUNDATIONS</span></div><h3>Data Types: Strings, Integers and Floats</h3><p>Work with text, whole numbers and decimal numbers, and inspect values using type().</p><a href="#learn" onclick="selectLesson(1)">Explore lesson <span aria-hidden="true">↗</span></a></article>
+    <article class="curriculum-card"><div class="curriculum-card-top"><span class="curriculum-number">03</span><span class="curriculum-level">FOUNDATIONS</span></div><h3>Operators and input()</h3><p>Use arithmetic operators, collect user input, and convert text into numbers with int() and float().</p><a href="#learn" onclick="selectLesson(2)">Explore lesson <span aria-hidden="true">↗</span></a></article>
+    <article class="curriculum-card"><div class="curriculum-card-top"><span class="curriculum-number">04</span><span class="curriculum-level">CONTROL FLOW</span></div><h3>Conditions: if, elif and else</h3><p>Make programs respond intelligently to different situations with conditions and comparisons.</p><a href="#learn" onclick="selectLesson(3)">Explore lesson <span aria-hidden="true">↗</span></a></article>
+    <article class="curriculum-card"><div class="curriculum-card-top"><span class="curriculum-number">05</span><span class="curriculum-level">CONTROL FLOW</span></div><h3>Loops: for and while</h3><p>Repeat instructions, work with range(), and understand how loops continue and finish.</p><a href="#learn" onclick="selectLesson(4)">Explore lesson <span aria-hidden="true">↗</span></a></article>
+    <article class="curriculum-card"><div class="curriculum-card-top"><span class="curriculum-number">06</span><span class="curriculum-level">REUSABLE CODE</span></div><h3>Functions: Reusable Code</h3><p>Organize programs into functions with parameters, arguments and return values.</p><a href="#learn" onclick="selectLesson(5)">Explore lesson <span aria-hidden="true">↗</span></a></article>
+    <article class="curriculum-card"><div class="curriculum-card-top"><span class="curriculum-number">07</span><span class="curriculum-level">DATA STRUCTURES</span></div><h3>Lists and Dictionaries</h3><p>Store related information, access list items by index, and look up dictionary values with keys.</p><a href="#learn" onclick="selectLesson(6)">Explore lesson <span aria-hidden="true">↗</span></a></article>
+    <article class="curriculum-card"><div class="curriculum-card-top"><span class="curriculum-number">08</span><span class="curriculum-level">CORE SKILLS</span></div><h3>Errors and Modules</h3><p>Recognize common errors, import useful modules, and handle exceptions with try and except.</p><a href="#learn" onclick="selectLesson(7)">Explore lesson <span aria-hidden="true">↗</span></a></article>
+    <article class="curriculum-card"><div class="curriculum-card-top"><span class="curriculum-number">09</span><span class="curriculum-level">CORE SKILLS</span></div><h3>String Skills</h3><p>Explore indexing, slicing, helpful string methods, and formatted strings such as f-strings.</p><a href="#learn" onclick="selectLesson(8)">Explore lesson <span aria-hidden="true">↗</span></a></article>
+    <article class="curriculum-card"><div class="curriculum-card-top"><span class="curriculum-number">10</span><span class="curriculum-level">DATA STRUCTURES</span></div><h3>Tuples and Sets</h3><p>Use tuples for ordered collections and sets for unique values and removing duplicates.</p><a href="#learn" onclick="selectLesson(9)">Explore lesson <span aria-hidden="true">↗</span></a></article>
+    <article class="curriculum-card"><div class="curriculum-card-top"><span class="curriculum-number">11</span><span class="curriculum-level">PYTHON SKILLS</span></div><h3>List Comprehensions</h3><p>Build lists with concise expressions, loops, and optional conditions to filter results.</p><a href="#learn" onclick="selectLesson(10)">Explore lesson <span aria-hidden="true">↗</span></a></article>
+    <article class="curriculum-card"><div class="curriculum-card-top"><span class="curriculum-number">12</span><span class="curriculum-level">WORKING WITH FILES</span></div><h3>File Handling</h3><p>Read and write files with open(), use with to manage them safely, and understand file modes.</p><a href="#learn" onclick="selectLesson(11)">Explore lesson <span aria-hidden="true">↗</span></a></article>
+    <article class="curriculum-card"><div class="curriculum-card-top"><span class="curriculum-number">13</span><span class="curriculum-level">ADVANCED CONCEPTS</span></div><h3>Object-Oriented Python</h3><p>Understand classes and objects, define methods, initialize instances, and use self.</p><a href="#learn" onclick="selectLesson(12)">Explore lesson <span aria-hidden="true">↗</span></a></article>
+    <article class="curriculum-card"><div class="curriculum-card-top"><span class="curriculum-number">14</span><span class="curriculum-level">REAL-WORLD PYTHON</span></div><h3>APIs and JSON</h3><p>Learn how applications exchange data and how Python works with JSON objects and arrays.</p><a href="#learn" onclick="selectLesson(13)">Explore lesson <span aria-hidden="true">↗</span></a></article>
   </div>
-
-  <div class="study-grid">
-    <article class="card">
-      <h3>1. Python Basics: Variables and print()</h3>
-      <p>Learn how variables give names to values, how assignment works, and how print() displays information.</p>
-    </article>
-
-    <article class="card">
-      <h3>2. Data Types: Strings, Integers and Floats</h3>
-      <p>Understand text (str), whole numbers (int), decimal numbers (float), and how to inspect values with type().</p>
-    </article>
-
-    <article class="card">
-      <h3>3. Operators and input()</h3>
-      <p>Practice arithmetic operators, receive user input, and convert text into numbers using int() and float().</p>
-    </article>
-
-    <article class="card">
-      <h3>4. Conditions: if, elif and else</h3>
-      <p>Make programs choose different actions using conditions, comparison operators, if, elif, and else.</p>
-    </article>
-
-    <article class="card">
-      <h3>5. Loops: for and while</h3>
-      <p>Repeat instructions with for and while loops, use range(), and learn when loops continue or stop.</p>
-    </article>
-
-    <article class="card">
-      <h3>6. Functions: Reusable Code</h3>
-      <p>Create functions with def, use parameters and arguments, and return results for other code to use.</p>
-    </article>
-
-    <article class="card">
-      <h3>7. Lists and Dictionaries</h3>
-      <p>Store and organize data, access list items by index, and retrieve dictionary values using keys.</p>
-    </article>
-
-    <article class="card">
-      <h3>8. Errors and Modules</h3>
-      <p>Understand common errors, import Python modules, and handle exceptions using try and except.</p>
-    </article>
-
-    <article class="card">
-      <h3>9. String Skills</h3>
-      <p>Work with text using indexing, slicing, string methods, and formatted strings such as f-strings.</p>
-    </article>
-
-    <article class="card">
-      <h3>10. Tuples and Sets</h3>
-      <p>Use tuples for ordered data that should not change, and sets to store unique values and remove duplicates.</p>
-    </article>
-
-    <article class="card">
-      <h3>11. List Comprehensions</h3>
-      <p>Create lists concisely using expressions and loops, with optional conditions to filter results.</p>
-    </article>
-
-    <article class="card">
-      <h3>12. File Handling</h3>
-      <p>Read and write files with open(), use with to manage files safely, and learn common file modes.</p>
-    </article>
-
-    <article class="card">
-      <h3>13. Object-Oriented Python</h3>
-      <p>Explore classes and objects, define methods, initialize objects with __init__, and use self.</p>
-    </article>
-
-    <article class="card">
-      <h3>14. APIs and JSON</h3>
-      <p>Learn how APIs exchange data and how to parse JSON into Python dictionaries and lists.</p>
-    </article>
-  </div>
-
-  <p class="section-lead">
-    Ready to practise?
-    <a href="#learn">Open the interactive lessons</a>
-    to read explanations, run examples, take quizzes, and try coding challenges. Lessons still unlock in sequence.
-  </p>
+  <div class="curriculum-footer"><div><span class="eyebrow">YOUR NEXT STEP</span><h3>Turn what you learn into something real.</h3><p>Read the explanations, run examples, test your understanding, and build projects as you progress.</p></div><a class="primary curriculum-bottom-cta" href="#learn">Open interactive lessons <span aria-hidden="true">→</span></a></div>
 </section>
 
 </main>
