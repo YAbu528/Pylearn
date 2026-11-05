@@ -6,7 +6,23 @@
 <link rel="stylesheet" href="../shared/navigation.css">
 <style>
 :root{color-scheme:dark;--bg:#090b12;--panel:#0f121b;--panel2:#171b27;--line:#262c3d;--txt:#f4f5fb;--muted:#98a0b5;--accent:#3b82f6;--blue:#60a5fa;--danger:#fb7185}body.light{color-scheme:light;--bg:#f5f6fb;--panel:#fff;--panel2:#edf0f7;--line:#e3e5ee;--txt:#171827;--muted:#666a7b;--accent:#2563eb;--blue:#2563eb;--danger:#b42335}body.light textarea,body.light pre{background:#f7f9fc;color:#172033}body.light .pl-shell{--pl-header-bg:#fff;--pl-line:#d9deea;--pl-text:#172033;--pl-muted:#58647a;--pl-active-bg:rgba(49,95,186,.1)}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.55 system-ui,sans-serif}body.playground-page{--pl-header-bg:var(--panel);--pl-bg:var(--bg);--pl-card:var(--panel);--pl-text:var(--txt);--pl-muted:var(--muted);--pl-line:var(--line);--pl-accent:var(--accent);--pl-accent-bright:var(--blue)}body.playground-page.light{--pl-header-bg:var(--panel);--pl-bg:var(--bg);--pl-card:var(--panel);--pl-text:var(--txt);--pl-muted:var(--muted);--pl-line:var(--line);--pl-accent:var(--accent);--pl-accent-bright:var(--blue)}.wrap{width:min(1680px,calc(100% - 56px));max-width:1680px;margin:auto;padding:34px 0 70px}.eyebrow{color:var(--accent);font-size:.78rem;font-weight:800;letter-spacing:.13em}.intro h1{font-size:clamp(2rem,6vw,3.2rem);line-height:1.1;margin:.35rem 0}.intro p,.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(270px,.8fr);gap:18px;margin-top:24px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;min-width:0}.panel h2{font-size:1.15rem;margin:0 0 12px}.toolbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:12px 0}button,select{font:inherit;border:1px solid var(--line);border-radius:10px;padding:10px 13px;background:var(--panel2);color:var(--txt)}button{cursor:pointer}button.primary{background:var(--accent);color:#082017;border-color:var(--accent);font-weight:800}button:disabled{opacity:.55;cursor:not-allowed}select{max-width:100%}textarea,pre{width:100%;border:1px solid var(--line);border-radius:12px;background:#08101c;color:#e8f1ff;padding:14px;font:14px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere}textarea{resize:vertical;min-height:260px;tab-size:4}#output{min-height:90px;max-height:240px;overflow:auto}.status{font-size:.9rem;color:var(--muted)}.challenge-prompt{color:var(--muted)}.choice{display:block;width:100%;text-align:left;margin:8px 0}.choice.selected{border-color:var(--accent);outline:1px solid var(--accent)}.feedback{min-height:52px;padding:12px;border-radius:10px;background:var(--panel2);white-space:pre-wrap;overflow-wrap:anywhere}.feedback.good{color:var(--accent)}.feedback.bad{color:var(--danger)}.hidden{display:none!important}.field-label{display:block;margin:12px 0 6px;font-weight:700}.small-code{min-height:110px}.practice-context{margin-top:18px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);color:var(--muted);font-size:13px;line-height:1.6}.navline{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}.navline a{color:var(--blue)}@media(max-width:760px){.grid{grid-template-columns:1fr}.wrap{width:calc(100% - 26px);padding:20px 0 50px}.panel{padding:15px}textarea{min-height:220px}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.55 system-ui,sans-serif}body.playground-page{--pl-header-bg:var(--panel);--pl-bg:var(--bg);--pl-card:var(--panel);--pl-text:var(--txt);--pl-muted:var(--muted);--pl-line:var(--line);--pl-accent:var(--accent);--pl-accent-bright:var(--blue)}body.playground-page.light{--pl-header-bg:var(--panel);--pl-bg:var(--bg);--pl-card:var(--panel);--pl-text:var(--txt);--pl-muted:var(--muted);--pl-line:var(--line);--pl-accent:var(--accent);--pl-accent-bright:var(--blue)}.wrap{width:min(1680px,calc(100% - 56px));max-width:1680px;margin:auto;padding:34px 0 70px}.eyebrow{color:var(--accent);font-size:.78rem;font-weight:800;letter-spacing:.13em}.intro h1{font-size:clamp(2rem,6vw,3.2rem);line-height:1.1;margin:.35rem 0}.intro p,.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(270px,.8fr);gap:18px;margin-top:24px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;min-width:0}.panel h2{font-size:1.15rem;margin:0 0 12px}.toolbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:12px 0}button,select{font:inherit;border:1px solid var(--line);border-radius:10px;padding:10px 13px;background:var(--panel2);color:var(--txt)}button{cursor:pointer}button.primary{background:var(--accent);color:#082017;border-color:var(--accent);font-weight:800}button:disabled{opacity:.55;cursor:not-allowed}select{max-width:100%}
+.lesson-picker{position:relative;width:100%;z-index:12;margin-top:5px}
+.lesson-picker-trigger{width:100%;min-height:54px;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 16px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,var(--panel2),var(--panel));color:var(--txt);text-align:left;font-weight:700;box-shadow:inset 0 1px 0 rgba(255,255,255,.035);transition:border-color .18s,box-shadow .18s,background .18s}
+.lesson-picker-trigger:hover,.lesson-picker-trigger[aria-expanded="true"]{border-color:var(--accent);background:var(--panel2)}
+.lesson-picker-trigger:focus-visible,.lesson-picker-option:focus-visible{outline:3px solid rgba(96,165,250,.45);outline-offset:2px}
+#lessonPickerCurrent{min-width:0;overflow-wrap:anywhere}
+.lesson-picker-chevron{flex:0 0 auto;color:var(--blue);font-size:23px;line-height:1;transition:transform .18s}
+.lesson-picker-trigger[aria-expanded="true"] .lesson-picker-chevron{transform:rotate(180deg)}
+.lesson-picker-menu{position:absolute;top:calc(100% + 8px);left:0;right:0;z-index:40;max-height:min(360px,48vh);overflow-y:auto;overscroll-behavior:contain;padding:7px;border:1px solid var(--line);border-radius:15px;background:var(--panel);box-shadow:0 18px 48px rgba(0,0,0,.48);scrollbar-width:thin}
+.lesson-picker-menu[hidden]{display:none}
+.lesson-picker-option{display:flex;width:100%;min-height:46px;align-items:center;justify-content:space-between;gap:12px;margin:2px 0;padding:11px 13px;border:1px solid transparent;border-radius:10px;background:transparent;color:var(--txt);text-align:left;font-size:14px;font-weight:600;line-height:1.4;white-space:normal}
+.lesson-picker-option:hover{background:var(--panel2);border-color:var(--line)}
+.lesson-picker-option[aria-selected="true"]{background:rgba(59,130,246,.14);border-color:rgba(96,165,250,.35);color:var(--blue)}
+.lesson-picker-option[aria-selected="true"]::after{content:"✓";flex:0 0 auto;color:var(--blue);font-weight:900}
+body.light .lesson-picker-menu{box-shadow:0 18px 42px rgba(23,32,51,.18)}
+@media(max-width:600px){.lesson-picker-menu{max-height:42vh}.lesson-picker-option{min-height:48px;font-size:14px;padding:12px}}
+textarea,pre{width:100%;border:1px solid var(--line);border-radius:12px;background:#08101c;color:#e8f1ff;padding:14px;font:14px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere}textarea{resize:vertical;min-height:260px;tab-size:4}#output{min-height:90px;max-height:240px;overflow:auto}.status{font-size:.9rem;color:var(--muted)}.challenge-prompt{color:var(--muted)}.choice{display:block;width:100%;text-align:left;margin:8px 0}.choice.selected{border-color:var(--accent);outline:1px solid var(--accent)}.feedback{min-height:52px;padding:12px;border-radius:10px;background:var(--panel2);white-space:pre-wrap;overflow-wrap:anywhere}.feedback.good{color:var(--accent)}.feedback.bad{color:var(--danger)}.hidden{display:none!important}.field-label{display:block;margin:12px 0 6px;font-weight:700}.small-code{min-height:110px}.practice-context{margin-top:18px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);color:var(--muted);font-size:13px;line-height:1.6}.navline{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}.navline a{color:var(--blue)}@media(max-width:760px){.grid{grid-template-columns:1fr}.wrap{width:calc(100% - 26px);padding:20px 0 50px}.panel{padding:15px}textarea{min-height:220px}}
 </style>
 </head>
 <body class="pl-page playground-page" data-page="code">
@@ -28,7 +44,14 @@ print("2 + 3 =", 2 + 3)</textarea>
 <section class="panel">
 <h2>🎯 Lesson challenge</h2>
 <p class="muted">Choose a lesson to load its original challenge and validator.</p>
-<label class="field-label" for="lessonSelect">Choose lesson</label><select id="lessonSelect" style="width:100%"></select>
+<label class="field-label" id="lessonPickerLabel">Choose lesson</label>
+<div class="lesson-picker" id="lessonPicker">
+ <button class="lesson-picker-trigger" id="lessonPickerButton" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="lessonPickerMenu" aria-labelledby="lessonPickerLabel lessonPickerCurrent">
+  <span id="lessonPickerCurrent">1. Python Basics: variables &amp; print()</span>
+  <span class="lesson-picker-chevron" aria-hidden="true">⌄</span>
+ </button>
+ <div class="lesson-picker-menu" id="lessonPickerMenu" role="listbox" aria-labelledby="lessonPickerLabel" hidden></div>
+</div>
 <div class="eyebrow" id="challengeMode" style="margin-top:18px">CHALLENGE</div>
 <h3 id="challengeTitle">Select a lesson</h3><p id="challengePrompt" class="challenge-prompt"></p>
 <pre id="challengePreview" class="hidden"></pre>
@@ -47,10 +70,67 @@ import {lessons, foundationPractice} from "../shared/curriculum.js";
 const $=id=>document.getElementById(id);
 let worker=null,ready=false,loading=null,runTimer=null,checkTimer=null,selected=0,choice=null,user=null,progress=[];
 const esc=s=>String(s??"");
-lessons.forEach((l,i)=>{const o=document.createElement("option");o.value=String(i);o.textContent=(i+1)+". "+l.title;$("lessonSelect").append(o);});
 const searchParams=new URLSearchParams(location.search);
 const requestedLesson=Number(searchParams.get("lesson"));
-if(Number.isInteger(requestedLesson)&&requestedLesson>=1&&requestedLesson<=lessons.length)$("lessonSelect").value=String(requestedLesson-1);
+if(Number.isInteger(requestedLesson)&&requestedLesson>=1&&requestedLesson<=lessons.length)selected=requestedLesson-1;
+
+const pickerButton=$("lessonPickerButton"),pickerMenu=$("lessonPickerMenu"),pickerCurrent=$("lessonPickerCurrent");
+const pickerOptions=[];
+function renderLessonPicker(){
+ pickerCurrent.textContent=(selected+1)+". "+lessons[selected].title;
+ pickerOptions.forEach((option,index)=>option.setAttribute("aria-selected",String(index===selected)));
+}
+function closeLessonPicker(returnFocus=false){
+ pickerMenu.hidden=true;
+ pickerButton.setAttribute("aria-expanded","false");
+ if(returnFocus)pickerButton.focus();
+}
+function openLessonPicker(focusSelected=false){
+ pickerMenu.hidden=false;
+ pickerButton.setAttribute("aria-expanded","true");
+ if(focusSelected)pickerOptions[selected]?.focus();
+}
+lessons.forEach((lesson,index)=>{
+ const option=document.createElement("button");
+ option.type="button";
+ option.className="lesson-picker-option";
+ option.setAttribute("role","option");
+ option.setAttribute("aria-selected",String(index===selected));
+ option.tabIndex=-1;
+ option.textContent=(index+1)+". "+lesson.title;
+ option.addEventListener("click",()=>{
+  selected=index;
+  renderLessonPicker();
+  closeLessonPicker(true);
+  renderChallenge();
+ });
+ pickerMenu.append(option);
+ pickerOptions.push(option);
+});
+renderLessonPicker();
+pickerButton.addEventListener("click",()=>{
+ if(pickerMenu.hidden)openLessonPicker();
+ else closeLessonPicker();
+});
+pickerButton.addEventListener("keydown",event=>{
+ if(event.key==="ArrowDown"||event.key==="ArrowUp"){
+  event.preventDefault();
+  openLessonPicker(true);
+ }
+});
+pickerMenu.addEventListener("keydown",event=>{
+ const current=pickerOptions.indexOf(document.activeElement);
+ if(event.key==="Escape"){event.preventDefault();closeLessonPicker(true);return;}
+ if(event.key==="ArrowDown"||event.key==="ArrowUp"){
+  event.preventDefault();
+  const delta=event.key==="ArrowDown"?1:-1;
+  pickerOptions[Math.min(pickerOptions.length-1,Math.max(0,current+delta))]?.focus();
+ }else if(event.key==="Home"){event.preventDefault();pickerOptions[0]?.focus();}
+ else if(event.key==="End"){event.preventDefault();pickerOptions[pickerOptions.length-1]?.focus();}
+});
+document.addEventListener("pointerdown",event=>{
+ if(!event.target.closest("#lessonPicker"))closeLessonPicker();
+});
 const requestedPractice=Number(searchParams.get("practice"));
 if(searchParams.has("practice")&&Number.isInteger(requestedLesson)&&requestedLesson>=1&&requestedLesson<=lessons.length&&Number.isInteger(requestedPractice)){
  const practice=foundationPractice[requestedLesson-1]?.[requestedPractice];
@@ -142,7 +222,7 @@ async function runCode(){
  clearTimeout(runTimer);runTimer=setTimeout(()=>{worker?.terminate();worker=null;ready=false;loading=null;$("output").textContent="Execution took longer than 30 seconds and was stopped. Restarting Python…";finishRun();initPython();},30000);
 }
 function renderChallenge(){
- selected=Number($("lessonSelect").value)||0;choice=null;const l=lessons[selected],c=l.challenge,mode=c.mode||"code";
+ choice=null;const l=lessons[selected],c=l.challenge,mode=c.mode||"code";
  $("challengeMode").textContent=({code:"✏️ CODE IT",debug:"🐛 FIX IT",predict:"🔮 PREDICT",fill:"🧩 FILL THE GAP",mcq:"🎯 CHOOSE ONE"})[mode]||"CHALLENGE";
  $("challengeTitle").textContent=c.title;$("challengePrompt").textContent=c.prompt;$("hintText").textContent="";
  $("challengeResult").textContent="Try the challenge, then check your answer.";$("challengeResult").className="feedback";
@@ -155,7 +235,7 @@ function renderChallenge(){
  const completed=progress.find(p=>p.lessonId===selected)?.challengeCompleted;
  $("saveStatus").textContent=completed?"✓ This challenge is already saved as completed.":user?"Signed in. A correct result can be saved to your account.":"Sign in to save challenge completion and XP.";
 }
-$("lessonSelect").addEventListener("change",renderChallenge);
+
 $("hint").addEventListener("click",()=>{$("hintText").textContent="💡 "+lessons[selected].challenge.hint;});
 async function checkChallenge(){
  const c=lessons[selected].challenge,mode=c.mode||"code";let result={ok:false,output:""};
