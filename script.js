@@ -510,14 +510,19 @@ async function initializeAuth() {
     button.disabled = true;
     button.textContent = "Signing in…";
     setAuthMessage("");
-    const { data, error } = await supabaseClient.auth.signInWithPassword({
-      email: $("signInEmail").value.trim(),
-      password: $("signInPassword").value
-    });
-    button.disabled = false;
-    button.textContent = "Sign in";
-    if (error) setAuthMessage(error.message, "error");
-    else renderAuthSession(data.user);
+    try {
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email: $("signInEmail").value.trim(),
+        password: $("signInPassword").value
+      });
+      if (error) throw error;
+      renderAuthSession(data.user);
+    } catch (error) {
+      setAuthMessage(error.message || "We couldn't sign you in. Check your connection and try again.", "error");
+    } finally {
+      button.disabled = false;
+      button.textContent = "Sign in";
+    }
   });
   $("signUpForm").addEventListener("submit", async event => {
     event.preventDefault();
@@ -525,25 +530,39 @@ async function initializeAuth() {
     button.disabled = true;
     button.textContent = "Creating account…";
     setAuthMessage("");
-    const { data, error } = await supabaseClient.auth.signUp({
-      email: $("signUpEmail").value.trim(),
-      password: $("signUpPassword").value,
-      options: { emailRedirectTo: "https://yabu528.github.io/Pylearn/" }
-    });
-    button.disabled = false;
-    button.textContent = "Create account";
-    if (error) {
-      setAuthMessage(error.message, "error");
-    } else if (data.session) {
-      renderAuthSession(data.user);
-    } else {
-      showAuthForm("signin");
-      setAuthMessage("Account created. Check your email for a confirmation link, then return here and sign in.", "success");
+    try {
+      const { data, error } = await supabaseClient.auth.signUp({
+        email: $("signUpEmail").value.trim(),
+        password: $("signUpPassword").value,
+        options: { emailRedirectTo: "https://yabu528.github.io/Pylearn/" }
+      });
+      if (error) throw error;
+      if (data.session) {
+        renderAuthSession(data.user);
+      } else {
+        showAuthForm("signin");
+        setAuthMessage("Account created. Check your email for a confirmation link, then return here and sign in.", "success");
+      }
+    } catch (error) {
+      setAuthMessage(error.message || "We couldn't create your account. Check your connection and try again.", "error");
+    } finally {
+      button.disabled = false;
+      button.textContent = "Create account";
     }
   });
   $("signOutButton").addEventListener("click", async () => {
-    const { error } = await supabaseClient.auth.signOut();
-    if (error) setAuthMessage(error.message, "error");
+    const button = $("signOutButton");
+    button.disabled = true;
+    button.textContent = "Signing out…";
+    try {
+      const { error } = await supabaseClient.auth.signOut();
+      if (error) throw error;
+    } catch (error) {
+      setAuthMessage(error.message || "We couldn't sign you out. Please try again.", "error");
+    } finally {
+      button.disabled = false;
+      button.textContent = "Sign out";
+    }
   });
   const { data: { session }, error } = await supabaseClient.auth.getSession();
   if (error) setAuthMessage(error.message, "error");
