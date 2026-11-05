@@ -49,3 +49,18 @@ body.pl-page.light{--pl-header-bg:#eef0f5;--pl-bg:#f6f7fb;--pl-card:#fff;--pl-te
 .pl-footer-links a{color:var(--pl-muted);font-size:12px;font-weight:700;text-decoration:none}
 .pl-footer-links a:hover{color:var(--pl-text)}
 @media(max-width:760px){.pl-footer-inner{width:calc(100% - 32px);padding:20px 0 95px;align-items:flex-start;flex-direction:column;gap:12px}.pl-footer-brand{align-items:flex-start;gap:12px}.pl-footer-brand img{width:105px;height:44px;flex:0 0 105px;align-self:flex-start}.pl-footer-brand p{align-self:center;line-height:1.45}}
+
+/* Header brand is a wordmark plus the square mark; do not rely on the PNG alone. */
+.pl-shell{display:block!important;width:100%;min-width:0}
+.pl-header{display:flex!important;visibility:visible!important}
+.pl-brand{gap:9px;flex:0 0 154px;min-width:154px;max-width:154px;white-space:nowrap;text-decoration:none}
+.pl-brand img{width:36px;height:36px;max-width:36px;max-height:36px;object-fit:contain}
+.pl-brand-wordmark{display:inline-block;color:var(--pl-text,#f5f5fa);font-size:20px;font-weight:850;letter-spacing:-.045em;line-height:1}
+@media(max-width:760px){
+ .pl-shell{position:sticky!important;top:0!important;z-index:70!important}
+ .pl-header{display:flex!important;min-height:62px!important;padding:8px 14px!important;gap:8px!important;justify-content:space-between!important;overflow:visible!important}
+ .pl-brand{display:flex!important;flex:0 0 126px!important;width:126px!important;min-width:126px!important;max-width:126px!important;height:44px!important;visibility:visible!important;opacity:1!important;overflow:visible!important}
+ .pl-brand img{display:block!important;flex:0 0 34px!important;width:34px!important;min-width:34px!important;max-width:34px!important;height:34px!important;max-height:34px!important;visibility:visible!important;opacity:1!important}
+ .pl-brand-wordmark{display:inline-block!important;visibility:visible!important;opacity:1!important;font-size:19px!important}
+ .pl-header-actions{display:flex!important;visibility:visible!important;flex:0 0 auto!important;gap:7px!important}
+}
