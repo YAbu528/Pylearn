@@ -25,8 +25,15 @@
   brand.href = home;
   const logo = document.createElement("img");
   logo.src = config.asset("assets/pylearn-logo-dark.png");
-  logo.alt = "PyLearn";
-  brand.append(logo);
+  logo.alt = "";
+  logo.width = 38;
+  logo.height = 38;
+  logo.decoding = "async";
+  logo.addEventListener("error", () => { logo.hidden = true; });
+  const wordmark = document.createElement("span");
+  wordmark.className = "pl-brand-wordmark";
+  wordmark.textContent = "PyLearn";
+  brand.append(logo, wordmark);
   const nav = document.createElement("nav");
   nav.className = "pl-desktop-nav";
   nav.setAttribute("aria-label","Main navigation");
