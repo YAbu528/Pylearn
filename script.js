@@ -1679,7 +1679,28 @@ $("theme").onclick = () => {
   updateLogoTheme();
 };
 
-$("menu").onclick=()=>$("mainNav").classList.toggle("open");
+const menuButton = $("menu");
+const featureMenu = $("mainNav");
+function closeFeatureMenu(){
+  featureMenu.classList.remove("open");
+  menuButton.setAttribute("aria-expanded","false");
+  menuButton.setAttribute("aria-label","Open all PyLearn features");
+}
+menuButton.addEventListener("click",event=>{
+  event.stopPropagation();
+  const isOpen=featureMenu.classList.toggle("open");
+  menuButton.setAttribute("aria-expanded",String(isOpen));
+  menuButton.setAttribute("aria-label",isOpen?"Close PyLearn navigation":"Open all PyLearn features");
+});
+featureMenu.addEventListener("click",event=>{
+  if(event.target.closest("[data-menu-link]")) closeFeatureMenu();
+});
+document.addEventListener("click",event=>{
+  if(!featureMenu.contains(event.target)&&!menuButton.contains(event.target)) closeFeatureMenu();
+});
+document.addEventListener("keydown",event=>{
+  if(event.key==="Escape") closeFeatureMenu();
+});
 
 $("lessonSearch")?.addEventListener("input",searchLessons);
 $("lessonNotes")?.addEventListener("input",()=>{
