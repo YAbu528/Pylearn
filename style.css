@@ -438,3 +438,20 @@ body.light .curriculum-card{background:linear-gradient(155deg,#fff,var(--card))}
  .navigation-menu-foot{align-items:flex-start;flex-direction:column;padding:12px 17px}
 }
 @media(prefers-reduced-motion:reduce){.topbar nav.navigation-menu,.navigation-group a{transition:none}}
+
+/* PyLearn footer refresh */
+.pylearn-footer{display:block!important;padding:42px 7% 20px!important;background:#07090e!important;border-top:1px solid var(--line)}
+.pylearn-footer .footer-main{display:grid;grid-template-columns:2fr repeat(3,minmax(0,1fr));gap:34px;padding-bottom:30px}
+.pylearn-footer .footer-brand{display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.pylearn-footer .footer-brand .logo img{width:112px;height:78px;object-fit:contain;object-position:left center}
+.pylearn-footer .footer-brand p{max-width:270px;margin:0;color:var(--muted);font-size:13px;line-height:1.6}
+.pylearn-footer .footer-tagline{color:var(--muted);font-size:11px;opacity:.8}
+.pylearn-footer .footer-column{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.pylearn-footer .footer-column b{margin:4px 0 3px;color:var(--text);font-size:13px}
+.pylearn-footer .footer-column a,.pylearn-footer .footer-bottom a{color:var(--muted);font-size:12px;text-decoration:none;transition:color .18s}
+.pylearn-footer .footer-column a:hover,.pylearn-footer .footer-bottom a:hover{color:var(--purple2)}
+.pylearn-footer .footer-bottom{display:flex;justify-content:space-between;align-items:center;gap:16px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:11px}
+.pylearn-footer .footer-bottom nav{display:flex;flex-wrap:wrap;gap:20px}
+body.light .pylearn-footer{background:#eef0f5!important}
+@media(max-width:900px){.pylearn-footer .footer-main{grid-template-columns:1.5fr 1fr 1fr;row-gap:28px}.pylearn-footer .footer-brand{grid-column:1/-1}}
+@media(max-width:600px){.pylearn-footer{padding:32px 5% 18px!important}.pylearn-footer .footer-main{grid-template-columns:1fr 1fr;gap:25px 18px}.pylearn-footer .footer-brand{grid-column:1/-1}.pylearn-footer .footer-brand .logo img{width:100px;height:70px}.pylearn-footer .footer-bottom{align-items:flex-start;flex-direction:column;gap:13px}.pylearn-footer .footer-bottom nav{gap:12px 18px}}
