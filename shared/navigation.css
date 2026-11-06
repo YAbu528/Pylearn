@@ -94,3 +94,55 @@ body.pl-page.light{--pl-header-bg:#eef0f5;--pl-bg:#f6f7fb;--pl-card:#fff;--pl-te
  .pl-header .pl-brand{flex:0 0 145px!important;width:145px!important;min-width:145px!important;max-width:145px!important}
  .pl-header .pl-brand-wordmark{font-size:20px!important}
 }
+
+
+/* Final mobile header layout: reserve room for the brand, account action and theme control. */
+@media (max-width:760px){
+  .pl-shell{width:100%!important;max-width:100vw!important;overflow:visible!important}
+  .pl-header{
+    box-sizing:border-box!important;width:100%!important;max-width:100%!important;
+    min-height:60px!important;padding:8px 12px!important;gap:6px!important;
+    display:flex!important;flex-flow:row nowrap!important;align-items:center!important;
+    justify-content:space-between!important;overflow:visible!important;
+  }
+  .pl-header .pl-brand{
+    box-sizing:border-box!important;flex:0 1 auto!important;width:auto!important;
+    min-width:0!important;max-width:112px!important;height:42px!important;
+    gap:5px!important;overflow:hidden!important;
+  }
+  .pl-header .pl-brand::before{display:none!important;content:none!important}
+  .pl-header .pl-brand img{
+    box-sizing:border-box!important;display:block!important;flex:0 0 27px!important;
+    width:27px!important;min-width:27px!important;max-width:27px!important;
+    height:30px!important;max-height:30px!important;object-fit:contain!important;
+  }
+  .pl-header .pl-brand-wordmark{
+    display:inline-block!important;min-width:0!important;max-width:78px!important;
+    overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;
+    font-size:17px!important;letter-spacing:-.04em!important;
+  }
+  .pl-header-actions{
+    box-sizing:border-box!important;display:flex!important;flex:0 0 auto!important;
+    min-width:0!important;align-items:center!important;justify-content:flex-end!important;
+    gap:6px!important;margin-left:auto!important;
+  }
+  .pl-header .pl-account-status{
+    box-sizing:border-box!important;display:inline-flex!important;flex:0 1 auto!important;
+    min-width:0!important;max-width:94px!important;min-height:34px!important;
+    padding:0 8px!important;font-size:11px!important;overflow:hidden!important;
+    text-overflow:ellipsis!important;white-space:nowrap!important;
+  }
+  .pl-header .pl-theme-toggle{
+    box-sizing:border-box!important;display:inline-flex!important;flex:0 0 34px!important;
+    width:34px!important;min-width:34px!important;height:34px!important;
+    align-items:center!important;justify-content:center!important;padding:0!important;
+  }
+}
+@media(max-width:360px){
+  .pl-header{padding-left:9px!important;padding-right:9px!important;gap:4px!important}
+  .pl-header .pl-brand{max-width:100px!important;gap:4px!important}
+  .pl-header .pl-brand-wordmark{font-size:16px!important;max-width:68px!important}
+  .pl-header .pl-account-status{max-width:82px!important;padding:0 6px!important;font-size:10px!important}
+  .pl-header-actions{gap:4px!important}
+  .pl-header .pl-theme-toggle{flex-basis:32px!important;width:32px!important;min-width:32px!important;height:32px!important}
+}
