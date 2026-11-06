@@ -216,3 +216,23 @@ body.pl-page.light{--pl-header-bg:#eef0f5;--pl-bg:#f6f7fb;--pl-card:#fff;--pl-te
 
 /* Mobile fixed navigation must be viewport-fixed, not trapped by the shell's backdrop-filter. */
 @media(max-width:760px){.pl-shell{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}}
+
+
+/* Use the official full PyLearn logo artwork in the shared top bar. */
+.pl-header .pl-brand-logo{
+  display:block!important;flex:0 1 126px!important;width:126px!important;
+  min-width:0!important;max-width:126px!important;height:48px!important;
+  max-height:48px!important;object-fit:contain!important;object-position:left center!important;
+}
+@media(max-width:760px){
+  .pl-header .pl-brand-logo{
+    flex:0 1 116px!important;width:116px!important;max-width:116px!important;
+    height:46px!important;max-height:46px!important;
+  }
+}
+@media(max-width:340px){
+  .pl-header .pl-brand-logo{
+    flex-basis:100px!important;width:100px!important;max-width:100px!important;
+    height:40px!important;max-height:40px!important;
+  }
+}
