@@ -22,7 +22,7 @@ The reward function source was recovered from deployed version 3 and checked aga
 
 ## Migration history gap — not silently fabricated
 
-The repository previously contained only two migration files, while the live project reports seven applied migrations. The two tracked files do not fully reproduce the applied history, and the previous reward migration filename/version did not match the database's recorded version. This branch corrects the reward migration to the recorded version and the current live function definition.
+The repository previously contained only two migration files, while the live project reports seven applied migrations. The two tracked files do not fully reproduce the applied history, and the previous reward migration filename/version did not match the database's recorded version. This branch adds a replayable replacement for the current live reward-function definition under the database's recorded version. It is not claimed to be the original historical SQL body.
 
 The original SQL bodies for these five applied migrations were not present in the repository and cannot be recovered from the migration-version ledger alone:
 - `20261024171501_pylearn_initial_schema`
