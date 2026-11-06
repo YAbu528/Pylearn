@@ -24,7 +24,8 @@ Deno.serve(async (req: Request) => {
     if (!token) return Response.json({ error: "Sign-in required" }, { status: 401, headers });
 
     const url = Deno.env.get("SUPABASE_URL")!;
-    // Use the legacy JWT-based keys when present; never expose the service key to the browser.
+    // Use the legacy JWT-based keys when present; they work with supabase-js v2's
+    // Authorization header behavior. Never expose the service key to the browser.
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
