@@ -9,7 +9,9 @@ const corsHeaders = {
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  if (req.method !== "POST") return Response.json({ error: "Method not allowed" }, { status: 405, headers: corsHeaders });
+  if (req.method !== "POST") {
+    return Response.json({ error: "Method not allowed" }, { status: 405, headers: corsHeaders });
+  }
 
   try {
     const authHeader = req.headers.get("Authorization") || "";
@@ -20,11 +22,17 @@ Deno.serve(async (req: Request) => {
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    const authClient = createClient(url, anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
+    const authClient = createClient(url, anonKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
     const { data: { user }, error: authError } = await authClient.auth.getUser(token);
-    if (authError || !user) return Response.json({ error: "Invalid or expired session" }, { status: 401, headers: corsHeaders });
+    if (authError || !user) {
+      return Response.json({ error: "Invalid or expired session" }, { status: 401, headers: corsHeaders });
+    }
 
-    const admin = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+    const admin = createClient(url, serviceKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
     const { error } = await admin.from("user_achievements").upsert(
       { user_id: user.id, achievement_id: "code" },
       { onConflict: "user_id,achievement_id", ignoreDuplicates: true },
