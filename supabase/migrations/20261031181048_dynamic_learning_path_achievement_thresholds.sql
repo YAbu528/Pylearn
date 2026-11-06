@@ -1,6 +1,6 @@
--- Recovered from the live Supabase database on 2026-11-07.
--- This is the exact deployed definition for migration version
--- 20261031181048 (dynamic_learning_path_achievement_thresholds).
+-- Reconstructed from the current live Supabase function definition on 2026-11-07.
+-- This is a replayable replacement for the function state associated with
+-- version 20261031181048, NOT the original historical migration SQL body.
 -- Keep the function service-role-only; the Edge Function authenticates the user
 -- and invokes this RPC with the verified user ID.
 
