@@ -229,7 +229,7 @@
     signUp: async (email, password) => {
       const { data, error } = await client.auth.signUp({
         email, password,
-        options: { emailRedirectTo: config.homeUrl() + "welcome/" }
+        options: { emailRedirectTo: config.authHomeUrl() + "welcome/" }
       });
       if (error) throw error;
       return data;
@@ -237,14 +237,14 @@
     signInWithProvider: async provider => {
       const { data, error } = await client.auth.signInWithOAuth({
         provider,
-        options: { redirectTo: config.homeUrl() + "dashboard/" }
+        options: { redirectTo: config.authHomeUrl() + "dashboard/" }
       });
       if (error) throw error;
       return data;
     },
     resetPassword: async email => {
       const { error } = await client.auth.resetPasswordForEmail(email, {
-        redirectTo: config.homeUrl() + "welcome/"
+        redirectTo: config.authHomeUrl() + "welcome/"
       });
       if (error) throw error;
       return true;
