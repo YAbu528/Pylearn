@@ -23,17 +23,13 @@
   const brand = document.createElement("a");
   brand.className = "pl-brand";
   brand.href = home;
-  // Use a self-contained mark in the shared header. This avoids the mobile
-  // header depending on a large raster logo or a remote image loading correctly.
-  const logoMark = document.createElement("span");
-  logoMark.className = "pl-brand-mark";
-  logoMark.textContent = "P";
-  logoMark.setAttribute("aria-hidden", "true");
-  const wordmark = document.createElement("span");
-  wordmark.className = "pl-brand-wordmark";
-  wordmark.textContent = "PyLearn";
+  // Reuse PyLearn's official brand artwork already used in the footer.
+  const headerLogo = document.createElement("img");
+  headerLogo.className = "pl-brand-logo";
+  headerLogo.src = config.asset("assets/pylearn-logo-dark.png");
+  headerLogo.alt = "PyLearn";
   brand.setAttribute("aria-label", "PyLearn home");
-  brand.append(logoMark, wordmark);
+  brand.append(headerLogo);
   const nav = document.createElement("nav");
   nav.className = "pl-desktop-nav";
   nav.setAttribute("aria-label","Main navigation");
@@ -62,8 +58,10 @@
   const applyTheme = value => {
     document.body.classList.toggle("light",value === "light");
     theme.textContent = value === "light" ? "☾" : "☀";
+    const logoAsset = config.asset(value === "light" ? "assets/pylearn-logo-light.png" : "assets/pylearn-logo-dark.png");
+    headerLogo.src = logoAsset;
     const footerLogo = document.querySelector(".pl-footer-brand img");
-    if (footerLogo) footerLogo.src = config.asset(value === "light" ? "assets/pylearn-logo-light.png" : "assets/pylearn-logo-dark.png");
+    if (footerLogo) footerLogo.src = logoAsset;
   };
   let savedTheme = "dark";
   try { savedTheme = localStorage.getItem("pylearn_prod_theme") || "dark"; } catch {}
