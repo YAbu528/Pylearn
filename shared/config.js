@@ -17,6 +17,9 @@
     },
     homeUrl() {
       return location.origin + basePath;
+    },
+    authHomeUrl() {
+      return "https://pylearn-git-architecture-multipage-foundation-yabu528s-projects.vercel.app/";
     }
   });
 })();
