@@ -236,3 +236,43 @@ body.pl-page.light{--pl-header-bg:#eef0f5;--pl-bg:#f6f7fb;--pl-card:#fff;--pl-te
     height:40px!important;max-height:40px!important;
   }
 }
+
+
+/* Final logo sizing: give the official artwork enough room in both brand areas. */
+.pl-header{
+  min-height:78px!important;
+}
+.pl-header > .pl-brand{
+  flex:0 0 166px!important;width:166px!important;min-width:166px!important;max-width:166px!important;
+  min-height:64px!important;
+}
+.pl-header .pl-brand-logo{
+  flex:0 0 156px!important;width:156px!important;min-width:156px!important;max-width:156px!important;
+  height:62px!important;max-height:62px!important;
+  object-fit:contain!important;object-position:left center!important;
+}
+.pl-footer-brand img{
+  width:156px!important;height:64px!important;max-width:100%!important;
+  object-fit:contain!important;object-position:left center!important;
+}
+@media(max-width:760px){
+  .pl-header{min-height:72px!important}
+  .pl-header > .pl-brand{
+    flex:0 1 148px!important;width:148px!important;min-width:0!important;max-width:148px!important;
+    min-height:60px!important;
+  }
+  .pl-header .pl-brand-logo{
+    flex:0 1 144px!important;width:144px!important;min-width:0!important;max-width:144px!important;
+    height:58px!important;max-height:58px!important;
+  }
+  .pl-footer-brand img{
+    width:148px!important;height:62px!important;flex:0 0 148px!important;
+  }
+}
+@media(max-width:360px){
+  .pl-header > .pl-brand{flex-basis:128px!important;max-width:128px!important}
+  .pl-header .pl-brand-logo{
+    flex-basis:124px!important;width:124px!important;max-width:124px!important;
+    height:52px!important;max-height:52px!important;
+  }
+}
