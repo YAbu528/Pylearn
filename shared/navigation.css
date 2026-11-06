@@ -146,3 +146,69 @@ body.pl-page.light{--pl-header-bg:#eef0f5;--pl-bg:#f6f7fb;--pl-card:#fff;--pl-te
   .pl-header-actions{gap:4px!important}
   .pl-header .pl-theme-toggle{flex-basis:32px!important;width:32px!important;min-width:32px!important;height:32px!important}
 }
+
+
+/* Header v2: the brand mark is inline text, not a raster image. This layout
+   deliberately allocates a predictable column for it on narrow screens. */
+.pl-header > .pl-brand{
+  display:flex!important;align-items:center!important;gap:9px!important;
+  flex:0 0 154px!important;width:154px!important;min-width:154px!important;
+  max-width:154px!important;min-height:42px!important;overflow:visible!important;
+  text-decoration:none!important;visibility:visible!important;opacity:1!important;
+}
+.pl-brand-mark{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  flex:0 0 34px!important;width:34px!important;height:34px!important;
+  border-radius:10px!important;background:linear-gradient(145deg,#60a5fa,#2563eb)!important;
+  color:#fff!important;font-size:22px!important;font-weight:950!important;
+  line-height:1!important;box-shadow:0 3px 12px rgba(37,99,235,.28)!important;
+}
+.pl-header .pl-brand-wordmark{
+  display:inline-block!important;flex:0 0 auto!important;white-space:nowrap!important;
+  color:var(--pl-text,#f5f5fa)!important;font-size:20px!important;font-weight:850!important;
+  letter-spacing:-.045em!important;line-height:1!important;visibility:visible!important;
+}
+@media(max-width:760px){
+  .pl-header{
+    box-sizing:border-box!important;display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    align-items:center!important;column-gap:8px!important;
+    width:100%!important;min-width:0!important;max-width:100%!important;
+    min-height:60px!important;padding:8px 12px!important;overflow:visible!important;
+  }
+  .pl-header > .pl-brand{
+    display:flex!important;grid-column:1!important;justify-self:start!important;
+    flex:0 1 auto!important;width:auto!important;min-width:0!important;max-width:100%!important;
+    gap:7px!important;overflow:visible!important;
+  }
+  .pl-header .pl-brand-mark{
+    flex:0 0 30px!important;width:30px!important;height:30px!important;
+    border-radius:9px!important;font-size:20px!important;
+  }
+  .pl-header .pl-brand-wordmark{
+    display:inline-block!important;max-width:none!important;overflow:visible!important;
+    font-size:18px!important;white-space:nowrap!important;
+  }
+  .pl-header > .pl-header-actions{
+    display:flex!important;grid-column:2!important;justify-self:end!important;
+    flex:0 0 auto!important;min-width:0!important;gap:6px!important;margin:0!important;
+  }
+  .pl-header .pl-account-status{
+    display:inline-flex!important;flex:0 1 auto!important;min-width:0!important;
+    max-width:92px!important;min-height:34px!important;padding:0 8px!important;
+    overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;
+    font-size:11px!important;
+  }
+  .pl-header .pl-theme-toggle{
+    display:inline-flex!important;flex:0 0 34px!important;width:34px!important;
+    min-width:34px!important;height:34px!important;align-items:center!important;
+    justify-content:center!important;padding:0!important;
+  }
+}
+@media(max-width:340px){
+  .pl-header{padding-left:8px!important;padding-right:8px!important;column-gap:5px!important}
+  .pl-header .pl-brand-mark{flex-basis:27px!important;width:27px!important;height:27px!important}
+  .pl-header .pl-brand-wordmark{font-size:16px!important}
+  .pl-header .pl-account-status{max-width:78px!important;padding:0 6px!important;font-size:10px!important}
+  .pl-header .pl-theme-toggle{flex-basis:32px!important;width:32px!important;min-width:32px!important;height:32px!important}
+}
