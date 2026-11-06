@@ -212,3 +212,7 @@ body.pl-page.light{--pl-header-bg:#eef0f5;--pl-bg:#f6f7fb;--pl-card:#fff;--pl-te
   .pl-header .pl-account-status{max-width:78px!important;padding:0 6px!important;font-size:10px!important}
   .pl-header .pl-theme-toggle{flex-basis:32px!important;width:32px!important;min-width:32px!important;height:32px!important}
 }
+
+
+/* Mobile fixed navigation must be viewport-fixed, not trapped by the shell's backdrop-filter. */
+@media(max-width:760px){.pl-shell{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}}
