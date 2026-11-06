@@ -29,7 +29,10 @@
   headerLogo.src = config.asset("assets/pylearn-logo-dark.png");
   headerLogo.alt = "PyLearn";
   brand.setAttribute("aria-label", "PyLearn home");
-  brand.append(headerLogo);
+  const headerWordmark = document.createElement("span");
+  headerWordmark.className = "pl-brand-wordmark";
+  headerWordmark.textContent = "PyLearn";
+  brand.append(headerLogo, headerWordmark);
   const nav = document.createElement("nav");
   nav.className = "pl-desktop-nav";
   nav.setAttribute("aria-label","Main navigation");
