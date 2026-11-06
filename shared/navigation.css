@@ -324,3 +324,43 @@ body.pl-page.light{--pl-header-bg:#eef0f5;--pl-bg:#f6f7fb;--pl-card:#fff;--pl-te
   }
   .pl-header .pl-brand-wordmark{font-size:18px!important}
 }
+
+
+/* Header logo final correction.
+   The previous mobile rule still capped the square PNG at 48px, while the footer
+   gives the same artwork a 62px-tall box. This was the actual size bottleneck. */
+.pl-header{min-height:94px!important}
+.pl-header > .pl-brand{
+  flex:0 0 232px!important;width:232px!important;min-width:232px!important;max-width:232px!important;
+  min-height:82px!important;gap:12px!important;
+}
+.pl-header .pl-brand-logo{
+  flex:0 0 76px!important;width:76px!important;min-width:76px!important;max-width:76px!important;
+  height:76px!important;max-height:76px!important;object-fit:contain!important;
+}
+.pl-header .pl-brand-wordmark{font-size:25px!important}
+@media(max-width:760px){
+  .pl-header{
+    min-height:86px!important;padding:7px 12px!important;
+    grid-template-columns:minmax(0,1fr) auto!important;column-gap:8px!important;
+  }
+  .pl-header > .pl-brand{
+    flex:0 1 auto!important;width:auto!important;min-width:0!important;max-width:100%!important;
+    min-height:72px!important;gap:9px!important;
+  }
+  .pl-header .pl-brand-logo{
+    flex:0 0 66px!important;width:66px!important;min-width:66px!important;max-width:66px!important;
+    height:66px!important;max-height:66px!important;
+  }
+  .pl-header .pl-brand-wordmark{font-size:22px!important}
+  .pl-header > .pl-header-actions{min-width:0!important}
+}
+@media(max-width:380px){
+  .pl-header{padding-left:8px!important;padding-right:8px!important;column-gap:5px!important}
+  .pl-header .pl-brand{gap:7px!important}
+  .pl-header .pl-brand-logo{
+    flex-basis:60px!important;width:60px!important;min-width:60px!important;max-width:60px!important;
+    height:60px!important;max-height:60px!important;
+  }
+  .pl-header .pl-brand-wordmark{font-size:20px!important}
+}
