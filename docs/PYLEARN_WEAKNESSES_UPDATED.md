@@ -186,14 +186,27 @@ The database transaction must atomically insert private evidence, create/dedupe 
 
 Use a durable queue namespaced by exact account ID, for example `pylearn_verified_events:<uid>`. Queue only verifier request payloads and local metadata; it is transport state, never evidence. On retry, compare the currently authenticated user ID with the queue namespace before sending. Never submit one account's queued event under another account. Remove requests after a definitive accepted/already-recorded/invalid-answer response; retain only transient network/5xx failures with bounded retry/backoff. Ensure sign-out and account switch do not migrate queue contents.
 
-## Development database decision — approval required
+## Development database decision — paid branch declined; free alternative preferred
 
-Read-only Supabase inspection found no existing development branches for project `vzgbxoxscmlmacxciwze`. The project details report region `eu-west-1`. A current Supabase branch cost quote for organization `zcenoqlgbbmshhkreceg` is **US$0.01344 per hour** (about **US$9.81 for 730 hours** if continuously running; actual billing depends on active hours and provider terms).
+The user explicitly declined authorization to create a Supabase development branch at **US$0.01344/hour**. No branch was created. Do not ask again to create a paid branch unless the user independently reopens that option.
 
-- No branch was created and no migration was applied.
-- Creating a Supabase development branch requires explicit user approval after presenting the cost.
-- The user's known testing devices are Android phones; no desktop/Docker environment is available for local Supabase CLI testing. Do not assume a local stack can be run on the phone.
-- Until the user approves a branch or another isolated dev database is available, continue with source-level design and implementation preparation only; do not run DDL against production.
+Fresh account/project inspection:
+- Supabase currently lists one project accessible to the account: `Pylearn` (`vzgbxoxscmlmacxciwze`).
+- Organization ID: `zcenoqlgbbmshhkreceg`.
+- No Supabase development branches exist.
+- Supabase's current official Free-plan documentation says an account may have **two active Free projects total** across organizations where the user is Owner or Administrator. Free projects have a 500 MB database quota and can pause after one week of inactivity. The current project list shows one project, so a second Free project may be available, but confirm the account-wide quota and Free-plan organization before creating it.
+- Official references: [Free-plan project limits and billing](https://supabase.com/docs/guides/platform/billing-on-supabase), [current pricing and Free-plan limits](https://supabase.com/pricing), [local development requirements](https://supabase.com/docs/guides/local-development).
+
+Preferred no-cost route:
+1. If the account has its second Free project slot available, create a separate disposable project named e.g. `Pylearn-Dev` under the existing Free organization. It must be confirmed as **$0** before creation; do not accept any paid compute or upgrade prompt.
+2. Use synthetic test users and synthetic seed data only. Do not copy production user rows, auth identities, XP history, or secrets into development.
+3. Apply only the new additive migrations and test Edge Function/RPC behavior in that isolated project. Keep production untouched.
+4. Free project inactivity pausing is acceptable for this small test environment; resume it when needed. Monitor storage and quota.
+5. If the second Free slot is unavailable, use a GitHub Actions ephemeral PostgreSQL service for SQL/RPC transaction and schema tests (no persistent database charge), plus source-level/type/unit tests for Edge Function logic. This does not fully reproduce Supabase Auth/Edge Runtime integration, so defer end-to-end Supabase integration tests until a free isolated Supabase project is available.
+
+Local Supabase CLI is not the recommended path for the user's current Android-only setup: the official local stack requires a container runtime such as Docker/Podman, and the user's available devices are not suitable for running the full stack.
+
+**Authorization state:** The user has declined the paid preview branch. A second Free project has only been recommended, not authorized or created. Ask before creating it. Never run DDL or deploy test functions to production as a substitute.
 
 ## Completed in this conversation
 
@@ -216,3 +229,22 @@ Read-only Supabase inspection found no existing development branches for project
 ## Companion contract document
 
 The full API request/response contract, 14 quiz answer indexes, objective challenge normalization, legacy-account transition, and development-environment gate are also recorded in [SERVER_AUTHORITATIVE_REWARDS_CONTRACT.md](https://github.com/YAbu528/Pylearn/blob/feat/server-authoritative-rewards-20261107/docs/SERVER_AUTHORITATIVE_REWARDS_CONTRACT.md) on `feat/server-authoritative-rewards-20261107`.
+
+
+## Session checkpoint — declined paid branch; selected free testing strategy (2026-11-07)
+
+- User explicitly declined the Supabase preview branch at US$0.01344/hour. No branch or paid resource was created.
+- Rechecked Supabase project listing: one accessible project, `Pylearn`; no development branches. The organization ID is `zcenoqlgbbmshhkreceg`.
+- Checked current official Supabase documentation: Free plan allows two active projects total across organizations where the user is Owner/Admin; Free project database quota is 500 MB; Free projects may pause after one week of inactivity.
+- Recommended first choice: a separate second Free Supabase project, only if the account-wide free-project slot is available and the create flow confirms $0. This is not yet authorized or created.
+- Fallback if no free slot: GitHub Actions ephemeral PostgreSQL for database/schema/transaction tests plus local/source-level tests for Edge Function logic. This will not fully test Supabase Auth/Edge Runtime integration.
+- Local Supabase CLI/Docker is not practical for the user's current Android-only environment.
+- No source implementation, SQL migration, Supabase project creation, production write, deployment, or tests were performed.
+
+### Next session entry point
+
+1. Read this handover first and fetch the Phase 2 design and event contract.
+2. Ask whether the user authorizes creating a separate **$0 Free-plan** Supabase project, after confirming the second Free-project slot is available. Do not create it without explicit approval; if any cost is quoted, stop.
+3. If approved and free, create it, verify its plan/quota/region/status, then use only synthetic test users/data.
+4. If not available or not approved, prepare a GitHub Actions ephemeral PostgreSQL test harness and continue source-level implementation/tests without touching production.
+5. Keep the named handover updated and fetch it again after each substantial checkpoint.
