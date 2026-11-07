@@ -6,18 +6,16 @@
 
 > This document is the named successor checkpoint requested by the user. A new ChatGPT conversation should fetch and read this file first, then fetch the linked Phase 2 design/contract files before asking the user to repeat context.
 
-## Current status at this checkpoint
+## Current status at this checkpoint — updated 2026-11-07
 
-- **Audit:** inspected.
-- **Architecture:** proposed and documented.
-- **Answer-key inventory:** completed for all 14 lessons.
-- **Objective challenge inventory:** completed for the two prediction challenges and one multiple-choice challenge.
-- **API contract:** specified as a proposal; not implemented.
-- **Legacy-account transition:** specified as a proposal; not implemented.
-- **Development database:** no Supabase development branches exist. A branch cost quote was obtained; no branch was created.
-- **Implementation:** not started.
-- **Production:** unchanged. No production SQL, migration, RLS/grant change, Edge Function deployment, or user-data write was performed.
-- **Testing:** no automated integration/security tests or mobile browser regression tests were run in this checkpoint. Do not describe the weakness as fixed.
+- **Audit:** inspected; 14 quiz answer indexes and the three objective challenge answer rules inventoried.
+- **Architecture/contract:** documented. Database/API boundary implemented in isolated Pylearn-Dev; frontend integrated on the feature branch.
+- **Development database:** separate Supabase Free project `Pylearn-Dev` created and verified at $0/month; project ref `rhtfripfqwccbhcwgoxy`.
+- **Implementation:** database migrations and JWT-verified Edge Function deployed to Pylearn-Dev; frontend changes committed on `feat/server-authoritative-rewards-20261107`.
+- **Preview:** Vercel feature-branch deployment reached READY. Preview routes to Pylearn-Dev; GitHub Pages and stable Vercel domains remain pointed at production.
+- **Tests:** SQL transaction assertions passed and rolled back; synthetic Auth bootstrap test passed; Supabase security advisor returned no lints; GitHub Actions source-check run 4 passed.
+- **Still pending:** Auth redirect allowlist setup, authenticated browser tests, Android Chrome/Samsung Internet regression, and production rollout review.
+- **Production:** unchanged. No production migration, Edge Function deployment, or user-data write has occurred. Do not describe the reward weakness as fixed in production.
 
 ## Repository and branch references
 
@@ -27,7 +25,9 @@
 - Phase 1 recovery/audit branch: `audit/reward-integrity-phase1-20261107`
 - Phase 2 feature branch: `feat/server-authoritative-rewards-20261107`
 - Phase 2 base commit: `faeb179c337d5c063a266086fc2b97b624a6215e`
-- Latest known Phase 2 design commit before this checkpoint: `9bb87f04b3fbec6ac6b61b27ae3b343e5aec3f7f`
+- Latest Phase 2 feature-branch checkpoint at this update: `d5fc0b2ecde4fabe7b35b5365e024f0edb34ad98`.
+- Latest Phase 2 design document commit: `2043762df53161378b4836b641f95e5899ffb02f`.
+- Latest Phase 2 contract document commit: `a17c4efa5b2d884404734065413a81d19e47b932`.
 - PR #38 source-recovery merge commit on main: `faeb179c337d5c063a266086fc2b97b624a6215e`
 - PR #38: https://github.com/YAbu528/Pylearn/pull/38
 - Original Phase 1 handover: https://github.com/YAbu528/Pylearn/blob/audit/reward-integrity-phase1-20261107/docs/REWARD_INTEGRITY_PHASE1_HANDOVER.md
@@ -186,27 +186,24 @@ The database transaction must atomically insert private evidence, create/dedupe 
 
 Use a durable queue namespaced by exact account ID, for example `pylearn_verified_events:<uid>`. Queue only verifier request payloads and local metadata; it is transport state, never evidence. On retry, compare the currently authenticated user ID with the queue namespace before sending. Never submit one account's queued event under another account. Remove requests after a definitive accepted/already-recorded/invalid-answer response; retain only transient network/5xx failures with bounded retry/backoff. Ensure sign-out and account switch do not migrate queue contents.
 
-## Development database decision — paid branch declined; free alternative preferred
+## Development database — paid branch declined; Free project created
 
-The user explicitly declined authorization to create a Supabase development branch at **US$0.01344/hour**. No branch was created. Do not ask again to create a paid branch unless the user independently reopens that option.
+The user explicitly declined a Supabase development branch at **US$0.01344/hour**. Do not create a paid branch unless the user independently reopens that option.
 
-Fresh account/project inspection:
-- Supabase currently lists one project accessible to the account: `Pylearn` (`vzgbxoxscmlmacxciwze`).
-- Organization ID: `zcenoqlgbbmshhkreceg`.
-- No Supabase development branches exist.
-- Supabase's current official Free-plan documentation says an account may have **two active Free projects total** across organizations where the user is Owner or Administrator. Free projects have a 500 MB database quota and can pause after one week of inactivity. The current project list shows one project, so a second Free project may be available, but confirm the account-wide quota and Free-plan organization before creating it.
-- Official references: [Free-plan project limits and billing](https://supabase.com/docs/guides/platform/billing-on-supabase), [current pricing and Free-plan limits](https://supabase.com/pricing), [local development requirements](https://supabase.com/docs/guides/local-development).
+A separate Free project was subsequently authorized and created after a $0 cost quote:
+- Organization: `zcenoqlgbbmshhkreceg`, plan `free`.
+- Project: `Pylearn-Dev`.
+- Project ref: `rhtfripfqwccbhcwgoxy`.
+- Region: `eu-west-1`.
+- Status: `ACTIVE_HEALTHY`.
+- Project creation quote: `$0/month`.
+- Production project: `vzgbxoxscmlmacxciwze`, unchanged.
 
-Preferred no-cost route:
-1. If the account has its second Free project slot available, create a separate disposable project named e.g. `Pylearn-Dev` under the existing Free organization. It must be confirmed as **$0** before creation; do not accept any paid compute or upgrade prompt.
-2. Use synthetic test users and synthetic seed data only. Do not copy production user rows, auth identities, XP history, or secrets into development.
-3. Apply only the new additive migrations and test Edge Function/RPC behavior in that isolated project. Keep production untouched.
-4. Free project inactivity pausing is acceptable for this small test environment; resume it when needed. Monitor storage and quota.
-5. If the second Free slot is unavailable, use a GitHub Actions ephemeral PostgreSQL service for SQL/RPC transaction and schema tests (no persistent database charge), plus source-level/type/unit tests for Edge Function logic. This does not fully reproduce Supabase Auth/Edge Runtime integration, so defer end-to-end Supabase integration tests until a free isolated Supabase project is available.
+Dev-only fixtures:
+- `supabase/tests/fixtures/pylearn_dev_baseline.sql`
+- `supabase/tests/fixtures/pylearn_dev_auth_trigger.sql`
 
-Local Supabase CLI is not the recommended path for the user's current Android-only setup: the official local stack requires a container runtime such as Docker/Podman, and the user's available devices are not suitable for running the full stack.
-
-**Authorization state:** The user has declined the paid preview branch. A second Free project has only been recommended, not authorized or created. Ask before creating it. Never run DDL or deploy test functions to production as a substitute.
+Use synthetic test users and data only. Do not copy production users, auth identities, XP history, personal data or secrets. Free project inactivity pausing is acceptable for this test environment. The paid branch remains declined.
 
 ## Completed in this conversation
 
@@ -219,55 +216,61 @@ Local Supabase CLI is not the recommended path for the user's current Android-on
 
 ## Exact next session entry point
 
-1. Read this file first.
-2. Fetch `docs/SERVER_AUTHORITATIVE_REWARDS_DESIGN.md` and the Phase 2 contract addendum on `feat/server-authoritative-rewards-20261107`.
-3. Ask the user whether to authorize a Supabase development branch at US$0.01344/hour (or choose another isolated dev database). Do not create it without approval.
-4. Once an isolated database is available, implement the additive private evidence migration, atomic RPC and JWT-verified Edge Function on the feature branch; do not deploy to production.
-5. Then implement frontend routing/retry and run the security/compatibility matrix. Keep the named handover updated and verify every saved checkpoint.
-
+1. Read this handover first, then fetch the Phase 2 design and contract documents on `feat/server-authoritative-rewards-20261107`.
+2. Add the Vercel feature-preview origin to Supabase Pylearn-Dev Authentication → URL Configuration → Redirect URLs. Current branch alias: `https://pylearn-git-feat-server-authoritative-abc05f-yabu528s-projects.vercel.app/**`.
+3. Test email signup/sign-in with a synthetic development account only. Social provider credentials were intentionally not copied; social buttons are hidden in preview.
+4. Run authenticated Edge Function tests and mobile browser regression in Android Chrome and Samsung Internet.
+5. Fix any failures and re-run the source/SQL test matrix. Keep all work on the feature branch and Pylearn-Dev.
+6. Do not deploy any migration/function or merge to production without a separate review and explicit user approval. The production `award-python-run` endpoint remains a separate hardening/retirement item; code-run achievement is deferred.
+7. Keep this handover current and fetch it again after substantial checkpoints.
 
 ## Companion contract document
 
 The full API request/response contract, 14 quiz answer indexes, objective challenge normalization, legacy-account transition, and development-environment gate are also recorded in [SERVER_AUTHORITATIVE_REWARDS_CONTRACT.md](https://github.com/YAbu528/Pylearn/blob/feat/server-authoritative-rewards-20261107/docs/SERVER_AUTHORITATIVE_REWARDS_CONTRACT.md) on `feat/server-authoritative-rewards-20261107`.
 
 
-## Session checkpoint — declined paid branch; selected free testing strategy (2026-11-07)
+## Session checkpoint — Pylearn-Dev reward-integrity implementation started (2026-11-07)
 
-- User explicitly declined the Supabase preview branch at US$0.01344/hour. No branch or paid resource was created.
-- Rechecked Supabase project listing: one accessible project, `Pylearn`; no development branches. The organization ID is `zcenoqlgbbmshhkreceg`.
-- Checked current official Supabase documentation: Free plan allows two active projects total across organizations where the user is Owner/Admin; Free project database quota is 500 MB; Free projects may pause after one week of inactivity.
-- Recommended first choice: a separate second Free Supabase project, only if the account-wide free-project slot is available and the create flow confirms $0. This is not yet authorized or created.
-- Fallback if no free slot: GitHub Actions ephemeral PostgreSQL for database/schema/transaction tests plus local/source-level tests for Edge Function logic. This will not fully test Supabase Auth/Edge Runtime integration.
-- Local Supabase CLI/Docker is not practical for the user's current Android-only environment.
-- No source implementation, SQL migration, Supabase project creation, production write, deployment, or tests were performed.
+### Environment
+- Pylearn-Dev: ref `rhtfripfqwccbhcwgoxy`, organization `zcenoqlgbbmshhkreceg`, Free plan, region `eu-west-1`, status `ACTIVE_HEALTHY`, verified project creation quote $0/month.
+- Production Pylearn remains `vzgbxoxscmlmacxciwze`; no production writes or deployments were made.
+- Paid Supabase preview branch at US$0.01344/hour remains declined.
 
-### Next session entry point
+### Dev database and migrations
+- Dev-only baseline fixture: `supabase/tests/fixtures/pylearn_dev_baseline.sql`.
+- Dev-only Auth trigger fixture: `supabase/tests/fixtures/pylearn_dev_auth_trigger.sql`; mirrors production `handle_new_user` to create profile and user_stats rows for synthetic users.
+- Additive migration applied only to Pylearn-Dev: `20261107194500_server_authoritative_learning_rewards.sql`.
+- Explicit private-table deny-policy migration applied only to Pylearn-Dev: `20261107200500_private_reward_tables_deny_policies.sql`.
+- Private evidence and attempt tables are not browser-readable. Public RPC shims are SECURITY INVOKER and execute-only for service_role; private SECURITY DEFINER implementations use an empty search_path and explicit service_role JWT checks.
+- Old `public.award_learning_xp` fails closed in Pylearn-Dev. It rejects the legacy client-progress flag path.
+- Rate limit: 10 attempts per 10 minutes per user/lesson/event. Answers and learner code are not stored.
 
-1. Read this handover first and fetch the Phase 2 design and event contract.
-2. Ask whether the user authorizes creating a separate **$0 Free-plan** Supabase project, after confirming the second Free-project slot is available. Do not create it without explicit approval; if any cost is quoted, stop.
-3. If approved and free, create it, verify its plan/quota/region/status, then use only synthetic test users/data.
-4. If not available or not approved, prepare a GitHub Actions ephemeral PostgreSQL test harness and continue source-level implementation/tests without touching production.
-5. Keep the named handover updated and fetch it again after each substantial checkpoint.
+### Edge Function and frontend
+- `verify-learning-activity` deployed to Pylearn-Dev, ACTIVE version 1, `verify_jwt=true`.
+- Function validates the JWT with Auth `getUser`, derives user ID from the authenticated session, validates all 14 quiz answer indexes and objective challenge answers for lesson IDs 2, 6 and 13, then calls the atomic RPC.
+- Frontend `script.js` on the feature branch no longer ships the 14 quiz answer indexes or objective challenge expected answers. Quiz and supported objective challenge submissions use the verifier.
+- Account-scoped retry queue key: `pylearn_verified_events:<uid>`. It retains transient network/5xx failures and cannot submit one user's queue under another account.
+- Old flag-based reward replay and the `award-python-run` frontend call were removed. Code/debug/fill challenges keep local feedback but award no XP until trusted validators exist.
+- Visible progress upserts, notes, bookmarks, reviews and challenge-attempt history remain independent.
+- Vercel preview deployments use Pylearn-Dev. GitHub Pages and stable Vercel domains remain on production. Preview social sign-in is hidden because OAuth credentials were intentionally not copied.
 
+### Tests actually run
+- SQL transaction assertions passed for service-role authorization, forged-progress legacy RPC rejection, lesson quiz prerequisite, 10/10 rate limit, quiz +15 XP, lesson +20 XP, supported challenge +30 XP, duplicate idempotency, achievement unlocks, unsupported challenge rejection and legacy XP-event deduplication.
+- Auth bootstrap transaction confirmed synthetic auth user creates profile and user_stats.
+- Both SQL test transactions rolled back; post-test counts verified zero synthetic auth users, profiles, user_stats, XP events, evidence rows and attempts.
+- Supabase security advisor returned no lints.
+- GitHub Actions run 4 passed source checks (Node syntax checks for script.js and python-worker.js plus answer-key/legacy-call guards).
+- Vercel preview deployment for feature branch reached READY; deployed script inspected to confirm preview dev-project routing, no client answer keys and no legacy reward calls.
 
-## Session checkpoint — free development project created and verified (2026-11-07)
+### Remaining gates / risks
+- Add current Vercel preview origin to Pylearn-Dev Auth Redirect URLs: `https://pylearn-git-feat-server-authoritative-abc05f-yabu528s-projects.vercel.app/**`.
+- Complete authenticated browser testing and Android Chrome/Samsung Internet regression.
+- No authenticated browser invocation of the Edge Function has been completed yet.
+- Production still has the audited legacy reward path and the separate `award-python-run` endpoint active until a separately approved production rollout. Do not say the weakness is fixed in production.
+- Do not merge or deploy to production without a complete test matrix, rollback review and explicit user approval.
 
-- User explicitly authorized creation of `Pylearn-Dev` only if the project cost was $0 and the Free-plan allowance permitted it.
-- Rechecked the only listed Supabase organization: `zcenoqlgbbmshhkreceg`; its plan was confirmed as `free` / `tier_free`.
-- Rechecked account-visible projects before creation: only the production `Pylearn` project (`vzgbxoxscmlmacxciwze`) was listed.
-- Supabase quoted the new project at **$0/month**. A zero-cost confirmation ID was obtained, and the project creation call succeeded.
-- Created **`Pylearn-Dev`** in organization `zcenoqlgbbmshhkreceg`, region `eu-west-1`.
-- New development project ref: **`rhtfripfqwccbhcwgoxy`**.
-- Immediately fetched project details after creation. Verified: `status: ACTIVE_HEALTHY`, region `eu-west-1`, PostgreSQL 17.11, and the expected project name/ref.
-- This is a separate project. No production project settings, schema, migrations, Edge Functions, users, or data were changed. No data was copied from production.
-- **Next:** use this project only for synthetic test users and synthetic seed data. Before any DDL or Edge Function deployment, inspect the new project's current state and prepare additive migrations/function implementation on the Phase 2 GitHub feature branch. Keep all production changes out of scope until separately reviewed and explicitly authorized.
-- No reward-integrity implementation or tests have been completed yet. The weakness remains open; creating the isolated development database is an environment milestone, not a fix.
-
-### Current environment identifiers
-
-| Environment | Project | Ref | Region | State |
-|---|---|---|---|---|
-| Production (unchanged) | Pylearn | `vzgbxoxscmlmacxciwze` | `eu-west-1` | Existing project |
-| Development (new) | Pylearn-Dev | `rhtfripfqwccbhcwgoxy` | `eu-west-1` | `ACTIVE_HEALTHY` |
-
-**Cost verification:** Supabase's project cost quote returned `amount: 0`, `recurrence: monthly`. No paid branch or paid resource was created.
+### Latest feature-branch references
+- Branch: `feat/server-authoritative-rewards-20261107`
+- Latest feature-branch commit at this checkpoint: `d5fc0b2ecde4fabe7b35b5365e024f0edb34ad98`
+- Design doc commit: `2043762df53161378b4836b641f95e5899ffb02f`
+- Contract doc commit: `a17c4efa5b2d884404734065413a81d19e47b932`
