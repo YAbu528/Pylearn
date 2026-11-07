@@ -64,9 +64,18 @@ Keep old visible progress and existing XP/achievements. Do not backfill evidence
 
 Persist verifier requests in a queue namespaced to the exact authenticated user, such as `pylearn_verified_events:<uid>`. Retry only while that same user is authenticated. Remove definitive outcomes; retain transient network/5xx failures. The queue is not evidence and must never cross account boundaries.
 
-## Development environment gate
+## Development environment gate — paid branch declined
 
-No Supabase development branches were present at inspection. A Supabase branch quote was US$0.01344/hour (approximately US$9.81 per 730-hour month if continuously running). No branch was created. The user must explicitly approve this cost before branch creation. Do not test migrations against production. Local Supabase CLI/Docker is not assumed available on the user's Android-only setup.
+The user explicitly declined the Supabase preview branch at US$0.01344/hour. Do not create one.
+
+Supabase currently lists one accessible project (`Pylearn`). Official current Free-plan documentation allows two active Free projects total across organizations where the user is Owner/Administrator, with 500 MB database quota per Free project; Free projects may pause after one week of inactivity. Therefore, a separate second Free project is the preferred no-cost integration-test environment if the account-wide slot is available and project creation confirms $0. It has not been authorized or created. Ask before creating it, and stop if any cost is shown.
+
+Use synthetic test users/data only. Never copy production auth users, personal data, XP history, or secrets. If a second Free project is unavailable or not approved, use GitHub Actions ephemeral PostgreSQL for SQL/schema/transaction tests and source-level/unit tests for Edge Function logic; acknowledge that this does not fully exercise Supabase Auth/Edge Runtime. Local Supabase CLI is not recommended for the current Android-only setup because the local stack requires Docker/Podman or another supported container runtime.
+
+Official references:
+- https://supabase.com/docs/guides/platform/billing-on-supabase
+- https://supabase.com/pricing
+- https://supabase.com/docs/guides/local-development
 
 ## Implementation status
 
