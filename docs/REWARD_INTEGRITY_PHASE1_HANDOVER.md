@@ -418,7 +418,7 @@ The frontend and Worker review was expanded from high-level call sites to the ex
 - Latest design document commit after handler review: `9bb87f04b3fbec6ac6b61b27ae3b343e5aec3f7f`
 - Design file: `docs/SERVER_AUTHORITATIVE_REWARDS_DESIGN.md`
 - Design file was fetched again after update and verified to contain the handler-level requirements.
-- The recovery handover is being updated on `audit/reward-integrity-phase1-20261107`; its exact latest commit is recorded by the verification following this checkpoint.
+- Recovery handover branch: `audit/reward-integrity-phase1-20261107`; latest verified handover commit before this small correction: `803acf325a80e5d70bd1b17612057ad34a0e113d`.
 
 ### Next action
 
