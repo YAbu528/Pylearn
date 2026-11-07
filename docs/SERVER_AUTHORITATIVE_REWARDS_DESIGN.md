@@ -1,6 +1,6 @@
 # PyLearn server-authoritative rewards — design proposal
 
-**Status:** Draft for review; not implemented  
+**Status:** Database/API implemented in isolated Pylearn-Dev; frontend integrated in preview. End-to-end browser testing and production rollout remain pending.  
 **Date:** 2026-11-07  
 **Repository:** `YAbu528/Pylearn`  
 **Feature branch:** `feat/server-authoritative-rewards-20261107`  
@@ -151,21 +151,24 @@ Existing `user_achievements` rows are immutable history for this migration: pres
 - Offline/retry behavior does not lose events or duplicate awards.
 - Android Chrome and Samsung Internet preview regression, including sign-in/out and reload.
 
-## 7. Open decisions before implementation
+## 7. Remaining decisions and rollout gates
 
-- Confirm the initial supported challenge XP policy (MCQ + prediction only is the proposed safe minimum).
-- Confirm whether the code badge is deferred or its wording/meaning is changed.
-- Choose and test the development database strategy before applying any migration.
-- Finalize the transition UX for legacy completed lessons that need quiz re-verification for an unearned lesson reward.
-- Confirm exact answer normalization and validator versioning for prediction challenges.
-- Decide whether a per-user/per-lesson attempt limit is necessary to reduce automated guessing; if used, ensure it does not unfairly lock out learners or punish network retries.
+- Complete authenticated end-to-end tests in the Vercel preview using synthetic development accounts.
+- Complete Android Chrome and Samsung Internet regression, including sign-in/out, account switching, reload, progress sync, notes, bookmarks, reviews and challenge history.
+- Confirm the exact user-facing copy for legacy completed lessons that need quiz re-verification for any reward not already recorded.
+- Keep the Python-run achievement deferred until a server-verifiable execution receipt is designed and implemented.
+- Review production rollout order, backup/rollback steps, and the retirement of the old `award-python-run` endpoint. No production change is authorized by the development work.
+- Confirm the preview Auth redirect allowlist is configured before asking the user to test email confirmation.
 
 ## 8. Current implementation status
 
-No part of this design is implemented. No production database or Edge Function was changed. This document is a proposal for review and the basis for implementation planning.
+The server-authoritative reward boundary has been implemented and SQL-tested in the isolated `Pylearn-Dev` project. The Edge Function is deployed there with JWT verification enabled. Frontend integration is committed on `feat/server-authoritative-rewards-20261107` and a Vercel preview is READY.
 
+The production project remains unchanged. There has been no production migration, Edge Function deployment, or user-data write. Authenticated browser testing and Android regression are still pending, so this must not be described as production-fixed.
 
-## 9. Frontend integration findings from handler-level inspection
+## 9. Frontend integration findings from the pre-implementation inspection (historical snapshot)
+
+The findings below record the original code paths before the implementation described in section 10. Where they conflict with the current implementation, section 10 is authoritative.
 
 The main frontend integration points are now confirmed on the feature branch (still unchanged):
 
@@ -192,3 +195,39 @@ The main frontend integration points are now confirmed on the feature branch (st
 `python-worker.js:62–97` contains the 14 local validator expressions. `python-worker.js:79–80` uses `validators[Number(validatorIndex)] || "valid = True"`, so an invalid validator index passes the local check. The worker then returns `check-result` with the result at lines 99–112. This fallback must be corrected for local feedback reliability, but it must never be used as a server reward decision.
 
 This handler-level review was read-only. No frontend or Worker source was modified and no browser test was run.
+
+## 10. Development implementation checkpoint — 2026-11-07
+
+### Database and API
+
+- Pylearn-Dev ref: `rhtfripfqwccbhcwgoxy`; Free project, `eu-west-1`, `ACTIVE_HEALTHY`, created at a verified $0/month quote.
+- Dev-only fixtures: `supabase/tests/fixtures/pylearn_dev_baseline.sql` and `supabase/tests/fixtures/pylearn_dev_auth_trigger.sql`.
+- Migrations applied only to Pylearn-Dev: `20261107194500_server_authoritative_learning_rewards.sql` and `20261107200500_private_reward_tables_deny_policies.sql`.
+- Private evidence and attempt tables are not browser-readable. Public RPC shims are SECURITY INVOKER and executable only by `service_role`; private implementations are SECURITY DEFINER with an empty search_path and explicit service-role JWT checks.
+- The old `public.award_learning_xp` RPC fails closed in dev. The new verifier records evidence and XP atomically, enforces the quiz prerequisite for lesson XP, deduplicates legacy event keys, and limits each user/lesson/event to 10 attempts per 10 minutes.
+- Edge Function `verify-learning-activity` is deployed to dev, ACTIVE version 1, with `verify_jwt=true`. It validates the user with Auth `getUser`, derives the user ID from the JWT, and keeps the 14 quiz answer indexes and objective challenge answers server-side.
+
+### Frontend
+
+- Vercel preview hosts route to Pylearn-Dev; GitHub Pages and stable Vercel domains remain on production.
+- The browser no longer contains the 14 quiz answer indexes or objective challenge expected answers for lessons 2, 6 and 13.
+- Quiz and supported objective-challenge submissions use `verify-learning-activity`. New XP is displayed only after the server response.
+- A durable retry queue is namespaced by authenticated user ID. It retries only transient network/5xx failures and cannot migrate a queued event across accounts.
+- Legacy visible progress remains intact. Progress upserts, notes, bookmarks, reviews and challenge-attempt history remain independent of reward evidence.
+- Local code/debug/fill challenge feedback remains available, but those modes no longer award XP. The Python-run achievement request was removed from the feature frontend and remains deferred.
+
+### Verification
+
+- SQL tests passed for role authorization, legacy forged-flag rejection, quiz prerequisite, rate limit, XP values, idempotency, achievements, unsupported challenge rejection and legacy XP deduplication.
+- Synthetic Auth bootstrap trigger test passed.
+- Test transactions rolled back; zero synthetic users or reward rows remained.
+- Supabase security advisor returned no lints.
+- GitHub Actions source-check run 4 passed.
+- Vercel feature-branch preview reached READY; deployed script was inspected for dev routing and removal of client answer keys/legacy reward calls.
+
+### Remaining test gates
+
+- Add the preview origin to the Pylearn-Dev Auth redirect allowlist.
+- Run authenticated browser tests with a synthetic account.
+- Run Android Chrome and Samsung Internet regression.
+- Do not deploy to production until the complete preview test matrix and a separate rollout review pass.
