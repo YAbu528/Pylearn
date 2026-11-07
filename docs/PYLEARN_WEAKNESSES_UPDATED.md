@@ -248,3 +248,26 @@ The full API request/response contract, 14 quiz answer indexes, objective challe
 3. If approved and free, create it, verify its plan/quota/region/status, then use only synthetic test users/data.
 4. If not available or not approved, prepare a GitHub Actions ephemeral PostgreSQL test harness and continue source-level implementation/tests without touching production.
 5. Keep the named handover updated and fetch it again after each substantial checkpoint.
+
+
+## Session checkpoint — free development project created and verified (2026-11-07)
+
+- User explicitly authorized creation of `Pylearn-Dev` only if the project cost was $0 and the Free-plan allowance permitted it.
+- Rechecked the only listed Supabase organization: `zcenoqlgbbmshhkreceg`; its plan was confirmed as `free` / `tier_free`.
+- Rechecked account-visible projects before creation: only the production `Pylearn` project (`vzgbxoxscmlmacxciwze`) was listed.
+- Supabase quoted the new project at **$0/month**. A zero-cost confirmation ID was obtained, and the project creation call succeeded.
+- Created **`Pylearn-Dev`** in organization `zcenoqlgbbmshhkreceg`, region `eu-west-1`.
+- New development project ref: **`rhtfripfqwccbhcwgoxy`**.
+- Immediately fetched project details after creation. Verified: `status: ACTIVE_HEALTHY`, region `eu-west-1`, PostgreSQL 17.11, and the expected project name/ref.
+- This is a separate project. No production project settings, schema, migrations, Edge Functions, users, or data were changed. No data was copied from production.
+- **Next:** use this project only for synthetic test users and synthetic seed data. Before any DDL or Edge Function deployment, inspect the new project's current state and prepare additive migrations/function implementation on the Phase 2 GitHub feature branch. Keep all production changes out of scope until separately reviewed and explicitly authorized.
+- No reward-integrity implementation or tests have been completed yet. The weakness remains open; creating the isolated development database is an environment milestone, not a fix.
+
+### Current environment identifiers
+
+| Environment | Project | Ref | Region | State |
+|---|---|---|---|---|
+| Production (unchanged) | Pylearn | `vzgbxoxscmlmacxciwze` | `eu-west-1` | Existing project |
+| Development (new) | Pylearn-Dev | `rhtfripfqwccbhcwgoxy` | `eu-west-1` | `ACTIVE_HEALTHY` |
+
+**Cost verification:** Supabase's project cost quote returned `amount: 0`, `recurrence: monthly`. No paid branch or paid resource was created.
