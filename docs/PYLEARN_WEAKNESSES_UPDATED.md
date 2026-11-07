@@ -271,6 +271,8 @@ The full API request/response contract, 14 quiz answer indexes, objective challe
 
 ### Latest feature-branch references
 - Branch: `feat/server-authoritative-rewards-20261107`
-- Latest feature-branch commit at this checkpoint: `d5fc0b2ecde4fabe7b35b5365e024f0edb34ad98`
-- Design doc commit: `2043762df53161378b4836b641f95e5899ffb02f`
-- Contract doc commit: `a17c4efa5b2d884404734065413a81d19e47b932`
+- Latest feature-branch HEAD after documentation updates: `2043762df53161378b4836b641f95e5899ffb02f`.
+- Latest app-source preview deployment commit: `d5fc0b2ecde4fabe7b35b5365e024f0edb34ad98` (Vercel READY).
+- Design doc commit: `2043762df53161378b4836b641f95e5899ffb02f`.
+- Contract doc commit: `a17c4efa5b2d884404734065413a81d19e47b932`.
+- Preview alias: `pylearn-git-feat-server-authoritative-abc05f-yabu528s-projects.vercel.app`.
