@@ -378,3 +378,48 @@ Continue on `feat/server-authoritative-rewards-20261107` at commit `407adb9f794e
 5. Test direct forged flags, old endpoint bypass, idempotency/concurrency, and cross-device behavior before asking for production rollout approval.
 
 **Mandatory continuity:** Update this handover after every substantial inspection or implementation checkpoint, include exact commit/test status, and fetch it again to verify the saved checkpoint before ending the session.
+
+
+## Further Phase 2 checkpoint — handler-level integration review (2026-11-07)
+
+The frontend and Worker review was expanded from high-level call sites to the exact action handlers and sync sections. This was read-only; no frontend files changed.
+
+### Exact frontend integration points
+
+- `script.js:1510` — `answerQuiz(choice)`: compares against browser-shipped `lessons[current].quiz.answer`, sets local `quizAnswered`, appends to `state.quiz`, and displays +15 XP without waiting for server verification.
+- `script.js:1531` — `completeLesson()`: trusts `quizAnswered`, appends to `state.done`, and displays +20 XP.
+- `script.js:1568` — `checkChallenge()`: locally validates MCQ and prediction modes; code/debug/fill modes go through the Web Worker with `validatorIndex: current`.
+- `script.js:1605` — `recordChallengeAttempt()`: appends client-reported challenge outcomes to the user's attempt-history queue. This is history, not trusted reward evidence.
+- `script.js:1644` — `handleChallengeResult(result)`: trusts `result.ok`, adds to `state.challenges`, and displays +30 XP.
+- `script.js:664` — `syncLearningData()`: independently merges and upserts all 14 visible progress rows at lines 712–736; then builds reward requests from merged state arrays at lines 739–760. This replay path must be removed/replaced so old or client-merged flags do not become new trusted events.
+- `script.js:763–770`: calls `award-python-run` when local `state.runs >= 1`, with no server-verifiable execution receipt.
+- Notes, bookmarks, lesson reviews, and challenge-attempt history are separate sync flows and must continue to work if reward verification fails.
+
+### Worker validator detail
+
+- `python-worker.js:62–97` contains the 14 local validator expressions.
+- At lines 79–80, `validators[Number(validatorIndex)] || "valid = True"` means an invalid validator index defaults to success.
+- `python-worker.js:99–112` handles messages and returns `check-result`.
+- This fallback is a client-side validation defect to correct for learner feedback, but the Worker result must never be used as server reward evidence.
+
+### New frontend requirements added to design
+
+- Only a server-accepted quiz response may mark a quiz as reward-verified and display XP as awarded.
+- Lesson XP requires a server call backed by trusted quiz evidence; browser `quizAnswered` and old `state.quiz` are not proof.
+- Objective MCQ/prediction challenge answers go to server validation; Worker results for code/debug/fill may remain feedback-only with no authoritative challenge XP.
+- Preserve user-visible progress merge/upsert, but remove reward generation from merged state arrays.
+- Keep pending verifier requests in a durable account-scoped retry queue so offline/reload/network errors do not silently lose submissions. Pending events must never be replayed under a different account.
+- The retry queue is only transport reliability; server evidence is still the authority.
+- Disable/redefine the Python-run achievement call until a server-verifiable execution receipt or new transparent badge semantics exist.
+
+### Updated branch and document commits
+
+- Feature branch: `feat/server-authoritative-rewards-20261107`
+- Latest design document commit after handler review: `9bb87f04b3fbec6ac6b61b27ae3b343e5aec3f7f`
+- Design file: `docs/SERVER_AUTHORITATIVE_REWARDS_DESIGN.md`
+- Design file was fetched again after update and verified to contain the handler-level requirements.
+- The recovery handover is being updated on `audit/reward-integrity-phase1-20261107`; its exact latest commit is recorded by the verification following this checkpoint.
+
+### Next action
+
+Continue with a complete answer-key/validator inventory and a concrete event contract, including all 14 quiz keys and the three objective challenge keys. Then finalize the transition UX and development database strategy. Only after those are documented should implementation begin. Keep all implementation on the feature branch and do not touch production Supabase.
