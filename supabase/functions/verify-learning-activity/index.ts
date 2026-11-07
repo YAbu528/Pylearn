@@ -38,6 +38,7 @@ function validateShape(body: Record<string, unknown>): string | null {
 
   if (body.event_type === "quiz") {
     if (!exactKeys(body, ["lesson_id", "event_type", "answer_index"])
+      || typeof body.answer_index !== "number"
       || !Number.isInteger(body.answer_index)
       || (body.answer_index as number) < 0
       || (body.answer_index as number) > 5) return "invalid_request";
@@ -53,6 +54,7 @@ function validateShape(body: Record<string, unknown>): string | null {
 
     if (body.lesson_id === "6") {
       if (!exactKeys(body, ["lesson_id", "event_type", "answer_index"])
+        || typeof body.answer_index !== "number"
         || !Number.isInteger(body.answer_index)
         || (body.answer_index as number) < 0
         || (body.answer_index as number) > 5) return "invalid_request";
@@ -144,14 +146,14 @@ Deno.serve(async (req: Request) => {
       p_user_id: user.id,
       p_lesson_id: body.lesson_id,
       p_event_type: body.event_type,
-    }).schema("private");
+    });
 
     if (limitError) throw limitError;
     if (allowed !== true) return reply({ error: "rate_limited" }, 429, headers);
 
     if (!isCorrectAnswer(body)) return reply({ error: "invalid_answer" }, 422, headers);
 
-    const { data, error } = await admin.schema("private").rpc("record_verified_learning_event", {
+    const { data, error } = await admin.rpc("record_verified_learning_event", {
       p_user_id: user.id,
       p_lesson_id: body.lesson_id,
       p_event_type: body.event_type,
