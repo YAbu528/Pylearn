@@ -1587,15 +1587,19 @@ function renderChallengeUI(){
 function showHint(){$("practiceHint").textContent="💡 "+lessons[current].challenge.hint}
 function showSolution(){
   const x=lessons[current].challenge;
-  if((x.mode||"code")==="mcq"){ $("practiceHint").textContent="👀 The correct answer is: "+x.options[x.answer]; return; }
-  if((x.mode||"code")==="predict"){ $("practiceHint").textContent="👀 Expected output: "+x.solution; return; }
+  if((x.mode||"code")==="mcq" || (x.mode||"code")==="predict"){
+    $("practiceHint").textContent="Try submitting your answer first. PyLearn will check it securely and give you feedback.";
+    return;
+  }
   if((x.mode||"code")==="fill"){ const answer=$("challengeFillAnswer"); if(answer) answer.value=x.fillAnswer||""; $("practiceHint").textContent="👀 Missing line shown above. Study it, then try again."; return; }
   $("practiceHint").textContent="👀 Solution shown below. Study it, then try writing it yourself.";
   $("challengeCode").value=x.solution;
 }
 function answerChallengeChoice(choice){
-  const x=lessons[current].challenge;
-  document.querySelectorAll(".challenge-choice").forEach((b,i)=>{b.classList.toggle("correct",i===x.answer);b.classList.toggle("wrong",i===choice&&i!==x.answer)});
+  document.querySelectorAll(".challenge-choice").forEach((button,index)=>{
+    button.setAttribute("aria-pressed",String(index===choice));
+    button.classList.remove("correct","wrong");
+  });
   window.__challengeChoice=choice;
 }
 
@@ -1630,11 +1634,17 @@ function renderLesson(){
   $("title").textContent=x.title; $("intro").textContent=x.intro; $("explain").textContent=x.idea; $("analogy").textContent=x.analogy;
   $("lessonCode").textContent=x.code; $("objectives").innerHTML=x.objectives.map(o=>`<li>${o}</li>`).join("");
   $("quizQuestion").textContent=x.quiz.q; $("quizOptions").innerHTML=x.quiz.options.map((o,i)=>`<button class="quiz-option" onclick="answerQuiz(${i})">${o}</button>`).join("");
-  $("quizFeedback").textContent=state.quiz.includes(current)?"✓ Quiz completed. "+x.quiz.explain:"";
-  $("quizScore").textContent=state.quiz.includes(current)?"1/1":"0/1";
-  quizAnswered=state.quiz.includes(current);
-  $("completeBtn").textContent=state.done.includes(current)?"✓ Lesson completed":"Mark complete +20 XP";
-  $("nextBtn").style.display=current<lessons.length-1 && state.done.includes(current)?"inline-block":"none";
+  const quizSaved=state.quiz.includes(current);
+  const quizVerified=state.verifiedQuiz.includes(current);
+  $("quizFeedback").textContent=quizVerified
+    ? "✓ Quiz verified. "+x.quiz.explain
+    : quizSaved ? "Your earlier quiz completion is saved. Retake the quick check to verify it for any remaining reward." : "";
+  $("quizScore").textContent=quizSaved||quizVerified?"1/1":"0/1";
+  quizAnswered=quizVerified;
+  const lessonSaved=state.done.includes(current);
+  const lessonVerified=state.verifiedLessons.includes(current);
+  $("completeBtn").textContent=lessonVerified?"✓ Lesson verified":lessonSaved?"Verify saved completion":"Mark complete +20 XP";
+  $("nextBtn").style.display=current<lessons.length-1 && lessonSaved?"inline-block":"none";
   $("challengeTitle").textContent=`Challenge: ${x.challenge.title}`;
   $("challengePrompt").textContent=x.challenge.prompt; $("challengeHint").textContent=x.challenge.hint; $("challengeLevel").textContent=x.level;
   renderChallengeUI();
@@ -1642,35 +1652,49 @@ function renderLesson(){
   renderStudyTools();
   $("practiceHint").textContent="";
   window.__challengeChoice=null;
-  $("challengeResult").textContent=state.challenges.includes(current)?"✓ Challenge solved. +30 XP":"Write your solution, then check it.";
+  const challengeSaved=state.challenges.includes(current);
+  const challengeVerified=state.verifiedChallenges.includes(current);
+  $("challengeResult").textContent=challengeVerified
+    ? "✓ Challenge verified."
+    : challengeSaved ? "✓ Challenge saved. Re-submit an eligible objective challenge to verify any available reward."
+    : "Write your solution, then check it.";
 }
 
-function answerQuiz(choice){
-  if(currentCloudUser && state.quiz.includes(current)){toast("You already completed this quiz.");return}
-  const x=lessons[current];
+async function answerQuiz(choice){
+  if(!currentCloudUser){
+    setAuthMessage("Sign in to check this quiz securely and save your result.","info");
+    toast("Sign in to submit your quiz answer.");
+    return;
+  }
   const options=[...document.querySelectorAll(".quiz-option")];
-  options.forEach((b,i)=>b.disabled=true);
-  if(choice===x.quiz.answer){
-    options[choice].classList.add("correct");
-    $("quizFeedback").textContent="✓ Correct! "+x.quiz.explain;
-    $("quizScore").textContent="1/1"; quizAnswered=true;
-    if(currentCloudUser){
-      state.quiz.push(current); save(); updateStreak(); renderLessons(); toast("+15 XP — quiz mastered!","success");
-    } else {
-      toast("Correct! Sign in to save quiz mastery and earn XP.","success");
-    }
-  }else{
-    options[choice].classList.add("wrong"); options[x.quiz.answer].classList.add("correct");
-    $("quizFeedback").textContent="Not quite. "+x.quiz.explain;
-    setTimeout(()=>{options.forEach(b=>b.disabled=false)},700);
+  options.forEach(button=>{button.disabled=true;button.classList.remove("wrong","correct");});
+  $("quizFeedback").textContent="Checking your answer securely…";
+  const result=await submitVerifiedEvent({
+    lesson_id:String(current),
+    event_type:"quiz",
+    answer_index:choice
+  });
+  if(result.status==="pending"){
+    $("quizFeedback").textContent="Your answer is saved on this device and waiting for server verification. It will retry when the connection returns.";
+    options.forEach(button=>button.disabled=false);
   }
 }
 
-function completeLesson(){
-  if(!currentCloudUser){setAuthMessage("Sign in to save lesson completion and earn XP.","info");toast("Sign in to save your progress.");return}
-  if(state.done.includes(current)){toast("Lesson already completed.");return}
-  if(!quizAnswered){toast("Finish the quick check first.");return}
-  state.done.push(current); updateStreak(); save(); renderLessons(); renderLesson(); celebrate("Lesson complete!","You mastered "+lessons[current].title+". Keep that momentum going!",20,"LESSON MASTERED");
+async function completeLesson(){
+  if(!currentCloudUser){
+    setAuthMessage("Sign in to save lesson completion and earn XP.","info");
+    toast("Sign in to save your progress.");
+    return;
+  }
+  if(state.verifiedLessons.includes(current)){toast("Lesson already verified.");return;}
+  if(!quizAnswered){toast("Verify the quick quiz first.");return;}
+  const result=await submitVerifiedEvent({
+    lesson_id:String(current),
+    event_type:"lesson"
+  });
+  if(result.status==="pending"){
+    $("challengeResult").textContent="Lesson completion is saved for server verification and will retry when the connection returns.";
+  }
 }
 
 function nextLesson(){
@@ -1708,15 +1732,35 @@ async function checkChallenge(){
   const out=$("challengeResult");
   if(mode==="mcq"){
     if(window.__challengeChoice==null){out.textContent="Choose an answer first.";return;}
-    if(window.__challengeChoice===x.answer) handleChallengeResult({ok:true,output:x.options[x.answer]});
-    else handleChallengeResult({ok:false,output:"Incorrect multiple-choice answer."});
+    if(!currentCloudUser){
+      setAuthMessage("Sign in to verify this challenge answer and save any available reward.","info");
+      toast("Sign in to submit this challenge.");
+      return;
+    }
+    out.textContent="Checking your answer securely…";
+    const result=await submitVerifiedEvent({
+      lesson_id:String(current),
+      event_type:"challenge",
+      answer_index:window.__challengeChoice
+    });
+    if(result.status==="pending") out.textContent="Your answer is saved on this device and waiting for server verification.";
     return;
   }
   if(mode==="predict"){
     const answer=($("challengeAnswer")?.value||"").trim();
     if(!answer){out.textContent="Type your predicted output first.";return;}
-    if(answer.toLowerCase()===String(x.solution).trim().toLowerCase()) handleChallengeResult({ok:true,output:answer});
-    else handleChallengeResult({ok:false,output:"Incorrect predicted output."});
+    if(!currentCloudUser){
+      setAuthMessage("Sign in to verify this challenge answer and save any available reward.","info");
+      toast("Sign in to submit this challenge.");
+      return;
+    }
+    out.textContent="Checking your answer securely…";
+    const result=await submitVerifiedEvent({
+      lesson_id:String(current),
+      event_type:"challenge",
+      answer
+    });
+    if(result.status==="pending") out.textContent="Your answer is saved on this device and waiting for server verification.";
     return;
   }
   const code=mode==="fill" ? (x.starter||"").replace("{{answer}}",($("challengeFillAnswer")?.value||"").trim()) : $("challengeCode").value;
@@ -1740,14 +1784,14 @@ async function checkChallenge(){
   }catch(err){ handleChallengeResult({ok:false,output:"ERROR: "+String(err)}); }
 }
 
-function recordChallengeAttempt(result) {
+function recordChallengeAttempt(result, lessonIndex=current) {
   if (!currentCloudUser) return;
-  const mode = lessons[current].challenge.mode || "code";
+  const mode = lessons[lessonIndex].challenge.mode || "code";
   const attempts = readEventList(CHALLENGE_ATTEMPTS_KEY);
   const isError = String(result?.output || "").startsWith("ERROR:");
   attempts.push({
     id:createEventId(), user_id:currentCloudUser?.id || null,
-    lesson_id:String(current), challenge_id:"lesson-" + (current + 1) + "-" + mode,
+    lesson_id:String(lessonIndex), challenge_id:"lesson-" + (lessonIndex + 1) + "-" + mode,
     challenge_type:mode, outcome:isError ? "error" : (result?.ok ? "correct" : "incorrect"),
     passed_tests:isError ? null : (result?.ok ? 1 : 0), total_tests:isError ? null : 1,
     attempted_at:new Date().toISOString(), synced:false
@@ -1780,14 +1824,17 @@ function renderLessonReview() {
   else if(status && !currentCloudUser) status.textContent="Sign in to save a revision schedule.";
 }
 function handleChallengeResult(result){
-  recordChallengeAttempt(result);
+  recordChallengeAttempt(result, current);
   const out=$("challengeResult");
   if(result.ok){
     if(currentCloudUser){
-      out.textContent="✓ Correct! +30 XP";
-      if(!state.challenges.includes(current)){state.challenges.push(current);updateStreak();save();renderLessons();celebrate("Challenge conquered!","You solved "+lessons[current].challenge.title+". Ready for the next one?",30,"CHALLENGE COMPLETE")}
+      if(!state.challenges.includes(current)) state.challenges.push(current);
+      save();
+      renderLessons();
+      renderLesson();
+      out.textContent="✓ Correct! This practice challenge is saved. It does not award XP until a server-supported validator is available.";
     } else {
-      out.textContent="✓ Correct! Sign in to save this achievement and earn XP.";
+      out.textContent="✓ Correct! Sign in to save this practice result.";
       toast("Challenge solved! Sign in to save your result.","success");
     }
   }else{
