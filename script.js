@@ -668,7 +668,17 @@ function queueCloudSync() {
   cloudSyncTimer = setTimeout(() => syncLearningData(), 250);
 }
 const verifiedQueueRunningUsers = new Set();
+let verifiedQueueRetryAttempt = 0;
+let verifiedQueueRetryTimer = null;
 
+function scheduleVerifiedQueueRetry(userId) {
+  if (verifiedQueueRetryTimer) clearTimeout(verifiedQueueRetryTimer);
+  const delay = Math.min(30000, 2000 * (2 ** verifiedQueueRetryAttempt));
+  verifiedQueueRetryAttempt = Math.min(verifiedQueueRetryAttempt + 1, 5);
+  verifiedQueueRetryTimer = setTimeout(() => {
+    if (currentCloudUser && currentCloudUser.id === userId) flushVerifiedEventQueue(userId);
+  }, delay);
+}
 function verifiedQueueStorageKey(userId) {
   return "pylearn_verified_events:" + userId;
 }
@@ -761,7 +771,7 @@ function handleVerifiedEventFailure(payload, code, status, userId) {
   if (payload.event_type === "challenge") {
     recordChallengeAttempt({
       ok:false,
-      output:code === "invalid_answer" ? "Incorrect answer." : code
+      output:code === "invalid_answer" ? "Incorrect answer." : "ERROR: " + code
     }, lessonIndex);
     if (lessonIndex === current) {
       $("challengeResult").textContent = code === "invalid_answer"
@@ -796,6 +806,7 @@ async function flushVerifiedEventQueue(userId) {
         const details = await getVerifiedFunctionError(error);
         if (!details.status || details.status >= 500) {
           console.warn("PyLearn verified event will retry:", error);
+          scheduleVerifiedQueueRetry(userId);
           break;
         }
         removeVerifiedEventQueueItem(userId, item.id);
@@ -803,10 +814,12 @@ async function flushVerifiedEventQueue(userId) {
         continue;
       }
       removeVerifiedEventQueueItem(userId, item.id);
+      verifiedQueueRetryAttempt = 0;
       handleVerifiedEventSuccess(item.payload, data || {}, userId);
     }
   } catch (error) {
     console.warn("PyLearn verified event queue paused for retry:", error);
+    scheduleVerifiedQueueRetry(userId);
   } finally {
     verifiedQueueRunningUsers.delete(userId);
   }
