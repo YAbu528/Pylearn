@@ -436,7 +436,10 @@ const $ = id => document.getElementById(id);
 
 // Vercel preview builds use the isolated development project. GitHub Pages and
 // the stable Vercel domain continue using production until a reviewed rollout.
-const isPylearnPreview = location.hostname.startsWith("pylearn-") && location.hostname.endsWith(".vercel.app");
+const previewHostname = location.hostname;
+const isPylearnPreview = previewHostname.endsWith("-yabu528s-projects.vercel.app")
+  && previewHostname !== "pylearn-yabu528s-projects.vercel.app"
+  && previewHostname !== "pylearn-git-main-yabu528s-projects.vercel.app";
 const SUPABASE_URL = isPylearnPreview
   ? "https://rhtfripfqwccbhcwgoxy.supabase.co"
   : "https://vzgbxoxscmlmacxciwze.supabase.co";
