@@ -508,6 +508,11 @@ async function initializeAuth() {
     setAuthMessage("The sign-in service could not load. Check your internet connection and refresh the page.", "error");
     return;
   }
+  if (isPylearnPreview) {
+    const socialOptions = document.querySelector(".auth-social");
+    if (socialOptions) socialOptions.hidden = true;
+    $("authDescription").textContent = "This isolated preview uses email and password sign-in. Social providers are intentionally not connected to the development project.";
+  }
   $("showSignUp").addEventListener("click", () => showAuthForm("signup"));
   $("showSignIn").addEventListener("click", () => showAuthForm("signin"));
   $("googleSignIn").addEventListener("click", event => startSocialSignIn("google", event.currentTarget));
@@ -537,7 +542,7 @@ async function initializeAuth() {
     const { data, error } = await supabaseClient.auth.signUp({
       email: $("signUpEmail").value.trim(),
       password: $("signUpPassword").value,
-      options: { emailRedirectTo: "https://yabu528.github.io/Pylearn/" }
+      options: { emailRedirectTo: isPylearnPreview ? location.origin : "https://yabu528.github.io/Pylearn/" }
     });
     button.disabled = false;
     button.textContent = "Create account";
