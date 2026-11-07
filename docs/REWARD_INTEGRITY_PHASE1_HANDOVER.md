@@ -220,3 +220,69 @@ For every meaningful work session or milestone:
 ### Next session entry point
 
 Begin with the required current-state reinspection: check PR #38, inspect the existing server-managed-rewards branch, and reconcile deployed Edge Function source with tracked GitHub source. Then inspect the complete auth/sync and relevant database definitions before finalizing the event schema and API contract. Do not begin production changes.
+
+
+## Phase 2 current-state reinspection — 2026-11-07
+
+This checkpoint records a read-only reinspection performed after the user confirmed the Phase 2 milestone. No implementation or production mutation was performed.
+
+### GitHub state and source reconciliation
+
+- PR #38, **"Reconcile Supabase backend sources and Pyodide documentation"**, is still **OPEN**, not merged. Its head branch is `chore/backend-source-reconciliation-20261107`, head commit `75526fbc7fad72cad868945e87206a9dbbe9e6ea`, base is `main`.
+- PR #38 changes five files. It restores `supabase/functions/award-learning-reward/index.ts`, records `award-python-run`, and adds `supabase/BACKEND_SOURCE_RECONCILIATION.md`. The deployed `award-learning-reward` version 3 source retrieved from Supabase matches the restored source content in the PR.
+- Main currently has only `supabase/functions/award-python-run/index.ts`; it does **not** contain the `award-learning-reward` source. Main has migration `20261031000000_dynamic_learning_path_achievement_thresholds.sql`, while live Supabase records the applied migration as `20261031181048_dynamic_learning_path_achievement_thresholds`.
+- PR #38 contains the corrected-version replayable function migration `20261031181048_dynamic_learning_path_achievement_thresholds.sql`, explicitly documented as reconstructed from live function state, not the original historical SQL body. Do not replay this against production.
+- Existing branch `server-managed-rewards` exists at commit `aee06ba566116cd3d201a7f1eb110d93b1204bef` (2026-10-25, commit message "Keep other cloud sync working when reward requests fail"). Its recursive tree contains only the older static-site files and no `supabase/` directory or reward implementation. It is stale and is not a suitable base for Phase 2.
+- The recovery branch remains `audit/reward-integrity-phase1-20261107`, last known checkpoint before this update: `00f3896411d16847eaf9e56bc05d43686a9fb65c`.
+
+### Live Supabase state rechecked
+
+Project: `vzgbxoxscmlmacxciwze`.
+
+- Edge Functions:
+  - `award-learning-reward`: ACTIVE version 3, `verify_jwt=true`.
+  - `award-python-run`: ACTIVE version 1, `verify_jwt=true`.
+- Live table inspection reports 9 profiles/user-stat rows, 126 lesson-progress rows, 87 XP-event rows, 21 achievement rows, and 18 challenge-attempt rows at inspection time. These are aggregate counts only; no row contents were modified.
+- Seven migrations are recorded as applied: `20261024171501`, `20261024181332`, `20261024181913`, `20261024182004`, `20261025120628`, `20261027163024`, and `20261031181048`.
+- Live RLS policies confirm that authenticated users may INSERT and UPDATE their own `lesson_progress` rows. They may only SELECT their own `xp_events`, `user_stats`, and `user_achievements`; the service role owns the write path for those reward tables.
+- `challenge_attempts` permits authenticated INSERT and SELECT for the user's own rows, but not UPDATE. It is an append-only user activity/history record, not verified reward evidence.
+- Live function `public.award_learning_xp(uuid,text,text,text)` remains SECURITY DEFINER with empty search_path and explicit service_role JWT check. Its execute ACL includes postgres and service_role; authenticated/anon are not granted EXECUTE.
+- The live RPC still trusts `lesson_progress.quiz_best_score`, `completed`, and `challenge_completed`. It awards 15/20/30 XP and deduplicates via `xp_events(user_id,event_key)`. The RPC's service-role gate and event dedupe remain protections to retain.
+
+### Frontend inspection — main branch
+
+Inspected `script.js` (blob SHA `a2144b358d104c395c5dd800db76d12ba641af14`) and `python-worker.js` (blob SHA `77da2d933177045028def3e1837a1c6ee6cf384c`).
+
+- There are 14 lesson definitions with 14 browser-side quiz answer keys.
+- Challenge modes by lesson index are: code, code, predict, debug, code, code, mcq, code, fill, code, debug, code, code, predict.
+- Quiz validation is in `answerQuiz(choice)`, comparing the browser-submitted choice to `lessons[current].quiz.answer`.
+- `completeLesson()` depends on the browser's `quizAnswered` state.
+- `checkChallenge()` validates MCQ and prediction answers in the browser. Other challenge modes use the Pyodide Web Worker. `handleChallengeResult(result)` trusts `result.ok` from the browser/worker and marks the challenge complete.
+- `python-worker.js` contains 14 local validators; invalid validator indices fall back to `valid = True`. This is suitable only as a UI feedback bug to address; it cannot be a trusted reward gate.
+- `syncLearningData()` currently merges local and remote progress, upserts all 14 rows with user-visible `completed`, `quiz_best_score`, and `challenge_completed` values, then invokes `award-learning-reward` for locally merged state. This is the direct compatibility hotspot: a secure change must preserve cross-device progress while stopping client flags from being reward evidence.
+- The same sync routine keeps separate flows for notes, bookmarks, lesson reviews, and challenge-attempt history. Those unrelated sync flows must remain operational.
+- `award-python-run` is invoked when local `state.runs >= 1`; the deployed function only writes the `code` achievement and does not independently verify execution.
+
+### Design implications from this reinspection
+
+1. PR #38 should be reviewed/merged as source-control recovery separately from Phase 2 security changes. Do not duplicate its recovered Edge Function source or migration.
+2. Do not reuse `server-managed-rewards`; create a new Phase 2 feature branch from an up-to-date main after PR #38 is reconciled.
+3. Keep user-visible lesson progress sync distinct from trusted reward evidence. Do not simply remove progress writes; the current sync merge/upsert is also how existing accounts and devices retain learning progress.
+4. New reward evidence should be written only by server validation after deriving the user from the verified JWT. A new trusted evidence record/table or equivalent server-owned structure is preferable to reusing client-writable `lesson_progress` flags.
+5. A verified quiz event can be the prerequisite for lesson-completion XP. It does not prove the learner read lesson text; document that product meaning accurately.
+6. Predict and MCQ challenges can be validated using server-owned expected answers. Fill/debug/code tasks need per-type server-side validation. Do not award code-task XP from browser Worker output; arbitrary Python needs a separately secured execution service or a clearly separated no-XP interim treatment.
+7. Preserve existing `xp_events`, `user_stats`, and `user_achievements` rows. Historical client-writable completion flags must not be silently treated as newly verified evidence or retroactively rewarded. Existing event keys and totals need compatibility checks before rollout.
+8. The `code` achievement needs its own trustworthy semantics/receipt; the current `state.runs` gate is not proof of Python execution.
+
+### What was and was not done in this checkpoint
+
+**Inspected:** PR #38 metadata and changed files; current main and legacy branch trees; live Edge Function versions and source; live migration ledger; relevant table schemas, RLS policies, table grants, and the live reward RPC definition; frontend quiz/challenge/sync call sites and the full Worker source.
+
+**Not done:** no source edits, no feature branch creation, no SQL migration, no RLS/grant change, no Edge Function deployment, no user-data write, no account mutation, no exploit test, and no mobile preview regression test.
+
+### Next session entry point
+
+1. Review and merge PR #38 as the separate source-control recovery step (do not merge automatically without inspecting its checks/diff and ensuring the user authorizes the merge).
+2. Once the recovered sources are on main, create a fresh Phase 2 feature branch from that current main.
+3. Finish the DB object inventory (all indexes, unique constraints, triggers, and exact grants), inspect the full frontend auth/sync sections and challenge definitions as needed, then write the trusted-event schema/API and compatibility/rollback design.
+4. Do not modify production until the design and migration plan are reviewed.
