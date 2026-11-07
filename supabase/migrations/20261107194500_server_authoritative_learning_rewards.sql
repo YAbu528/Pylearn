@@ -279,3 +279,45 @@ revoke all on function public.award_learning_xp(uuid,text,text,text)
   from public, anon, authenticated;
 grant execute on function public.award_learning_xp(uuid,text,text,text)
   to service_role;
+
+
+-- Public-schema RPC shims are callable only by service_role. The underlying
+-- implementation and evidence tables remain in the non-exposed private schema.
+create or replace function public.reserve_learning_attempt(
+  p_user_id uuid,
+  p_lesson_id text,
+  p_event_type text
+)
+returns boolean
+language sql
+security invoker
+set search_path to ''
+as $function$
+  select private.reserve_learning_attempt(p_user_id, p_lesson_id, p_event_type);
+$function$;
+
+revoke all on function public.reserve_learning_attempt(uuid,text,text)
+  from public, anon, authenticated;
+grant execute on function public.reserve_learning_attempt(uuid,text,text)
+  to service_role;
+
+create or replace function public.record_verified_learning_event(
+  p_user_id uuid,
+  p_lesson_id text,
+  p_event_type text,
+  p_verification_version smallint
+)
+returns jsonb
+language sql
+security invoker
+set search_path to ''
+as $function$
+  select private.record_verified_learning_event(
+    p_user_id, p_lesson_id, p_event_type, p_verification_version
+  );
+$function$;
+
+revoke all on function public.record_verified_learning_event(uuid,text,text,smallint)
+  from public, anon, authenticated;
+grant execute on function public.record_verified_learning_event(uuid,text,text,smallint)
+  to service_role;
