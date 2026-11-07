@@ -211,3 +211,8 @@ Read-only Supabase inspection found no existing development branches for project
 3. Ask the user whether to authorize a Supabase development branch at US$0.01344/hour (or choose another isolated dev database). Do not create it without approval.
 4. Once an isolated database is available, implement the additive private evidence migration, atomic RPC and JWT-verified Edge Function on the feature branch; do not deploy to production.
 5. Then implement frontend routing/retry and run the security/compatibility matrix. Keep the named handover updated and verify every saved checkpoint.
+
+
+## Companion contract document
+
+The full API request/response contract, 14 quiz answer indexes, objective challenge normalization, legacy-account transition, and development-environment gate are also recorded in [SERVER_AUTHORITATIVE_REWARDS_CONTRACT.md](https://github.com/YAbu528/Pylearn/blob/feat/server-authoritative-rewards-20261107/docs/SERVER_AUTHORITATIVE_REWARDS_CONTRACT.md) on `feat/server-authoritative-rewards-20261107`.
