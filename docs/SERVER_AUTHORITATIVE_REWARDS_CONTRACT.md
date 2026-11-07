@@ -1,6 +1,6 @@
 # PyLearn verified learning event contract
 
-**Status:** Proposed contract; not implemented.  
+**Status:** Implemented in isolated Pylearn-Dev for the database/API boundary; frontend integrated on the preview branch. Authenticated browser end-to-end testing and production rollout remain pending.  
 **Date:** 2026-11-07  
 **Feature branch:** `feat/server-authoritative-rewards-20261107`
 
@@ -64,18 +64,21 @@ Keep old visible progress and existing XP/achievements. Do not backfill evidence
 
 Persist verifier requests in a queue namespaced to the exact authenticated user, such as `pylearn_verified_events:<uid>`. Retry only while that same user is authenticated. Remove definitive outcomes; retain transient network/5xx failures. The queue is not evidence and must never cross account boundaries.
 
-## Development environment gate — paid branch declined
+## Development environment — Pylearn-Dev created
 
-The user explicitly declined the Supabase preview branch at US$0.01344/hour. Do not create one.
+The paid Supabase preview branch at US$0.01344/hour remains declined. A separate Free project was authorized, created and verified instead:
 
-Supabase currently lists one accessible project (`Pylearn`). Official current Free-plan documentation allows two active Free projects total across organizations where the user is Owner/Administrator, with 500 MB database quota per Free project; Free projects may pause after one week of inactivity. Therefore, a separate second Free project is the preferred no-cost integration-test environment if the account-wide slot is available and project creation confirms $0. It has not been authorized or created. Ask before creating it, and stop if any cost is shown.
+- Organization: `zcenoqlgbbmshhkreceg` (Free plan).
+- Project: `Pylearn-Dev`.
+- Ref: `rhtfripfqwccbhcwgoxy`.
+- Region: `eu-west-1`.
+- Status at verification: `ACTIVE_HEALTHY`.
+- Project creation quote: **$0/month**.
+- Production project `vzgbxoxscmlmacxciwze` remains unchanged.
 
-Use synthetic test users/data only. Never copy production auth users, personal data, XP history, or secrets. If a second Free project is unavailable or not approved, use GitHub Actions ephemeral PostgreSQL for SQL/schema/transaction tests and source-level/unit tests for Edge Function logic; acknowledge that this does not fully exercise Supabase Auth/Edge Runtime. Local Supabase CLI is not recommended for the current Android-only setup because the local stack requires Docker/Podman or another supported container runtime.
+The isolated dev schema was initialized from checked-in dev-only fixtures under `supabase/tests/fixtures/`. It contains synthetic schema only; no production users, auth identities, XP rows, secrets or personal data were copied. A dev-only `auth.users` trigger mirrors production's `handle_new_user` behavior for synthetic accounts.
 
-Official references:
-- https://supabase.com/docs/guides/platform/billing-on-supabase
-- https://supabase.com/pricing
-- https://supabase.com/docs/guides/local-development
+Use only synthetic test users/data in Pylearn-Dev. Do not create a paid branch. Do not deploy these changes to production without separate review and explicit approval.
 
 ## Implementation status
 
@@ -84,13 +87,39 @@ No SQL migration, Edge Function, RPC, frontend change, deployment, or test has b
 
 ## Development environment update — Pylearn-Dev created (2026-11-07)
 
-The user authorized creation provided the new project cost $0. Supabase confirmed the organization `zcenoqlgbbmshhkreceg` is on the Free plan and quoted the project at **$0/month**. The project was created successfully and re-fetched for verification:
+The user authorized creation provided the new project cost $0. Supabase confirmed the organization `zcenoqlgbbmshhkreceg` is on the Free plan and quoted the project at **$0/month**. The project was created successfully and re## Implementation status — 2026-11-07
 
-- Name: `Pylearn-Dev`
-- Project ref: `rhtfripfqwccbhcwgoxy`
-- Organization: `zcenoqlgbbmshhkreceg`
-- Region: `eu-west-1`
-- Status: `ACTIVE_HEALTHY`
-- PostgreSQL: 17.11
+### Implemented in Pylearn-Dev
 
-This replaces the earlier statement that the free project was merely proposed/not yet authorized. Use this isolated project for synthetic test users and synthetic data only. Do not copy production users, auth identities, personal data, XP history, or secrets. No schema changes, migrations, functions, or tests have yet been run in the new project. Production project `vzgbxoxscmlmacxciwze` remains unchanged. The paid preview branch remains declined and must not be created.
+- Dev-only baseline fixture: `supabase/tests/fixtures/pylearn_dev_baseline.sql`.
+- Dev-only auth bootstrap fixture: `supabase/tests/fixtures/pylearn_dev_auth_trigger.sql`.
+- Additive migration: `supabase/migrations/20261107194500_server_authoritative_learning_rewards.sql`.
+- Explicit private-table deny policies: `supabase/migrations/20261107200500_private_reward_tables_deny_policies.sql`.
+- Private evidence table `private.learning_reward_evidence`, unique on `(user_id, lesson_id, event_type)`.
+- Private attempt timestamp table with a per-user/per-lesson/per-event limit of 10 attempts per 10 minutes. Submitted answers and learner code are not stored.
+- Service-role-only private SECURITY DEFINER functions, exposed through public-schema SECURITY INVOKER RPC shims that only `service_role` may execute.
+- `public.award_learning_xp` is fail-closed in Pylearn-Dev and no longer accepts client progress flags as reward evidence.
+- Edge Function `verify-learning-activity` deployed to Pylearn-Dev, ACTIVE version 1, `verify_jwt=true`. It validates the JWT with Auth `getUser`, derives the user ID from that session, validates server-held quiz/objective-challenge answers, applies the rate limit, then calls the atomic RPC.
+- Supported challenge XP is limited to objective challenge lessons 2, 6 and 13. Code/debug/fill checks remain local feedback only and do not award XP.
+- Frontend branch changes route Vercel preview deployments to Pylearn-Dev while GitHub Pages and stable Vercel domains remain pointed at production. The frontend no longer contains the 14 quiz answer indexes or the three objective challenge expected answers; it calls the verifier and uses an account-scoped durable retry queue. Old flag-based reward replay and the local Python-run reward call were removed.
+- Existing visible progress upserts, notes, bookmarks, reviews and challenge-attempt history remain separate from reward evidence.
+- GitHub Actions source checks were added. Run 4 for commit `d5fc0b2ecde4fabe7b35b5365e024f0edb34ad98` completed successfully.
+
+### Tests actually run
+
+- SQL transaction assertions passed for: authenticated-role rejection; legacy RPC rejection despite forged progress flags; lesson prerequisite enforcement; 10 allowed attempts followed by an 11th blocked attempt; quiz +15, lesson +20 and supported challenge +30; duplicate-event idempotency; verified achievement unlocks; unsupported challenge rejection; and historical XP event-key deduplication.
+- A synthetic Auth-user transaction confirmed that the dev trigger creates a profile and user_stats row.
+- Both test transactions were rolled back. Post-test counts verified zero synthetic Auth users, profiles, stats, XP events, evidence rows and attempt rows remain.
+- Supabase security advisor returned no lints.
+- GitHub Actions run 4 passed JavaScript syntax and reward-boundary source checks.
+- Vercel preview deployment for the feature branch reached READY. Its deployed script was checked to confirm dev-project routing, absence of browser answer keys, and absence of legacy reward calls.
+
+### Not yet verified / not deployed
+
+- No authenticated browser invocation of the Edge Function has been completed yet.
+- No full Android Chrome/Samsung Internet regression has been completed yet.
+- The preview project's Auth redirect allowlist still needs the feature-preview origin added before email confirmation flow can be tested. Social provider credentials were intentionally not copied; social buttons are hidden in preview.
+- No production migration, Edge Function deployment, or production data write has occurred.
+- Production remains exposed to the previously audited legacy reward path until the reviewed rollout is separately approved. The existing production `award-python-run` endpoint also remains a separate item to retire/harden; the feature frontend no longer calls it.
+- The code-run achievement is deferred until a trustworthy server-side execution receipt exists.
+
