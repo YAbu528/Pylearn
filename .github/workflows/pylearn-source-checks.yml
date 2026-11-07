@@ -1,0 +1,39 @@
+name: PyLearn source checks
+
+on:
+  push:
+    branches:
+      - feat/server-authoritative-rewards-20261107
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  source-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check JavaScript syntax
+        run: |
+          node --check script.js
+          node --check python-worker.js
+      - name: Guard reward validation boundary
+        shell: bash
+        run: |
+          ! grep -E 'quiz:[^}]*answer:[[:space:]]*[0-9]+' script.js
+          ! grep -E 'challenge:[^}]*answer:[[:space:]]*[0-9]+' script.js
+          ! grep -F 'solution:"16"' script.js
+          ! grep -F 'solution:"95"' script.js
+          ! grep -F 'solution:"sum(numbers)"' script.js
+          ! grep -F 'award-learning-reward' script.js
+          ! grep -F 'award-python-run' script.js
+          grep -F 'verify-learning-activity' script.js
+          grep -F 'pylearn_verified_events:' script.js
