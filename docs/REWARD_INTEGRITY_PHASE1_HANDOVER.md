@@ -286,3 +286,95 @@ Inspected `script.js` (blob SHA `a2144b358d104c395c5dd800db76d12ba641af14`) and 
 2. Once the recovered sources are on main, create a fresh Phase 2 feature branch from that current main.
 3. Finish the DB object inventory (all indexes, unique constraints, triggers, and exact grants), inspect the full frontend auth/sync sections and challenge definitions as needed, then write the trusted-event schema/API and compatibility/rollback design.
 4. Do not modify production until the design and migration plan are reviewed.
+
+## Phase 2 checkpoint — source reconciliation merged and architecture drafted (2026-11-07)
+
+### PR #38 reviewed and merged
+
+The user authorized continuing with the proposed merge. Before merging, the PR metadata, five-file diff, Vercel check, and discussion were inspected.
+
+- PR: [#38 — Reconcile Supabase backend sources and Pyodide documentation](https://github.com/YAbu528/Pylearn/pull/38)
+- Head commit: `75526fbc7fad72cad868945e87206a9dbbe9e6ea`
+- Base commit before merge: `324b3e945984270c7048ded691e840451b5c9d8d`
+- Merge method: squash
+- Merge commit: `faeb179c337d5c063a266086fc2b97b624a6215e`
+- Post-merge GitHub fetch confirmed PR state `closed`, `merged=true`, and confirmed these files exist on `main`:
+  - `supabase/functions/award-learning-reward/index.ts`
+  - `supabase/BACKEND_SOURCE_RECONCILIATION.md`
+  - `supabase/migrations/20261031181048_dynamic_learning_path_achievement_thresholds.sql`
+- The recovered reward Edge Function source was fetched from main after merge and inspected.
+- PR check run `Vercel Preview Comments` for head SHA `75526fbc7fad72cad868945e87206a9dbbe9e6ea` completed with conclusion `success`; Vercel preview was reported Ready. This is a successful preview deployment check, not a full browser regression test.
+- Merge was source-control-only. No production database migration was applied and no Edge Function was redeployed.
+
+### New Phase 2 implementation branch
+
+Created a clean feature branch from the verified post-merge main commit:
+
+- Branch: `feat/server-authoritative-rewards-20261107`
+- Base commit: `faeb179c337d5c063a266086fc2b97b624a6215e`
+- First branch commit: `407adb9f794e53f7eb502beb3fcf1fa0bc00645d`
+- New design document: `docs/SERVER_AUTHORITATIVE_REWARDS_DESIGN.md`
+- The design document was created on the feature branch. It is a proposal, not implementation.
+
+### Additional live database inventory completed
+
+Read-only SQL inspection collected exact columns, constraints, indexes, triggers, RLS policies, grants, and reward RPC definition for:
+- `public.lesson_progress`
+- `public.xp_events`
+- `public.user_stats`
+- `public.user_achievements`
+- `public.challenge_attempts`
+
+Key verified details:
+- `lesson_progress` has unique `(user_id,lesson_id)`, check constraint on quiz score 0–100, FK to auth user, and an updated_at trigger. Authenticated still has INSERT/UPDATE/DELETE on own progress rows under RLS.
+- `xp_events` has unique `(user_id,event_key)`, event type check for quiz/lesson/challenge, positive XP check, FK to auth user. Authenticated can SELECT only own rows; service_role owns writes.
+- `user_stats` is keyed by user_id, enforces nonnegative XP/streak, has an updated_at trigger. Authenticated can SELECT own rows; service_role owns writes.
+- `user_achievements` has unique `(user_id,achievement_id)`, FK to auth user. Authenticated can SELECT own rows; service_role owns writes.
+- `challenge_attempts` has user/time, user/lesson/time, and user/outcome/time indexes; challenge type and outcome checks; passed/total test count checks; authenticated can INSERT and SELECT own rows but cannot UPDATE.
+- The two timestamp triggers are `lesson_progress_set_updated_at` and `user_stats_set_updated_at`, both calling `set_updated_at()`.
+- No user rows were changed by this inspection.
+
+### Architecture draft decisions and rationale
+
+The new design document proposes:
+- Keep `lesson_progress` as user-visible, cross-device progress; stop using its client-writable flags as reward evidence.
+- Add private server-owned evidence storage (proposed `private.learning_reward_evidence`) with unique per-user/lesson/event evidence.
+- Add a JWT-verified `verify-learning-activity` Edge Function. Derive user identity from Auth `getUser(token)`; do not accept user ID or XP amount from the client.
+- Make evidence insertion and XP awarding atomic in one service-role-only RPC.
+- Require verified quiz evidence before lesson-completion XP.
+- Initially support server-validated quiz, MCQ, and prediction challenges. Defer authoritative XP for arbitrary code/debug/fill tasks until a separate secure validator boundary exists.
+- Change the existing reward RPC so the old `award-learning-reward` endpoint cannot award from client-writable progress flags alone.
+- Compute new integrity-sensitive achievements from verified evidence, preserving existing achievement rows and never backfilling evidence from old flags.
+- Preserve existing XP totals, XP event history, accounts, visible progress, and unrelated sync.
+- Provide a user-friendly transition for old completed lessons that need quiz re-verification before an unearned lesson reward can be granted.
+
+Important limitation explicitly recorded in the design: server validation confirms a submitted answer, not that the learner understood or read the material. Browser-shipped answer keys must be removed from the client bundle for the server validation boundary to have value. Guessing remains possible; this is not advertised as cheat-proof.
+
+### What was done and what was not done
+
+**Done:**
+- PR #38 reviewed and squash-merged, then post-merge state verified.
+- Phase 2 feature branch created from post-merge main.
+- Architecture proposal committed to the feature branch.
+- Live database metadata inventory expanded.
+
+**Not done:**
+- No production SQL, RLS, grants, table, or function changes.
+- No Edge Function creation or deployment.
+- No frontend edits.
+- No XP/achievement/progress/account data changes.
+- No exploit or automated security tests.
+- No Android Chrome or Samsung Internet preview regression test.
+- No migration has been run against a development or production database.
+
+### Exact next-session entry point
+
+Continue on `feat/server-authoritative-rewards-20261107` at commit `407adb9f794e53f7eb502beb3fcf1fa0bc00645d`.
+
+1. Fetch and read `docs/SERVER_AUTHORITATIVE_REWARDS_DESIGN.md` first.
+2. Finish detailed review of lesson answer keys, challenge validators, frontend quiz/lesson/challenge handlers, and all reward call sites; explicitly identify every client-shipped answer key and legacy reward path.
+3. Finalize event semantics, validator versioning, legacy-account transition UX, and development database strategy.
+4. Then implement the additive evidence schema and Edge Function/RPC on the feature branch, with no production deployment.
+5. Test direct forged flags, old endpoint bypass, idempotency/concurrency, and cross-device behavior before asking for production rollout approval.
+
+**Mandatory continuity:** Update this handover after every substantial inspection or implementation checkpoint, include exact commit/test status, and fetch it again to verify the saved checkpoint before ending the session.
