@@ -164,3 +164,59 @@ This branch is a documentation checkpoint, not a production fix. It should be us
 ## Next action
 
 Design the event schema and API contract for server-verified quiz completion and lesson completion, while explicitly separating code-challenge validation as a distinct security problem. Then implement on a feature branch and test in preview. Do not modify production Supabase policies, grants, tables, or functions until the migration and rollback plan are reviewed.
+
+---
+
+## Phase 2 milestone — server-authoritative reward system
+
+**Milestone objective (confirmed 2026-11-07):**
+
+Build a server-authoritative reward system that preserves all existing accounts, existing XP and achievement records, and reliable cross-device learning progress.
+
+This is the next project milestone. The Phase 1 findings above remain the verified baseline; they must not be described as fixed until implementation and the required tests have passed.
+
+### Scope and invariants
+
+- Preserve existing Supabase users/accounts and authentication providers.
+- Preserve existing XP totals, XP event history, achievements, notes, bookmarks, challenge-attempt history, and legitimate learning progress.
+- Preserve sign-in/sign-out behavior and cross-device synchronization.
+- Derive the acting user identity from the validated JWT on the server; never trust a client-supplied user ID for reward ownership.
+- Make reward-critical evidence server-authoritative. Client-side state may support responsive learning UI, but must not authorize XP.
+- Keep reward amounts and event identity server-defined.
+- Preserve idempotency under retries, duplicate requests, and concurrent requests.
+- Do not make production database, RLS, grant, or Edge Function changes until the schema/API design, migration, compatibility, and rollback plans have been reviewed.
+- Keep arbitrary Python execution and code-challenge validation as a separately designed security boundary. Do not treat a browser Worker result as proof.
+
+### Agreed implementation order
+
+1. Reinspect current repository and deployed state before coding, including PR #38 and any existing server-managed-rewards branch. Confirm current status rather than relying on the Phase 1 snapshot.
+2. Inspect complete frontend auth/sync flow, lesson and challenge definitions, current Edge Function source, and relevant database schemas, constraints, indexes, triggers, grants, and RLS policies.
+3. Design the server-verified event schema and API contract for quiz validation and lesson completion.
+4. Design a backward-compatible migration that separates user-visible progress from trusted reward evidence and preserves existing user data.
+5. Implement on a dedicated feature branch; do not deploy schema or function changes to production during initial development.
+6. Validate in preview using the full Phase 1 test matrix, plus migration/rollback, existing-account compatibility, and cross-device regression tests.
+7. Inspect actual results and deployed preview before reporting a fix as complete. Production rollout requires an explicit review of migration safety and rollback readiness.
+
+### Continuity and GitHub handover protocol — mandatory
+
+This document is the durable technical handover for this work. Keep it updated throughout the milestone so a fresh conversation can recover the project without depending on chat history.
+
+For every meaningful work session or milestone:
+- Update this document on the recovery branch (or a clearly identified successor branch) with the objective, inspected files/systems, verified findings, decisions and rationale, implementation details, exact branch/commit/PR references, tests actually run and their results, and remaining risks/open questions.
+- Record what was changed and what was deliberately not changed. Distinguish inspected, proposed, implemented, preview-tested, and production-deployed states.
+- Record exact file paths, database objects, function names, migration identifiers, and relevant commit SHAs where available.
+- Never record a test as passed unless it was actually run and its result inspected. Never claim a fix is complete based only on code changes.
+- Before ending a substantial session or when the conversation is getting long, commit the latest handover update and fetch it again from GitHub to verify that the document exists and contains the new checkpoint.
+- At the end of each session, leave a concise Next session entry point stating the exact next action and any required context.
+- A new conversation should first fetch this document from GitHub and read the latest checkpoint before asking the user to repeat project details or making changes.
+
+### Session checkpoint — 2026-11-07
+
+- The Phase 1 handover was fetched successfully from audit/reward-integrity-phase1-20261107.
+- The user confirmed the next milestone objective: a server-authoritative reward system that preserves existing accounts and cross-device progress.
+- No Phase 2 implementation or production changes have been made in this session.
+- The user explicitly requires this GitHub handover method to be followed continuously for future work.
+
+### Next session entry point
+
+Begin with the required current-state reinspection: check PR #38, inspect the existing server-managed-rewards branch, and reconcile deployed Edge Function source with tracked GitHub source. Then inspect the complete auth/sync and relevant database definitions before finalizing the event schema and API contract. Do not begin production changes.
