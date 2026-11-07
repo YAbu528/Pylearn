@@ -163,3 +163,32 @@ Existing `user_achievements` rows are immutable history for this migration: pres
 ## 8. Current implementation status
 
 No part of this design is implemented. No production database or Edge Function was changed. This document is a proposal for review and the basis for implementation planning.
+
+
+## 9. Frontend integration findings from handler-level inspection
+
+The main frontend integration points are now confirmed on the feature branch (still unchanged):
+
+- `answerQuiz(choice)` at `script.js:1510` reads `lessons[current].quiz.answer` and locally sets `quizAnswered`, `state.quiz`, and the +15 XP message.
+- `completeLesson()` at `script.js:1531` trusts `quizAnswered`, then adds the lesson to `state.done` and shows +20 XP.
+- `checkChallenge()` at `script.js:1568` locally checks MCQ and prediction answers; other challenge types use the browser Worker and send `validatorIndex: current`.
+- `handleChallengeResult(result)` at `script.js:1644` currently trusts any `result.ok`, adds the lesson to `state.challenges`, and shows +30 XP.
+- `syncLearningData()` at `script.js:664` merges remote and local progress and upserts all 14 visible progress rows at lines 728–736. It then builds reward requests from the merged `state.quiz`, `state.done`, and `state.challenges` arrays at lines 739–760. This means the current sync replay path can attempt rewards from old client-side state, so it must be removed/replaced when the new verified-event flow is introduced.
+- `syncLearningData()` separately synchronizes notes, bookmarks, lesson reviews, and challenge-attempt history. Those sync paths must not be coupled to reward validation failures.
+- `award-python-run` is called when local `state.runs >= 1` at lines 763–770. The server currently receives no execution receipt; this must be disabled or redefined before treating the code badge as verified.
+- `recordChallengeAttempt()` at `script.js:1605` records local outcomes and queues append-only history sync. That history is user activity data and must not be confused with trusted evidence.
+
+### Required frontend behavior during migration
+
+- Quiz: the browser sends the selected answer index to the verifier; only server acceptance may mark the quiz as reward-verified and display XP as awarded. The answer key must be removed from the browser bundle. Keep an explicit pending/retry state for network errors.
+- Lesson completion: call the server verifier, which checks trusted quiz evidence. Do not allow the browser's `quizAnswered` boolean or old `state.quiz` array to authorize XP.
+- Objective challenge: submit the selected/predicted answer to the server verifier. The server's accepted response, not local comparison, authorizes challenge XP.
+- Code/debug/fill challenge: retain Worker-based immediate feedback if desired, but never use Worker `ok` to award XP. Do not claim +30 XP for these modes until a trusted validator is available.
+- Visible progress sync: preserve the existing `lesson_progress` merge/upsert for compatibility, but remove reward-event generation from the merged arrays. Keep pending verified-event requests in a durable, account-scoped retry queue (for example a namespaced localStorage key) so an offline/reload/network failure does not silently lose a learner's submission. The queue is a transport retry mechanism only; server evidence remains the authority.
+- On sign-in, sign-out, or account switch, pending event retries must be scoped to the exact account and must never be submitted under another account. Do not use the in-memory-only learning state as the only copy of a pending request if reload resilience is required.
+
+### Worker validation detail
+
+`python-worker.js:62–97` contains the 14 local validator expressions. `python-worker.js:79–80` uses `validators[Number(validatorIndex)] || "valid = True"`, so an invalid validator index passes the local check. The worker then returns `check-result` with the result at lines 99–112. This fallback must be corrected for local feedback reliability, but it must never be used as a server reward decision.
+
+This handler-level review was read-only. No frontend or Worker source was modified and no browser test was run.
