@@ -1,3 +1,9 @@
+-- Reconstructed from the current live Supabase function definition on 2026-11-07.
+-- This is a replayable replacement for the function state associated with
+-- version 20261031181048, NOT the original historical migration SQL body.
+-- Keep the function service-role-only; the Edge Function authenticates the user
+-- and invokes this RPC with the verified user ID.
+
 create or replace function public.award_learning_xp(
   p_user_id uuid,
   p_event_key text,
@@ -17,7 +23,7 @@ declare
   v_done integer;
   v_quizzes integer;
   v_challenges integer;
-  v_total_lessons integer;
+  v_total_lessons integer := 14;
   v_earned text[] := array[]::text[];
 begin
   if coalesce(auth.jwt()->>'role','') <> 'service_role' then
@@ -68,7 +74,6 @@ begin
   select count(*) into v_done from public.lesson_progress where user_id=p_user_id and completed;
   select count(*) into v_quizzes from public.lesson_progress where user_id=p_user_id and quiz_best_score >= 100;
   select count(*) into v_challenges from public.lesson_progress where user_id=p_user_id and challenge_completed;
-  select count(*) into v_total_lessons from public.lesson_progress where user_id=p_user_id;
 
   insert into public.user_achievements(user_id,achievement_id)
   select p_user_id, a.achievement_id
@@ -76,10 +81,10 @@ begin
     ('first', v_done >= 1),
     ('challenge', v_challenges >= 1),
     ('five', v_done >= 5),
-    ('quiz', v_total_lessons > 0 and v_quizzes >= v_total_lessons),
+    ('quiz', v_quizzes >= v_total_lessons),
     ('builder', v_challenges >= 3),
     ('week', v_stats.streak >= 7),
-    ('python', v_total_lessons > 0 and v_done >= v_total_lessons),
+    ('python', v_done >= v_total_lessons),
     ('explorer', v_stats.xp >= 500)
   ) as a(achievement_id, qualifies)
   where a.qualifies
@@ -95,3 +100,6 @@ begin
   );
 end;
 $function$;
+
+revoke all on function public.award_learning_xp(uuid,text,text,text) from public, anon, authenticated;
+grant execute on function public.award_learning_xp(uuid,text,text,text) to service_role;
