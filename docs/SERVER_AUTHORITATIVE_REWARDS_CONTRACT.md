@@ -80,3 +80,17 @@ Official references:
 ## Implementation status
 
 No SQL migration, Edge Function, RPC, frontend change, deployment, or test has been performed under this contract.
+
+
+## Development environment update — Pylearn-Dev created (2026-11-07)
+
+The user authorized creation provided the new project cost $0. Supabase confirmed the organization `zcenoqlgbbmshhkreceg` is on the Free plan and quoted the project at **$0/month**. The project was created successfully and re-fetched for verification:
+
+- Name: `Pylearn-Dev`
+- Project ref: `rhtfripfqwccbhcwgoxy`
+- Organization: `zcenoqlgbbmshhkreceg`
+- Region: `eu-west-1`
+- Status: `ACTIVE_HEALTHY`
+- PostgreSQL: 17.11
+
+This replaces the earlier statement that the free project was merely proposed/not yet authorized. Use this isolated project for synthetic test users and synthetic data only. Do not copy production users, auth identities, personal data, XP history, or secrets. No schema changes, migrations, functions, or tests have yet been run in the new project. Production project `vzgbxoxscmlmacxciwze` remains unchanged. The paid preview branch remains declined and must not be created.
