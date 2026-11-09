@@ -1256,3 +1256,43 @@ The earlier investigation is recorded in the preceding session notes (around the
 - Canonical document before this record: blob `3a19c2e4f6e9b0554e46ca97edc8152611a7424d`.
 - Vercel deployment inspected: `dpl_8mJpMPh4LuXpSTwNw8D3cbqvrxxp`, READY, commit `b4a496edf7cd933ef4491e20a06394f68cc822f6`.
 - Documentation commit/blob are recorded after the update and GitHub re-fetch verification.
+
+
+## Session record — requested addition of audit-preview Auth redirect allowlist; write capability unavailable (2026-11-09)
+
+### User authorization
+- The user explicitly instructed: "Add it" — referring to adding the verified audit-branch Vercel preview URL to the Pylearn-Dev Supabase Authentication > URL Configuration > Redirect URLs allowlist.
+- The user reiterated the mandatory checkpoint rule: every interaction/action must be recorded with structured explanations and exact commit/blob identifiers, followed by GitHub re-fetch verification.
+
+### Environment and target
+- Supabase project: Pylearn-Dev, project ref `rhtfripfqwccbhcwgoxy`.
+- Existing user-reported allowlist entry to preserve:
+  `https://pylearn-git-feat-server-authoritative-abc05f-yabu528s-projects.vercel.app/**`
+- Requested additional entry:
+  `https://pylearn-git-audit-reward-integrity-pha-4fbac1-yabu528s-projects.vercel.app/**`
+- Vercel deployment inspected again in this interaction:
+  - Deployment ID: `dpl_8mJpMPh4LuXpSTwNw8D3cbqvrxxp`
+  - Status: `READY`
+  - Branch: `audit/reward-integrity-phase1-20261107`
+  - Commit: `b4a496edf7cd933ef4491e20a06394f68cc822f6`
+  - Alias: `pylearn-git-audit-reward-integrity-pha-4fbac1-yabu528s-projects.vercel.app`
+
+### Action attempted and outcome
+- Re-fetched the canonical handover before acting; the previously verified blob was `3a19c2e4f6e9b0554e46ca97edc8152611a7424d`.
+- Inspected all currently exposed Supabase integration actions. They provide project/database/log/function operations, but no action to read or update Supabase Auth URL Configuration / redirect allowlist.
+- The available Browser integration is read-only in this chat context (list tabs and read tab context); it does not expose browser click/type controls for changing the dashboard.
+- Therefore the requested Supabase Auth setting **was not changed**. The user must not be told it was added or saved. No Supabase API/dashboard write was attempted through an unsupported route.
+- No code, database, SMTP setting, Auth template, production setting, or deployment was changed in this interaction.
+- The earlier feature-branch allowlist entry should remain. Add the audit-branch entry as a second entry; do not replace the feature-branch entry.
+- Manual action still required in Pylearn-Dev: Authentication → URL Configuration → Redirect URLs → add the exact audit preview wildcard above → Save. Then visually confirm both entries remain listed.
+
+### Next verification gate
+- Once the user has saved the entry, confirm that the audit URL appears alongside the existing feature URL.
+- Only then run one controlled signup from the audit-branch preview and immediately inspect Pylearn-Dev Auth logs for the new confirmation request and SMTP sender/error outcome.
+- Do not claim email delivery is fixed until the message is received and the confirmation link is verified.
+- Production remains untouched; no paid option is approved.
+
+### Traceability
+- Previous canonical blob fetched before this record: `3a19c2e4f6e9b0554e46ca97edc8152611a7424d`.
+- This record documents a blocked requested action, not a successful Supabase configuration change.
+- Documentation commit and blob identifiers are provided only after GitHub update and re-fetch verification.
