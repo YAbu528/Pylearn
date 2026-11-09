@@ -1223,3 +1223,15 @@ The earlier investigation is recorded in the preceding session notes (around the
 - Current canonical document blob before this session record: `af7cb128b4d2285345f690bcfffceb7c9e678c5f`.
 - Verified documentation commit SHA: 5d78ab91addffb1bca43a3433d2ed1479bfc4bf3.
 - Verified documentation blob SHA: 6e2304dbabc294d0624b08ae48a4ab48d7fa8d6d (re-fetched from GitHub and matched the update response).
+
+### Final documentation and deployment checkpoint
+- Prior documentation commit: `16dbbeba470c0f9a210db9ffeb77b02d26748fbf`.
+- Prior documentation blob: `b50fd438787fc61a1ff53e5477e1d75646ecf7dd`.
+- After that checkpoint, Vercel created and marked READY a documentation-only deployment containing the same corrected application code:
+  - Deployment ID: `dpl_EupwEDURzxKVXBkhif4DKQ32uubJ`.
+  - Deployment URL: `https://pylearn-9hduxfa8g-yabu528s-projects.vercel.app`.
+  - Branch alias: `https://pylearn-git-audit-reward-integrity-pha-4fbac1-yabu528s-projects.vercel.app`.
+  - Commit: `16dbbeba470c0f9a210db9ffeb77b02d26748fbf`.
+- Re-fetched the actual deployed `/script.js` from the READY deployment and confirmed it contains both Supabase project URLs, the Vercel-preview selector, and the dynamic signup redirect.
+- The branch alias is the preferred test URL because it follows the latest deployment on this branch.
+- The latest document update's commit/blob will be stated after GitHub write and re-fetch verification.
