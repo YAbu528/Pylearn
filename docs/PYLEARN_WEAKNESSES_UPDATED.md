@@ -333,3 +333,81 @@ The full API request/response contract, 14 quiz answer indexes, objective challe
 - READY preview alias: `pylearn-git-feat-server-authoritative-abc05f-yabu528s-projects.vercel.app`.
 - Pylearn-Dev project ref: `rhtfripfqwccbhcwgoxy`.
 - Active Edge Function: `verify-learning-activity`, version 1, `verify_jwt=true`.
+
+
+## Session record — missing signup email investigation and OTP requirement (2026-11-09)
+
+### User decisions and required behavior
+
+- The user confirmed that email-code verification is required **only during new account registration**.
+- Existing users must continue to sign in with their existing email + password flow. Do not add an OTP challenge to ordinary password sign-in.
+- The user explicitly rejected **all paid options** for email delivery. Do not configure paid SMTP, create paid accounts, enable paid add-ons, or incur any cost without a new explicit decision. Current instruction is to pursue a genuinely free path only.
+- Desired registration UX: after signup, show six separate digit boxes; send a six-digit code to the submitted email; verify the code on the PyLearn preview; only then complete/activate registration.
+- Desired email branding: display sender name **PyLearn**, not Supabase. This is a requirement to investigate, not yet implemented.
+
+### What was inspected in this session
+
+- Re-fetched this canonical document from `audit/reward-integrity-phase1-20261107` before work. Starting blob SHA: `f7ed216f94838b7864429fcbb0d26c93904a9462`.
+- Re-fetched feature-branch `script.js` at `feat/server-authoritative-rewards-20261107`. Blob SHA: `43a2f00237972dbf449fc1787eab965b88978684`.
+- Re-inspected the signup form in `index.html`. Blob SHA: `2d296b774e979b82909d9afecaed6233e96c04fa`.
+- Confirmed the current feature-preview signup implementation calls `supabaseClient.auth.signUp({ email, password, options: { emailRedirectTo: ... } })`. If there is no immediate session, it tells the user to check email for a **confirmation link**, then return and sign in. No six-digit OTP entry UI or `verifyOtp` signup handler exists in the inspected source excerpt.
+- Confirmed the preview selects Pylearn-Dev project ref `rhtfripfqwccbhcwgoxy`; production routing remains separate.
+- Confirmed Pylearn-Dev project status is `ACTIVE_HEALTHY`, region `eu-west-1`. This was a read-only project metadata check.
+
+### Evidence from Pylearn-Dev Auth logs for the failed registration
+
+- Read the development project's unified logs, filtering Auth/email-related events.
+- At `2026-11-09T16:38:24Z`, Auth recorded `user_confirmation_requested` for an email signup.
+- At `2026-11-09T16:38:25Z`, Auth recorded a `mail.send` event with mail type `confirmation`, using the default sender `noreply@mail.app.supabase.io`.
+- The signup API request completed with HTTP 200 and came from the PyLearn feature-preview alias.
+- These records establish that the Auth signup path requested confirmation and emitted a mail-send event. **They do not prove inbox delivery, acceptance by the recipient's mail server, or successful arrival in Inbox/Spam.** No delivery receipt or bounce evidence was established in this inspection.
+- A detail to verify privately with the user: the recipient domain visible in the Auth log appears to be `gmile.com`. If the intended address was a Gmail address, this may be a spelling error. Do not repeat the full address in this document or in user-facing messages.
+- A first query against the logs used a nonexistent `log_level` column and returned a schema error; the query was corrected by removing that column. The corrected read-only query returned the Auth and mail events described above.
+
+### Supabase email-delivery constraints discovered in current documentation
+
+- Current Supabase documentation says the built-in/default SMTP service is for development/testing and is heavily restricted. Without custom SMTP, it only sends to pre-authorized addresses belonging to the project's organization team; other destinations can fail as unauthorized. It also has a project-wide hourly rate limit and no delivery SLA.
+- The same documentation says custom SMTP is needed to send Auth emails to arbitrary end-user addresses. The documented SMTP setup includes a sender email and `smtp_sender_name`, which is where a branded sender name such as PyLearn is configured.
+- Consequently, the current free built-in SMTP service is **not a viable public-user email-delivery solution** for PyLearn. Adding ordinary learners to the Supabase organization team is not an acceptable production workaround. It could at most be used for controlled team-member testing, and must not be treated as scalable public signup delivery.
+- No paid SMTP provider was selected or configured. No email settings were changed.
+- Documentation consulted:
+  - Supabase “Send emails with custom SMTP”: https://supabase.com/docs/guides/auth/auth-smtp
+  - Supabase “Test auth flows”: https://supabase.com/docs/guides/auth/testing-auth-flows
+  - Supabase password-based Auth: https://supabase.com/docs/guides/auth/passwords
+
+### Technical design direction for the requested six-digit code
+
+- Supabase Auth supports email OTP templates using the `{{ .Token }}` template variable and client-side verification through `supabase.auth.verifyOtp(...)`. The signup-specific flow must be confirmed against the current supabase-js version/API before implementation.
+- The OTP should be requested as part of the email/password **signup confirmation** flow, not as a second factor on every sign-in.
+- The browser UI should provide six accessible one-character numeric inputs (with paste/autofill support, focus movement, keyboard navigation, and a single combined code value), a Verify action, clear invalid/expired-code feedback, and a resend action that respects Auth rate limits.
+- Preserve password signup, existing password sign-in, existing social sign-in behavior outside preview, account data, and reward integrity. Do not disable email confirmation or auto-confirm unverified users as a shortcut.
+- Branding the body/subject of an email template may be possible independently, but the **From display name** is controlled by the configured mail sender/SMTP settings. With the current default Supabase sender, do not claim that the sender can be changed to PyLearn unless a supported free configuration is verified.
+
+### Current result and scope boundaries
+
+- **Root-cause evidence:** Auth attempted the confirmation-mail send through Supabase's default sender; delivery was not proven. Supabase's documented default SMTP recipient restrictions are a likely explanation if the address is not a pre-authorized organization-team address. The apparent recipient-domain spelling also needs user confirmation. Neither should be stated as a conclusively proven bounce cause.
+- **OTP implementation:** not started.
+- **Six-box UI:** not implemented.
+- **Email template / sender settings:** not changed.
+- **Paid services:** none selected or configured; user explicitly disallows paid options.
+- **Application source, database schema/data, Edge Functions, Auth configuration, and production resources:** unchanged in this session.
+- **Production:** untouched.
+
+### Next actions — continue from here
+
+1. Ask the user to confirm privately whether the email address entered during signup was spelled correctly (especially its domain); do not ask them to post the full address or any password/code in chat.
+2. Determine whether the recipient is an authorized member of the Supabase organization team. Do not add anyone to the team without the user's explicit approval and do not treat team membership as the public delivery solution.
+3. Inspect current Supabase Auth email OTP documentation and the exact `verifyOtp` signup type for the installed supabase-js version used by this static frontend. Establish whether Pylearn-Dev can send a test OTP to the user's authorized address using its existing free built-in SMTP.
+4. Before implementing the OTP flow, decide and document a genuinely free email-delivery route for arbitrary PyLearn users. If none is available without a paid provider/domain or unsuitable restrictions, report that limitation honestly and ask the user how to prioritize the requirement; do not silently substitute a paid service or weaken email verification.
+5. If a viable free test route exists, implement on `feat/server-authoritative-rewards-20261107` only: OTP signup request, six-box UI, signup OTP verification, resend/rate-limit feedback, and keep ordinary email/password sign-in unchanged. Do not alter production Auth.
+6. Investigate whether sender-name branding is possible with the chosen no-cost route. Do not claim “From: PyLearn” until an actual received test email proves it.
+7. Deploy only to the existing Vercel feature preview and Pylearn-Dev. Run registration, wrong-code, expired-code, resend, successful verification, duplicate signup, existing-user password sign-in, reload/session, and Android Chrome/Samsung Internet tests.
+8. Record each source/configuration change, exact branch and commit, deployment ID/URL, test evidence, failures and next steps in this canonical handover. After every checkpoint update, fetch this file again and verify the saved text. No production changes or paid services without separate explicit approval.
+
+### Source branch reference at start of this investigation
+
+- Feature branch: `feat/server-authoritative-rewards-20261107`.
+- Inspected `script.js` blob SHA: `43a2f00237972dbf449fc1787eab965b88978684`.
+- Inspected `index.html` blob SHA: `2d296b774e979b82909d9afecaed6233e96c04fa`.
+- Feature branch source was read only; no new feature-branch commit was created in this investigation.
+- Canonical handover branch: `audit/reward-integrity-phase1-20261107`.
