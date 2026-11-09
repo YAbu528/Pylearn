@@ -868,3 +868,53 @@ Findings:
 | EMAIL-SMTP-10 | Configure custom SMTP in Pylearn-Dev and verify a real received email | Pylearn-Dev `rhtfripfqwccbhcwgoxy` only | `test(auth): validate PyLearn Gmail SMTP sender in dev` | PENDING — not configured/tested | Awaiting mailbox and protected credential entry |
 | EMAIL-TEMPLATE-07 | Prepare branded Auth email templates and verification UX | Feature branch / Pylearn-Dev preview only | `feat(auth): brand verification email templates` | PENDING — not implemented | Awaiting successful delivery test and design review |
 | PROD-REVIEW-08 | Separate production email review and rollout | Production | No production commit planned | PENDING — requires separate explicit approval | Not authorized |
+
+
+## Session record — dedicated PyLearn Gmail App Password created; dev SMTP configuration next (2026-11-09)
+
+### User-reported progress
+- The user reports that the dedicated Gmail mailbox has been created and that Google allowed them to generate an App Password.
+- The user was instructed to label the App Password `PyLearn SMTP`; this is only Google's local label and does not set the visible sender name.
+- The user has not shared the Gmail password or App Password in chat. **Do not request either secret.**
+- The exact mailbox address has not yet been provided, so the sender address is not yet recorded.
+- This is user-reported account setup; the mailbox and App Password have not been independently inspected. No SMTP connection or email delivery has been verified.
+
+### Current implementation boundary
+- Next configuration target remains the Free Supabase development project `Pylearn-Dev`, ref `rhtfripfqwccbhcwgoxy`.
+- Production project `vzgbxoxscmlmacxciwze` must remain untouched.
+- The App Password must be entered directly by the user into the protected SMTP password field in the Pylearn-Dev Supabase Dashboard only. Never place it in chat, GitHub, source code, this document, screenshots, or logs.
+- Keep email confirmation enabled; do not enable auto-confirm.
+- Expected SMTP identity values, pending dashboard verification:
+  - Host: `smtp.gmail.com`
+  - Port: `587` with STARTTLS, or `465` with implicit TLS if the dashboard offers that mode.
+  - SMTP username: the dedicated Gmail address.
+  - Sender/from email: the same dedicated Gmail address.
+  - Sender display name: `PyLearn`.
+  - SMTP password: App Password entered privately by the user in the protected Supabase field.
+- Supabase integration tools available in this workflow do not expose an Auth SMTP configuration setter, so the user must perform the secret entry in the dashboard UI.
+
+### Exact next actions
+1. Ask the user for the new Gmail address only; never ask for the password or App Password.
+2. Guide the user to open Supabase Dashboard and select **Pylearn-Dev** (verify project ref `rhtfripfqwccbhcwgoxy`, not production).
+3. Open **Authentication → SMTP Settings** (dashboard labels may vary slightly), enable custom SMTP, and enter the host, port/security mode, username, sender email, sender name, and App Password privately.
+4. Save settings in Pylearn-Dev only. Do not change email-confirmation/auto-confirm behavior or production settings.
+5. Run a controlled test signup to an inbox the user controls, then inspect Auth logs and the actual received message. Verify delivery, visible From name/address, subject/body, verification action/link destination, and inbox/spam placement. A successful API response alone is not delivery proof.
+6. If authentication fails, stop and inspect the non-secret error details; do not ask the user to paste the App Password or weaken Google account security.
+7. Only after real delivery is verified, proceed to branded email templates and feature-branch/preview UX. Production changes require separate explicit approval.
+
+### Current status
+- Dedicated Gmail mailbox: **created according to user report; address not yet supplied**.
+- Google App Password: **created according to user report; secret remains private**.
+- Pylearn-Dev SMTP: **not configured**.
+- Actual SMTP authentication and message delivery: **not tested**.
+- PyLearn visible sender branding: **not verified**.
+- Production: **unchanged; no production authorization**.
+- Cost: **no paid option introduced or approved**.
+
+### Traceability
+| Task ID | Work | Branch/environment | Commit message | Commit SHA | Verification |
+|---|---|---|---|---|---|
+| EMAIL-GMAIL-11 | Record user-reported dedicated mailbox and App Password creation without recording secrets | Canonical doc branch `audit/reward-integrity-phase1-20261107` | `docs: record PyLearn Gmail App Password setup progress` | PENDING until commit response | User report only; no secret received or inspected |
+| EMAIL-SMTP-10 | Configure Gmail custom SMTP and test real delivery | Pylearn-Dev only | `test(auth): validate PyLearn Gmail SMTP sender in dev` | PENDING — not started | Awaiting mailbox address and private dashboard configuration |
+| EMAIL-TEMPLATE-07 | Brand Auth templates and verification UX after delivery test | Feature branch / Pylearn-Dev preview | `feat(auth): brand verification email templates` | PENDING — not started | Not tested |
+| PROD-REVIEW-08 | Review production SMTP/template rollout separately | Production | No production commit planned | PENDING — separate explicit approval required | Not authorized |
