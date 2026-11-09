@@ -1235,3 +1235,24 @@ The earlier investigation is recorded in the preceding session notes (around the
 - Re-fetched the actual deployed `/script.js` from the READY deployment and confirmed it contains both Supabase project URLs, the Vercel-preview selector, and the dynamic signup redirect.
 - The branch alias is the preferred test URL because it follows the latest deployment on this branch.
 - The latest document update's commit/blob will be stated after GitHub write and re-fetch verification.
+
+
+## Session record — clarify Pylearn-Dev Auth redirect allowlist for two Vercel preview branches (2026-11-09)
+
+### User question
+- The user reports that Pylearn-Dev Authentication > URL Configuration > Redirect URLs currently contains `https://pylearn-git-feat-server-authoritative-abc05f-yabu528s-projects.vercel.app/**`.
+- They ask whether to replace it with the previously supplied audit-branch preview URL or keep the existing entry.
+
+### Verification and decision
+- The existing URL is the Vercel feature-branch preview alias for `feat/server-authoritative-rewards-20261107`. It is a distinct hostname from the preview used for the SMTP-routing correction.
+- Re-fetched Vercel deployment `dpl_8mJpMPh4LuXpSTwNw8D3cbqvrxxp`; it is `READY`, branch `audit/reward-integrity-phase1-20261107`, commit `b4a496edf7cd933ef4491e20a06394f68cc822f6`, with alias `pylearn-git-audit-reward-integrity-pha-4fbac1-yabu528s-projects.vercel.app`.
+- Therefore the user's existing feature-branch redirect entry should not be removed if that preview is still used. Add the audit-branch alias as a second allowed redirect entry so the SMTP-corrected audit preview can complete its confirmation redirect. Do not replace one branch's entry with the other.
+- Recommended exact audit preview allowlist entry: `https://pylearn-git-audit-reward-integrity-pha-4fbac1-yabu528s-projects.vercel.app/**`. This is the same verified Vercel branch alias; the `/**` suffix follows the wildcard pattern already used in the user's existing entry.
+- The actual test should be opened from the audit-branch preview alias above, because that is the branch where the preview-to-Pylearn-Dev routing correction was applied. The feature-branch URL is not interchangeable with it.
+- No Supabase setting was changed by the assistant. User action is still required to add the second allowlist entry.
+- No signup attempt or email delivery test was performed in this interaction. Do not claim SMTP delivery is fixed.
+
+### Traceability
+- Canonical document before this record: blob `3a19c2e4f6e9b0554e46ca97edc8152611a7424d`.
+- Vercel deployment inspected: `dpl_8mJpMPh4LuXpSTwNw8D3cbqvrxxp`, READY, commit `b4a496edf7cd933ef4491e20a06394f68cc822f6`.
+- Documentation commit/blob are recorded after the update and GitHub re-fetch verification.
