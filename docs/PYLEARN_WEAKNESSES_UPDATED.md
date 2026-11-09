@@ -1090,3 +1090,56 @@ The earlier investigation is recorded in the preceding session notes (around the
 - Previous checkpoint commit: `a7f30de324089560e98eb1efebe494f6cb3b0690`.
 - Previous checkpoint blob: `9cb143ab80fd11f4c69b94192f08f0673b2e8cbc`.
 - Current record's commit/blob are recorded in the next verified checkpoint; this record does not claim an unreturned SHA.
+
+
+## Session record — correct recipient spelling confirmed; likely default-SMTP issue and preview prepared (2026-11-09)
+
+### User clarification
+- The user confirms they tried the recipient address with the spelling corrected and the confirmation email still did not arrive.
+- This weakens the earlier suspected typo explanation. The possible typo noted in the prior log review remains an unverified historical observation and must not be treated as the cause.
+- The user asked for a likely cause to be fixed if identifiable, followed by a preview for testing; otherwise, prepare the preview regardless.
+
+### Evidence-based diagnosis
+- Earlier Pylearn-Dev Auth logs showed a confirmation mail-send event at 2026-11-09T16:38:25Z using Supabase's default sender noreply@mail.app.supabase.io after a signup request returned HTTP 200. This proves an Auth send attempt, not delivery to the recipient server or inbox.
+- The user subsequently reported that custom Gmail SMTP settings were successfully saved in Pylearn-Dev. These settings are intended to replace the default Supabase mail path for Auth messages.
+- The leading hypothesis for the earlier missing email is the default Supabase SMTP service's restricted/testing-oriented delivery behavior and/or low sending limits, rather than recipient spelling. This is a likely diagnosis, not proven root cause: the old logs do not show recipient-server acceptance, and no fresh message has yet been tested through the newly saved Gmail SMTP configuration.
+- The user-side SMTP save is the corrective configuration step already completed. No further speculative SMTP changes are justified before one controlled test.
+- Do not claim the issue is fixed until a new confirmation message is actually received and its sender and confirmation link are checked.
+
+### Preview deployment prepared
+- Retrieved the latest Vercel deployment for project pylearn and verified it is READY.
+- Deployment ID: dpl_J94TfC5k1jD1pUiUont4XwhUA1Gv.
+- Deployment URL: https://pylearn-k3ljdpk1i-yabu528s-projects.vercel.app
+- Branch: audit/reward-integrity-phase1-20261107.
+- Deployed commit: bd9bdd6169b4b235d9e21a5d7c3f723104960399.
+- The deployment is a Vercel Preview deployment sourced from Git; production was not changed.
+- The deployed commit contains the documentation checkpoint, not an application-code change. The signup UI/source remains unchanged. This preview test validates the newly saved Pylearn-Dev custom SMTP configuration against the existing signup flow.
+- The exact deployment URL and branch/commit metadata were fetched from Vercel; this is not a guessed preview alias.
+
+### Testing instructions and boundaries
+1. Open the verified preview URL above.
+2. Use the normal account-creation flow and enter an inbox you control. Keep the full address private; do not paste it into chat.
+3. Submit only one controlled signup attempt. Note the local time and exact on-screen result.
+4. Check Inbox, Spam, and All Mail. Verify whether the message arrives, whether the From name/address are PyLearn and the dedicated Gmail sender, and whether the confirmation link returns to the intended PyLearn preview/redirect destination.
+5. If it does not arrive, stop before repeated retries. Inspect fresh Pylearn-Dev Auth logs and SMTP error details to distinguish SMTP authentication/connection rejection, provider throttling, recipient rejection, or redirect/template issues.
+6. Do not change production Supabase settings or deploy to production. No paid option is approved. Never share the Gmail App Password or confirmation token.
+
+### What changed / what did not
+- New user evidence recorded: correct recipient spelling was tried, but no email arrived.
+- Diagnosis updated: prior typo suspicion downgraded; default Supabase SMTP delivery restrictions are now the leading hypothesis, pending a real test after custom SMTP save.
+- The user had saved custom Gmail SMTP in Pylearn-Dev before this interaction; the assistant made no new SMTP change.
+- A READY Vercel preview was retrieved and verified.
+- No application source code, Supabase Auth template, database, environment variable, Gmail account, production setting, or production deployment was changed in this interaction.
+- No email delivery success is claimed.
+
+### Traceability
+| Task ID | Work | Branch/environment | Commit / deployment | Verification |
+|---|---|---|---|---|
+| EMAIL-SMTP-14 | Reassess missing confirmation email after correct spelling confirmation | Pylearn-Dev only | No Supabase write | Prior default sender event plus user-reported custom SMTP save; fresh delivery pending |
+| EMAIL-PREVIEW-09 | Prepare signup test preview | audit/reward-integrity-phase1-20261107 / Vercel Preview | Deployment dpl_J94TfC5k1jD1pUiUont4XwhUA1Gv; commit bd9bdd6169b4b235d9e21a5d7c3f723104960399 | Vercel returned READY and exact URL/branch/commit |
+| EMAIL-TEMPLATE-07 | Review email template/verification UX after SMTP delivery is verified | Feature branch / Pylearn-Dev preview | Not started | Waiting for real message receipt |
+| PROD-REVIEW-08 | Any production SMTP/template rollout | Production | Not authorized | Requires separate explicit approval |
+
+### Canonical-document checkpoint
+- Previous fetched blob SHA before this update: d4fdb93d4fe690070a6cdf1749a11aa698f7e244.
+- This checkpoint's commit and new blob SHA will be recorded after the GitHub write is accepted and the updated file is re-fetched.
