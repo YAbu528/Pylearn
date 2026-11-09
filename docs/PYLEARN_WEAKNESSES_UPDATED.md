@@ -1296,3 +1296,37 @@ The earlier investigation is recorded in the preceding session notes (around the
 - Previous canonical blob fetched before this record: `3a19c2e4f6e9b0554e46ca97edc8152611a7424d`.
 - This record documents a blocked requested action, not a successful Supabase configuration change.
 - Documentation commit and blob identifiers are provided only after GitHub update and re-fetch verification.
+
+
+## Session record — user added audit redirect; Supabase connector permissions already grant full access (2026-11-09)
+
+### User update and question
+- The user confirms they added the audit-preview redirect URL in Pylearn-Dev.
+- They ask whether they can grant ChatGPT additional permission to manage Supabase Authentication redirect settings, and request a permission-page link if such a grant is possible. They accept continuing manually if not possible.
+
+### Permission inspection
+- Inspected the ChatGPT app permission state for the specifically named Supabase connector using the plugin-permission settings action.
+- Returned state:
+  - Global/default app permission: `Allow low-risk actions`.
+  - Supabase-specific override: `Allow all actions`.
+  - The connector already has its most permissive app-specific action permission; it is configured not to ask before reading or taking actions.
+- Therefore there is no additional ChatGPT permission toggle the user needs to enable for this Supabase connector. Changing global permissions would be unnecessary and would broaden access for other apps.
+- Important distinction: app permissions control whether existing connector actions may run; they do not create new API capabilities or add missing tool schemas. The exposed Supabase connector actions still do not include an Auth URL Configuration / redirect allowlist read-write action. The Browser connector in this chat context exposes read-only tab inspection, not dashboard interaction.
+- Consequently, the earlier inability to add the URL was a connector capability limitation, not a denied permission. No further permission grant or reconnect is expected to solve it.
+- The user's manual addition is accepted as user-reported; no independent read-back of the Supabase Auth allowlist is available through the exposed connector.
+
+### Current state and next step
+- User reports the audit preview redirect is now added. Preserve the existing feature-branch redirect entry.
+- The next step is one controlled signup test using the audit-branch preview URL, followed immediately by inspection of Pylearn-Dev Auth logs. Verify the event and sender before asking the user to wait for email delivery.
+- Actual email delivery remains unverified until the message arrives and its confirmation link is tested.
+- No Supabase setting was changed by the assistant in this interaction. No code, database, SMTP, production configuration, or deployment was changed.
+- No paid option is approved; production remains untouched.
+
+### Helpful navigation
+- Pylearn-Dev Auth URL Configuration dashboard route:
+  `https://supabase.com/dashboard/project/rhtfripfqwccbhcwgoxy/auth/url-configuration`
+- This is a Supabase project settings link, not a ChatGPT permission-grant link. No permission-grant link is needed because Supabase app-specific permission is already Allow all actions.
+
+### Traceability
+- Canonical document blob fetched before this record: `ff83602f35f6e1a3694b24112066a9a1e0f519ec`.
+- This checkpoint records the user's confirmation and the permission inspection result. Documentation commit/blob IDs follow only after successful GitHub write and re-fetch verification.
