@@ -1053,3 +1053,40 @@ For **Pylearn-Dev only** (project ref `rhtfripfqwccbhcwgoxy`; do not select prod
 - Previous checkpoint commit: `5495dd1682a88f7d5ddb7d7290089e44b7170852`.
 - Previous checkpoint blob: `ee1bea661b6b3d49fe9511cacf4444d2155bb904`.
 - Current record's resulting commit/blob are recorded in the next checkpoint after GitHub returns them and the updated file is re-fetched.
+
+
+## Session record — Gmail profile-logo guidance and recovery of the earlier delayed signup-email test (2026-11-09)
+
+### User's two questions
+1. Whether the dedicated PyLearn Gmail account's profile should use the PyLearn logo.
+2. Whether the prior signup attempt and delayed/missing confirmation email (user reports waiting approximately 10–20 minutes) were already recorded in this canonical document.
+
+### Recovered earlier evidence from this document
+The earlier investigation is recorded in the preceding session notes (around the reward-integrity / email-delivery investigation):
+- The feature-preview signup source was inspected and used `supabaseClient.auth.signUp(...)` with an email redirect URL. If no immediate session existed, the UI instructed the user to check email for a confirmation link. The inspected excerpt did not contain a six-digit OTP entry UI or signup `verifyOtp` handler.
+- For the earlier failed registration, Pylearn-Dev Auth logs showed:
+  - `user_confirmation_requested` at `2026-11-09T16:38:24Z`.
+  - A `mail.send` event for mail type `confirmation` at `2026-11-09T16:38:25Z`, using Supabase's default sender `noreply@mail.app.supabase.io`.
+  - Signup API request completed with HTTP 200 from the PyLearn feature-preview alias.
+- These events prove that Auth requested and attempted to send a confirmation message through the built-in mail path. They do **not** prove delivery to the recipient's mail server or arrival in Inbox/Spam.
+- The earlier log review raised a possible recipient-address typo: the domain appeared as `gmile.com`. The full address was deliberately not copied here. This was a suspicion to verify privately, not a confirmed cause.
+- The user now clarifies that they waited approximately 10–20 minutes and still did not receive the email. This wait duration is a user report; it was not previously captured explicitly in the earlier log summary.
+- The earlier attempt occurred before the custom Gmail SMTP configuration was saved. The current successful SMTP dashboard update is a separate, newer state and has not yet had a real delivery test.
+
+### Guidance — dedicated Gmail account profile branding
+- Recommended: set the dedicated PyLearn Gmail account's Google Account profile name to `PyLearn` and use the official PyLearn logo as its profile photo, provided the user has the logo asset and rights to use it.
+- This is optional supporting branding only. It does **not** configure SMTP, change the SMTP From header, or guarantee that every recipient's Gmail app will display the profile image. Display can depend on Google account identity/contact handling and recipient UI.
+- The authoritative sender display name for the Supabase Auth email remains the SMTP Sender name configured in Supabase as `PyLearn`; the From email remains the dedicated Gmail address. The actual received email must be inspected to verify both.
+- Do not add unrelated personal details to the dedicated account profile. Do not publish credentials or expose the Google App Password.
+
+### Decision / next action
+- Do not repeat the same registration test blindly before acknowledging the earlier failed attempt.
+- For the next controlled test after the user is ready, first ensure privately that the recipient address is spelled correctly (especially the domain); do not ask the user to disclose the full address in chat.
+- Then test one fresh signup against Pylearn-Dev after the custom SMTP save. Record the exact test time and whether the app reports a confirmation message. Check Inbox and Spam. If no email arrives, inspect the new Auth logs for the recipient domain and SMTP failure details before another attempt.
+- Do not infer that the earlier missing message was caused by SMTP configuration alone; the suspected address typo must also be ruled out.
+- Production remains untouched. No code, Auth template, SMTP setting, account profile, database, or deployment was changed in this conversation.
+
+### Traceability
+- Previous checkpoint commit: `a7f30de324089560e98eb1efebe494f6cb3b0690`.
+- Previous checkpoint blob: `9cb143ab80fd11f4c69b94192f08f0673b2e8cbc`.
+- Current record's commit/blob are recorded in the next verified checkpoint; this record does not claim an unreturned SHA.
