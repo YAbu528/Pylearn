@@ -1140,6 +1140,13 @@ The earlier investigation is recorded in the preceding session notes (around the
 | EMAIL-TEMPLATE-07 | Review email template/verification UX after SMTP delivery is verified | Feature branch / Pylearn-Dev preview | Not started | Waiting for real message receipt |
 | PROD-REVIEW-08 | Any production SMTP/template rollout | Production | Not authorized | Requires separate explicit approval |
 
+### Final preview deployment after the verified documentation checkpoint
+- Vercel deployment ID: dpl_6WFYXpqbyh7PEX3Jjoop3PWffeoi.
+- Preview URL: https://pylearn-iznx0ygg6-yabu528s-projects.vercel.app.
+- Status: READY, confirmed by a second Vercel deployment-list read.
+- Branch: audit/reward-integrity-phase1-20261107; deployed commit: dd50310ca459decdb5e39e4a658440dd08a04ced.
+- This deployment contains the final documentation-only checkpoint; application code is unchanged.
+
 ### Canonical-document checkpoint
 - Previous fetched blob SHA before this update: d4fdb93d4fe690070a6cdf1749a11aa698f7e244.
 
