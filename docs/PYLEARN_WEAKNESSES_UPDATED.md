@@ -1142,4 +1142,6 @@ The earlier investigation is recorded in the preceding session notes (around the
 
 ### Canonical-document checkpoint
 - Previous fetched blob SHA before this update: d4fdb93d4fe690070a6cdf1749a11aa698f7e244.
-- This checkpoint's commit and new blob SHA will be recorded after the GitHub write is accepted and the updated file is re-fetched.
+
+- Verified checkpoint commit SHA: 9a9a4854c45bb8470976a880a642a97f16f46022.
+- Verified checkpoint blob SHA: 143c61aa2917782670ffa29c516faf4e04f780b1 (re-fetched from GitHub and matched the update response).
