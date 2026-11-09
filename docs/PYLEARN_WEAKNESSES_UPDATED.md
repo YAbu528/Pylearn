@@ -479,3 +479,13 @@ The prior Auth log investigation showed the attempted recipient's domain as `gmi
 4. If no free route can meet public-recipient delivery and PyLearn sender branding without a user-owned domain, explain that constraint plainly; do not disable email verification or auto-confirm accounts.
 5. Only after a viable delivery route is established, implement signup OTP on `feat/server-authoritative-rewards-20261107`, with six digit boxes, paste/autofill/accessibility support, wrong/expired-code feedback, resend rate-limit feedback, and signup-only verification. Keep `signInWithPassword` unchanged.
 6. Preview-test all relevant cases in Pylearn-Dev and on Android Chrome and Samsung Internet. Do not claim success until those tests have actually been run and observed.
+
+
+### Supabase JS CDN version extraction completed
+
+The feature-branch `index.html` was inspected in full enough to locate the script imports:
+- Line 459: `<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>`
+- Line 460: `<script src="script.js?v=feature-navigation-20261105-1"></script>`
+- `@supabase/supabase-js@2` is a floating major-version CDN selector, not an exact pinned release. There is no package lock or imported package version in the inspected frontend path.
+- Before changing auth behavior, choose and pin a tested exact v2 release in the CDN URL (and record the selected version) rather than allowing the dependency to change silently. Validate that the selected release retains the documented `signUp`, `verifyOtp`, and `resend` API shapes.
+- This is an inspection finding only; `index.html` was not changed.
