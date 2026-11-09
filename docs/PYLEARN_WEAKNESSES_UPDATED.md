@@ -617,3 +617,63 @@ The user explicitly answered that they do not own or have access to DNS settings
 
 ### Record update status
 This entry is being appended to the canonical handover on `audit/reward-integrity-phase1-20261107`. It records the user's DNS clarification and continuity rule. It does not claim that the email-delivery issue is solved.
+
+
+## Session record — managed authentication provider alternative evaluated (2026-11-09)
+
+### Purpose
+Continue EMAIL-ALT-01 by checking whether a managed authentication service could provide six-digit signup verification without requiring the user to own a custom domain or operate SMTP. This was read-only research. No provider account was created or connected.
+
+### Candidate examined: Clerk Hobby
+
+Official Clerk documentation and current pricing were reviewed:
+- Pricing: https://clerk.com/pricing
+- Email/password signup with verification code: https://clerk.com/docs/guides/development/custom-flows/authentication/email-password
+- Email template settings and sender address: https://clerk.com/docs/guides/customizing-clerk/email-sms-templates
+- Development vs production instances: https://clerk.com/docs/guides/development/managing-environments
+- Development email delivery limits: https://clerk.com/docs/guides/development/testing/test-emails-and-phones
+- Sign-up and sign-in options: https://clerk.com/docs/guides/configure/auth-strategies/sign-up-sign-in-options
+
+Verified findings:
+- Clerk's current Hobby plan is listed as $0 with no credit card required and includes email/password, six-digit email codes, and up to 50,000 monthly retained users per app.
+- Its documented custom signup flow supports password signup followed by an email verification code.
+- Clerk's development instance is not suitable for production. The documentation says it has a 100-user cap, and the development email delivery limits are 100 emails/month and 50 distinct recipients/day per workspace (with additional conditions and test-address exceptions).
+- Clerk's email-template settings describe the production From address in the form `<local part>@<your-domain>`. Its production setup requires associating a production domain. The user has no custom-domain DNS access, so this does not establish a viable production sender route with PyLearn branding.
+- The free plan does not include removal of Clerk branding; the pricing page lists “Remove Clerk branding” as not included on Hobby. This is another mismatch if a fully PyLearn-branded auth experience is required.
+- A development instance could potentially be used for a limited technical prototype, but it must not be mistaken for a public production solution. Its relaxed development configuration and email caps are not a basis for launching PyLearn signups.
+- Clerk is a separate identity platform. Replacing Supabase Auth would require a deliberate identity/session architecture migration and integration with the existing Supabase RLS, user IDs, OAuth providers, progress, rewards, and backend authorization. No such migration has been designed or approved.
+
+### Other managed-provider findings rechecked
+- Supabase's current official guide says its built-in email service sends only to pre-authorized organization-team addresses, is currently limited to 2 emails/hour, and is best-effort; public arbitrary-recipient signup requires custom SMTP or a Send Email Hook backed by an email provider.
+- Official reference: https://supabase.com/docs/guides/auth/auth-smtp
+- Supabase email testing guide: https://supabase.com/docs/guides/auth/testing-auth-flows
+- The Firebase documentation reviewed describes custom-domain sender configuration as requiring DNS ownership verification; it did not establish a suitable signup-only six-digit code flow with a provider-managed branded sender for this project.
+- Firebase reference: https://firebase.google.com/docs/auth/email-custom-domain
+
+### Decision
+Clerk Hobby is **not approved or recommended as the production fix** under the current constraints. Its free six-digit code capability is real, but the development delivery limits are not production-grade, while the documented production sender setup expects a domain the user cannot manage. Migrating PyLearn's identity platform would add substantial risk without solving the confirmed sender constraint.
+No currently evaluated option has established all of the required properties simultaneously:
+1. Six-digit code only during new account creation.
+2. Existing email/password sign-in remains unchanged.
+3. Public delivery to ordinary Gmail recipients.
+4. No cost or paid service.
+5. No custom-domain DNS access.
+6. Sender identity branded as PyLearn.
+7. No risky migration away from the existing Supabase identity system.
+
+No provider was connected; no code, Auth settings, database, Edge Function, deployment, or production resource was changed.
+
+### Updated next move
+1. Preserve the current Supabase Auth architecture and do not implement a fake/local OTP. A client-generated code is not email verification and would be insecure.
+2. Do not switch to Clerk or another identity provider merely to obtain a demo code flow.
+3. The remaining blocker is a real email-delivery identity. Ask the user whether they are willing to relax the **sender-branding requirement only** and receive a clearly identified provider-managed sender, if a genuinely free provider can be proven to support public Gmail delivery without DNS ownership and can integrate with Supabase Auth. Do not assume that this relaxation is acceptable.
+4. If the user does not relax sender branding and no domain becomes available, document that signup OTP cannot responsibly be launched under all current constraints. Keep the existing confirmation flow; do not disable email verification or auto-confirm users.
+5. Continue other independent PyLearn weaknesses while this email decision is blocked, but keep the OTP item explicitly blocked in this handover.
+
+### Traceability update
+| Task ID | Work | Branch | Planned/actual commit message | Commit SHA | Verification |
+|---|---|---|---|---|---|
+| EMAIL-ALT-01 | Evaluate Clerk Hobby as a no-domain managed-auth alternative | Read-only research; canonical record on `audit/reward-integrity-phase1-20261107` | `docs: evaluate managed auth email alternative without custom domain` | PENDING — this entry not yet committed | Official docs reviewed; no account or runtime test |
+| EMAIL-OTP-02 | Signup-only six-digit OTP implementation | `feat/server-authoritative-rewards-20261107` | `feat(auth): add signup-only email OTP verification` | PENDING — not authorized/implemented | Blocked |
+| EMAIL-TEST-03 | Signup/sign-in and Android regression | Feature preview / Pylearn-Dev only | `test(auth): verify signup OTP and existing sign-in flows` | PENDING — not run | Blocked |
+| PROD-REVIEW-04 | Separate production rollout review | Production | No production commit planned | PENDING — requires separate explicit approval | Not authorized |
