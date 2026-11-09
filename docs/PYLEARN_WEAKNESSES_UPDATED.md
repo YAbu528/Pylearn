@@ -276,3 +276,60 @@ The full API request/response contract, 14 quiz answer indexes, objective challe
 - Design doc commit: `2043762df53161378b4836b641f95e5899ffb02f`.
 - Contract doc commit: `a17c4efa5b2d884404734065413a81d19e47b932`.
 - Preview alias: `pylearn-git-feat-server-authoritative-abc05f-yabu528s-projects.vercel.app`.
+
+
+## Session checkpoint — preview/auth readiness inspection (2026-11-09)
+
+### Work completed in this session
+
+- Re-read this canonical handover, plus:
+  - `docs/SERVER_AUTHORITATIVE_REWARDS_DESIGN.md` on `feat/server-authoritative-rewards-20261107`.
+  - `docs/SERVER_AUTHORITATIVE_REWARDS_CONTRACT.md` on `feat/server-authoritative-rewards-20261107`.
+- Verified Pylearn-Dev still reports `ACTIVE_HEALTHY` at ref `rhtfripfqwccbhcwgoxy`.
+- Verified Edge Function `verify-learning-activity` is still `ACTIVE`, version 1, with `verify_jwt=true`.
+- Verified Phase 2 feature branch HEAD before this documentation checkpoint: `2043762df53161378b4836b641f95e5899ffb02f`.
+- Verified Vercel deployment for that feature-branch HEAD is READY:
+  - Deployment ID: `dpl_8bSCC1oS5CNjsXWuXUREwnK8cSqx`.
+  - Deployment URL: `https://pylearn-l5p4aj3jk-yabu528s-projects.vercel.app`.
+  - Branch alias: `https://pylearn-git-feat-server-authoritative-abc05f-yabu528s-projects.vercel.app`.
+  - The branch alias matches the preview origin recorded in the previous checkpoint.
+- Retrieved the branch alias page successfully (HTTP 200) and inspected the deployed `script.js`:
+  - Preview uses Supabase project ref `rhtfripfqwccbhcwgoxy`.
+  - Frontend invokes `verify-learning-activity`.
+  - No `award-learning-reward` frontend call was found.
+  - The deployed frontend does not include the quiz answer-key field `quiz.answer`.
+  - Preview sign-up sets `emailRedirectTo: location.origin`; the production path remains `https://yabu528.github.io/Pylearn/`.
+- Retrieved the deployed Edge Function source and confirmed its CORS allowlist includes the branch preview alias pattern, GitHub Pages, and the stable PyLearn Vercel domain.
+- User stated in the preceding conversation that the preview redirect URL had already been added to Pylearn-Dev. The branch alias was independently confirmed from Vercel deployment metadata. **The Supabase Auth URL Configuration itself was not independently read back** because the available Supabase connection does not expose an Auth configuration read action.
+- No application source, database schema/data, Edge Function, or production resource was changed in this session. No authenticated browser test has yet been run.
+
+### Current status (supersedes the earlier pending redirect note)
+
+- Preview deployment and branch alias: **inspected; READY**.
+- Preview-to-development Supabase routing: **inspected in deployed script**.
+- Edge Function deployment/JWT setting: **inspected; ACTIVE version 1; JWT required**.
+- Redirect allowlist: **user-reported as added; exact Supabase setting not independently read back**.
+- Authenticated signup, email confirmation redirect, sign-in, reward requests, retry behavior, account switching, and mobile regression: **not yet tested**.
+- Production: **unchanged**. No production rollout is authorized by this checkpoint.
+
+### Exact next actions
+
+1. Use only the Vercel preview branch alias:
+   `https://pylearn-git-feat-server-authoritative-abc05f-yabu528s-projects.vercel.app/`.
+2. In the preview, create or use a **synthetic development-only account**. Do not use production accounts for this test and do not send passwords or email verification codes in chat.
+3. Verify that the confirmation email arrives and that its link returns to the same preview alias (not GitHub Pages or the stable production domain). If it does not, record the exact error and inspect the Auth redirect/template configuration before changing anything.
+4. Sign in and verify the authenticated session survives reload. Then test one quiz submission and inspect the server-confirmed XP response and the corresponding dev database rows. Use a disposable synthetic account and avoid creating unnecessary test data.
+5. Test negative cases and idempotency: incorrect answer, lesson completion without verified quiz evidence, duplicate accepted submission, and unsupported challenge mode. Confirm no client-only result grants XP.
+6. Test sign-out and account switching; then run the same focused flow in Android Chrome and Samsung Internet.
+7. After each code/config change, update this handover with exact files, tests/results, branch and commit SHA. Commit the handover checkpoint, then fetch it again from GitHub and verify the saved text. Do not merge or deploy to production without a separate review and explicit user approval.
+
+### Reference state for this checkpoint
+
+- Canonical handover branch: `audit/reward-integrity-phase1-20261107`.
+- Canonical handover path: `docs/PYLEARN_WEAKNESSES_UPDATED.md`.
+- Feature branch: `feat/server-authoritative-rewards-20261107`.
+- Feature branch HEAD before this handover update: `2043762df53161378b4836b641f95e5899ffb02f`.
+- READY preview deployment: `dpl_8bSCC1oS5CNjsXWuXUREwnK8cSqx`.
+- READY preview alias: `pylearn-git-feat-server-authoritative-abc05f-yabu528s-projects.vercel.app`.
+- Pylearn-Dev project ref: `rhtfripfqwccbhcwgoxy`.
+- Active Edge Function: `verify-learning-activity`, version 1, `verify_jwt=true`.
