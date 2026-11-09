@@ -489,3 +489,51 @@ The feature-branch `index.html` was inspected in full enough to locate the scrip
 - `@supabase/supabase-js@2` is a floating major-version CDN selector, not an exact pinned release. There is no package lock or imported package version in the inspected frontend path.
 - Before changing auth behavior, choose and pin a tested exact v2 release in the CDN URL (and record the selected version) rather than allowing the dependency to change silently. Validate that the selected release retains the documented `signUp`, `verifyOtp`, and `resend` API shapes.
 - This is an inspection finding only; `index.html` was not changed.
+
+
+## Session record — recipient corrected to Gmail; Mailjet sender feasibility decision (2026-11-09)
+
+### User clarification
+
+The user confirmed that the recipient domain in the failed signup attempt was intended to be `gmail.com`, not `gmile.com`. The prior log observation was therefore a typing error in the attempted recipient address, not evidence that the user intended a different mail provider. Do not record or expose the full recipient address.
+
+### Mailjet sender feasibility research completed
+
+Current official Mailjet documentation and Gmail sender guidance were reviewed:
+- Mailjet free plan limits: https://documentation.mailjet.com/hc/en-us/articles/19154256993051-Understanding-Mailjet-Free-Plan-Limits
+- Mailjet sender address validation: https://documentation.mailjet.com/hc/en-us/articles/360042759253-How-to-add-a-sender-address
+- Mailjet warning about free webmail sender addresses: https://documentation.mailjet.com/hc/en-us/articles/19308800104091-Why-you-should-avoid-free-webmail-as-a-sender-address
+- Mailjet SPF/DKIM and domain authentication: https://www.mailjet.com/email-playbook/deliverability/domain-authentication/
+- Mailjet quick start (updated 2026-11-03): https://documentation.mailjet.com/hc/en-us/articles/37251169295003--Quick-Start-with-Mailjet
+- Gmail sender requirements: https://support.google.com/mail/answer/81126
+
+Findings:
+- Mailjet Free currently advertises $0/month, no credit card required to sign up, SMTP/API access, 6,000 messages/month and 200/day. This is a genuine free quota, but the quota alone does not establish that the desired sender setup is deliverable.
+- Mailjet permits an individual sender address to be added and validated by clicking a confirmation link sent to that address. This is not the same as authenticating the sender domain.
+- Mailjet explicitly warns that using Gmail/Outlook/Yahoo free-webmail addresses as the sender can cause spam placement or non-delivery. Its SPF/DKIM guidance says domain authentication requires control of the sending domain's DNS and cannot be configured for free-webmail domains.
+- Gmail's current sender requirements say senders must authenticate their sending domain with SPF or DKIM and warns against impersonating Gmail From headers.
+- Therefore, using the user's personal Gmail address as Mailjet's sender—even if the address can be verified—would not be a dependable or appropriate public signup-email solution. A display name of `PyLearn` does not solve sender-domain authentication and does not prove that recipients will see a trustworthy, authenticated PyLearn sender.
+- Mailjet remains a possible free SMTP relay only if PyLearn can use a domain it controls and configure the required SPF/DKIM records. No domain ownership or DNS access has yet been established.
+- No Mailjet account was created, no sender was registered, no API/SMTP credentials were generated, and no provider was connected.
+
+### Decision and current status
+
+- Do not configure Mailjet using a personal Gmail From address as a workaround.
+- Do not claim that the sender name will appear as `PyLearn` until a real received message confirms it.
+- The recipient typo is resolved: the intended recipient provider is Gmail.
+- A free public signup email route with authenticated PyLearn branding is **not yet established**. A domain under the user's control with DNS access may make a free-tier SMTP route feasible, subject to the provider's actual verification and test delivery.
+- Supabase built-in SMTP remains unsuitable for public signups because its default service is restricted to pre-authorized team addresses and is best-effort.
+- No code, Auth settings, database, Edge Function, Vercel deployment, or production resource was changed in this continuation.
+
+### Next decision needed
+
+Ask whether the user owns or can manage DNS for any custom domain (not merely the GitHub Pages URL). If yes, assess whether it can be used for an authenticated sender on a free SMTP tier. If no, explain that the requirements—public Gmail delivery, no paid service, no owned domain, and authenticated `PyLearn` sender identity—may not all be achievable simultaneously with a dependable provider. Do not quietly relax any of the requirements.
+
+### Exact handover state
+
+- Canonical branch: `audit/reward-integrity-phase1-20261107`
+- Canonical file: `docs/PYLEARN_WEAKNESSES_UPDATED.md`
+- Feature source branch: `feat/server-authoritative-rewards-20261107`
+- Signup source still uses confirmation-link `signUp`; ordinary sign-in still uses `signInWithPassword`.
+- No OTP UI or `verifyOtp`/resend handler has been implemented.
+- The next implementation step remains blocked on establishing a viable free, authenticated email sender. Keep production untouched and require explicit approval before connecting any provider.
