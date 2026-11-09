@@ -677,3 +677,52 @@ No provider was connected; no code, Auth settings, database, Edge Function, depl
 | EMAIL-OTP-02 | Signup-only six-digit OTP implementation | `feat/server-authoritative-rewards-20261107` | `feat(auth): add signup-only email OTP verification` | PENDING — not authorized/implemented | Blocked |
 | EMAIL-TEST-03 | Signup/sign-in and Android regression | Feature preview / Pylearn-Dev only | `test(auth): verify signup OTP and existing sign-in flows` | PENDING — not run | Blocked |
 | PROD-REVIEW-04 | Separate production rollout review | Production | No production commit planned | PENDING — requires separate explicit approval | Not authorized |
+
+
+## Session record — relaxed signup-only OTP restriction; sender identity remains the core requirement (2026-11-09)
+
+### User decision and clarification
+- The user explicitly removed the requirement that a six-digit email verification code must be used **only during new-account registration**.
+- Do not preserve signup-only as a hard constraint. The best design may use email verification codes in other appropriate verification flows too, if that is safer and clearer.
+- This change does **not** mean the user has waived the sender-identity concern. The core UX problem remains: a learner who is creating a PyLearn account may see an email that appears to come from Supabase and reasonably wonder whether the message/link is genuinely from PyLearn.
+- The goal is to make the verification email unmistakably recognizable as a legitimate PyLearn message. No paid option has been approved. The user has no custom-domain DNS access.
+- No provider, identity migration, email configuration change, or source-code change is authorized by this clarification.
+
+### Fresh official Supabase documentation check
+Reviewed current official references:
+- Custom SMTP and sender configuration: https://supabase.com/docs/guides/auth/auth-smtp
+- Email template variables and OTP support: https://supabase.com/docs/guides/auth/auth-email-templates
+- Auth configuration reference: https://supabase.com/docs/guides/auth/general-configuration
+- Auth server configuration reference: https://supabase.github.io/auth/
+
+Verified:
+- Supabase email templates can customize the subject and message body for confirmation and other Auth email types. The template variables include `{{ .Token }}` for a six-digit OTP and `{{ .ConfirmationURL }}` for a confirmation link.
+- Supabase's documented custom-SMTP configuration includes `smtp_sender_name`, which sets the sender display name (example: `PyLearn`) when using a configured SMTP provider.
+- The built-in Supabase email service remains a restricted, best-effort service: only pre-authorized team addresses, currently 2 messages/hour per the current guide, and no delivery SLA. The custom-SMTP instructions are the documented route for sending to arbitrary public addresses.
+- The documentation reviewed does **not** establish that changing an email template or setting the project/site name changes the From display name on the built-in Supabase sender. Templates change message content; they are not proof of a changed sender header.
+- Prior Auth log inspection for the test signup showed the built-in sender address `noreply@mail.app.supabase.io`. That log proves the Auth service handed the message to its built-in mail path; it did not prove inbox delivery.
+- Therefore, a branded subject/body can reduce confusion, but cannot yet be represented as a complete fix for the visible Supabase sender identity. A verified PyLearn From name/address for public recipients remains unestablished without a viable sender service.
+
+### Updated design direction
+1. Remove the signup-only restriction from the OTP design brief. Evaluate verification codes across relevant email-verification flows rather than treating registration as the only permitted use.
+2. Keep the existing Supabase Auth identity system as the default architecture; do not migrate accounts or providers merely to change the email appearance.
+3. Prioritize a recognizable PyLearn email subject and message body, with clear wording that the email was requested from PyLearn and a concise explanation of the action. This is a possible content-level mitigation, not a sender-header fix.
+4. Continue investigating whether any genuinely free, public-recipient-compatible delivery route can set a PyLearn sender identity without user-managed DNS. Do not configure or connect a provider without approval.
+5. Do not disable email confirmation or auto-confirm accounts as a workaround. Do not claim a sender-branding fix until a real received message is inspected in Gmail and its visible sender details are verified.
+6. Once a viable route is established and approved, implement in the isolated development project/preview first and test on Android Chrome and Samsung Internet. Production remains untouched absent separate explicit approval.
+
+### Current status
+- Signup-only OTP limitation: **removed by user decision**.
+- Sender-branding requirement: **still central and unresolved**.
+- Content-level PyLearn branding in email templates: supported by Supabase documentation, but not yet implemented or tested.
+- Visible From-name/address customization using built-in SMTP: **not established**.
+- Custom SMTP route: still blocked on finding a genuinely free sender option compatible with public Gmail delivery and the no-custom-DNS constraint.
+- No code, Auth settings, provider account, database, Edge Function, Vercel deployment, or production resource changed in this session.
+
+### Traceability update
+| Task ID | Work | Branch | Planned/actual commit message | Commit SHA | Verification |
+|---|---|---|---|---|---|
+| EMAIL-REQ-05 | Remove signup-only restriction from verification-code design | Canonical documentation branch | `docs: relax signup-only email verification constraint` | PENDING until commit response | User decision recorded; no implementation |
+| EMAIL-BRAND-06 | Establish a recognizable PyLearn sender identity for public email | Research first; no provider change | `docs: investigate PyLearn-branded auth email sender` | PENDING — research ongoing | Official docs reviewed; actual Gmail inbox sender not yet verified |
+| EMAIL-TEMPLATE-07 | Brand Supabase Auth email subject/body clearly as PyLearn | Feature branch / Pylearn-Dev only, after approval | `feat(auth): brand verification email templates` | PENDING — not implemented | Not tested |
+| PROD-REVIEW-08 | Review any eventual production email change separately | Production | No production commit planned | PENDING — requires separate explicit approval | Not authorized |
