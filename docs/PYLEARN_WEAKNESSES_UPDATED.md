@@ -411,3 +411,71 @@ The full API request/response contract, 14 quiz answer indexes, objective challe
 - Inspected `index.html` blob SHA: `2d296b774e979b82909d9afecaed6233e96c04fa`.
 - Feature branch source was read only; no new feature-branch commit was created in this investigation.
 - Canonical handover branch: `audit/reward-integrity-phase1-20261107`.
+
+
+## Session record — OTP signup protocol and free email-provider research (2026-11-09, continuation)
+
+### User's standing rule reaffirmed
+
+The user clarified that “don't forget the rule” refers to the previously established quality/continuity requirements. In particular:
+- Never report a fix as complete unless the relevant code/configuration has been inspected and the actual behavior tested.
+- Preserve the canonical chronological handover after each substantive work step; record findings and evidence, then fetch the saved document again to verify it.
+- Keep production untouched and do not incur any cost or enable paid services without explicit approval.
+
+### Read-only inspection performed in this continuation
+
+- Re-read the canonical handover on `audit/reward-integrity-phase1-20261107`; starting blob SHA was `9d67b803482d8809f4dfdb19c6275ba4b7941d66`.
+- Re-fetched `script.js` from `feat/server-authoritative-rewards-20261107`; blob SHA remains `43a2f00237972dbf449fc1787eab965b88978684`.
+- The current frontend still calls `supabaseClient.auth.signUp({ email, password, options: { emailRedirectTo } })`, then shows a message telling the user to check email for a confirmation link and return to sign in.
+- The ordinary sign-in handler still uses `signInWithPassword`. It is a separate handler and must remain unchanged by the signup OTP work.
+- No `verifyOtp` or `resend` call exists in the inspected `script.js` source. There is no six-digit signup verification UI in the current inspected source.
+- The development Supabase project `rhtfripfqwccbhcwgoxy` was read again and reports `ACTIVE_HEALTHY`, region `eu-west-1`, database engine PostgreSQL 17. Production project `vzgbxoxscmlmacxciwze` was not changed.
+- No frontend, Supabase configuration, schema, Edge Function, or production resource was changed during this continuation.
+
+### Current Supabase OTP API behavior verified against official docs
+
+Official references consulted:
+- JavaScript verify OTP: https://supabase.com/docs/reference/javascript/auth-verifyotp
+- JavaScript resend: https://supabase.com/docs/reference/javascript/auth-resend
+- Email templates: https://supabase.com/docs/guides/auth/auth-email-templates
+- Passwordless email OTP guide: https://supabase.com/docs/guides/auth/auth-email-passwordless
+
+Findings:
+- Supabase's current JavaScript reference explicitly demonstrates signup OTP verification as `supabase.auth.verifyOtp({ email, token, type: 'email' })`.
+- The current passwordless guide also documents six-digit email OTP verification using `type: 'email'`. This is the correct verification call shape for the email token in the documented flow; do not blindly substitute `type: 'signup'` here.
+- Resending an existing signup confirmation is a distinct call: `supabase.auth.resend({ type: 'signup', email, options: { emailRedirectTo } })`.
+- The email template must include `{{ .Token }}` to deliver a code rather than only a confirmation link. The template subject/body can be branded, but this does not itself change the SMTP envelope/From identity.
+- OTP expiry and request rate limits are Auth configuration values; the guide documents a default one-minute resend interval and one-hour validity in the current reference material. Preserve server-enforced limits and show clear UI feedback; do not implement client-side bypasses.
+- The `EmailOtpType` TypeScript union includes both `signup` and `email` values, but the current verifyOtp signup example and guide use `email`; resend uses `signup`. Follow the documented method-specific examples.
+- The browser source uses the global `window.supabase.createClient` and the inspected script contains no package import. The exact CDN supabase-js version still needs to be extracted from the script tags in `index.html` before implementation; do not assume a package version.
+
+### Free email provider research — no service selected or connected
+
+Official references consulted:
+- Supabase SMTP restrictions: https://supabase.com/docs/guides/auth/auth-smtp
+- Mailjet free plan: https://documentation.mailjet.com/hc/en-us/articles/19154256993051-Understanding-Mailjet-Free-Plan-Limits
+- Mailjet sender onboarding: https://documentation.mailjet.com/hc/en-us/articles/37251169295003--Quick-Start-with-Mailjet
+- Brevo free plan: https://help.brevo.com/hc/en-us/articles/208580669-FAQs-What-are-the-limits-of-the-Free-plan
+- Brevo sender requirements: https://help.brevo.com/hc/en-us/articles/14925263522578-Comply-with-Gmail-Yahoo-and-Microsoft-s-requirements-for-email-senders
+- Resend pricing: https://resend.com/pricing
+
+Findings:
+- Supabase built-in SMTP is currently limited to pre-authorized organization-team email addresses and a very low project rate limit (currently documented as 2 messages/hour); it is explicitly best-effort and not a public signup mail solution.
+- Mailjet currently advertises a no-cost tier of 6,000 emails/month, capped at 200/day, with SMTP relay. Its current onboarding guide says a sender email address can be added and verified via a confirmation link; a domain can alternatively be verified through DNS. This makes Mailjet a candidate worth checking further, but it is not yet proven that a non-domain sender can reliably deliver to public Gmail/Outlook recipients or satisfy their current sender-authentication rules. Do not configure it or represent it as a confirmed solution yet.
+- Brevo currently advertises 300 emails/day on its free tier. Its current documentation says domain authentication is mandatory for transactional SMTP, free-mail sender domains such as Gmail cannot be authenticated, and free email sender addresses may be rewritten to a Brevo-managed domain. Therefore it does not currently meet the user's PyLearn From-branding requirement without a domain the user controls.
+- Resend currently advertises 3,000 emails/month and 100/day on its free tier, but its onboarding examples require a verified sending domain for sending to arbitrary users; its test sender is restricted to the account owner's address. It is not currently a no-domain public signup solution.
+- A custom SMTP provider can set Supabase's `smtp_sender_name` to `PyLearn`, but the actual received message must be inspected before claiming that recipients see the requested sender name.
+- No provider account was created, no SMTP credentials were requested or stored, no service was connected, and no billing or paid feature was enabled.
+
+### Recipient-domain confirmation remains pending
+
+The prior Auth log investigation showed the attempted recipient's domain as `gmile.com`. The user has not yet confirmed whether that was intentional or a typo for `gmail.com`. Do not reproduce the full address in notes or chat. Before attempting a live recipient test, obtain that simple domain confirmation; do not ask the user to share their full email, password, or OTP.
+
+### Next actions
+
+1. Extract the exact Supabase JS CDN URL/version from the `index.html` script tags on the feature branch.
+2. Continue checking Mailjet's sender-address-only requirements and Gmail/Outlook deliverability rules. Keep this a read-only evaluation until there is a verified free option and the user explicitly authorizes connecting it.
+3. Await the user's confirmation of the recipient-domain spelling before any live delivery test.
+4. If no free route can meet public-recipient delivery and PyLearn sender branding without a user-owned domain, explain that constraint plainly; do not disable email verification or auto-confirm accounts.
+5. Only after a viable delivery route is established, implement signup OTP on `feat/server-authoritative-rewards-20261107`, with six digit boxes, paste/autofill/accessibility support, wrong/expired-code feedback, resend rate-limit feedback, and signup-only verification. Keep `signInWithPassword` unchanged.
+6. Preview-test all relevant cases in Pylearn-Dev and on Android Chrome and Samsung Internet. Do not claim success until those tests have actually been run and observed.
