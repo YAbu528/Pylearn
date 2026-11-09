@@ -147,8 +147,7 @@ Proposed successful response:
   "event_type": "quiz",
   "xp_awarded": 15,
   "total_xp": 135,
-  "streak": 2,
-  "newly_unlocked_achievements": [],
+  "streak": 2,  "newly_unlocked_achievements": [],
   "feedback": {
     "correct": true,
     "explanation": "A single = assigns a value."
@@ -297,8 +296,7 @@ The full API request/response contract, 14 quiz answer indexes, objective challe
   - Preview uses Supabase project ref `rhtfripfqwccbhcwgoxy`.
   - Frontend invokes `verify-learning-activity`.
   - No `award-learning-reward` frontend call was found.
-  - The deployed frontend does not include the quiz answer-key field `quiz.answer`.
-  - Preview sign-up sets `emailRedirectTo: location.origin`; the production path remains `https://yabu528.github.io/Pylearn/`.
+  - The deployed frontend does not include the quiz answer-key field `quiz.answer`.  - Preview sign-up sets `emailRedirectTo: location.origin`; the production path remains `https://yabu528.github.io/Pylearn/`.
 - Retrieved the deployed Edge Function source and confirmed its CORS allowlist includes the branch preview alias pattern, GitHub Pages, and the stable PyLearn Vercel domain.
 - User stated in the preceding conversation that the preview redirect URL had already been added to Pylearn-Dev. The branch alias was independently confirmed from Vercel deployment metadata. **The Supabase Auth URL Configuration itself was not independently read back** because the available Supabase connection does not expose an Auth configuration read action.
 - No application source, database schema/data, Edge Function, or production resource was changed in this session. No authenticated browser test has yet been run.
@@ -448,7 +446,6 @@ Findings:
 - OTP expiry and request rate limits are Auth configuration values; the guide documents a default one-minute resend interval and one-hour validity in the current reference material. Preserve server-enforced limits and show clear UI feedback; do not implement client-side bypasses.
 - The `EmailOtpType` TypeScript union includes both `signup` and `email` values, but the current verifyOtp signup example and guide use `email`; resend uses `signup`. Follow the documented method-specific examples.
 - The browser source uses the global `window.supabase.createClient` and the inspected script contains no package import. The exact CDN supabase-js version still needs to be extracted from the script tags in `index.html` before implementation; do not assume a package version.
-
 ### Free email provider research — no service selected or connected
 
 Official references consulted:
@@ -597,8 +594,7 @@ The user explicitly answered that they do not own or have access to DNS settings
 - Resend's public-user sending path requires a verified domain; its test sender is not a public signup solution.
 - The user has no custom-domain DNS access, and no provider has been authorized or connected.
 - Therefore, **a dependable free public signup email route that also presents an authenticated PyLearn sender identity has not been established**. Do not present the earlier provider candidates as a working solution.
-- The six-digit OTP UI and verification handler remain unimplemented. The existing signup flow still uses Supabase confirmation-link behavior; ordinary password sign-in uses `signInWithPassword`.
-- No code, Auth configuration, database, Edge Function, Vercel deployment, or production resource was changed as part of this decision.
+- The six-digit OTP UI and verification handler remain unimplemented. The existing signup flow still uses Supabase confirmation-link behavior; ordinary password sign-in uses `signInWithPassword`.- No code, Auth configuration, database, Edge Function, Vercel deployment, or production resource was changed as part of this decision.
 
 ### Next move — research alternatives before implementation
 1. Investigate whether a no-cost, no-user-domain route can meet public Gmail delivery and signup-only six-digit OTP, using a provider-managed sender identity (for example, a managed authentication email service). Check current official pricing, free-tier limits, sender requirements, account eligibility and whether it can integrate without replacing or weakening the existing Supabase account model.
@@ -748,7 +744,6 @@ Verified findings:
 - Google's SMTP service authenticates as a Gmail user. Supabase's Google SMTP troubleshooting note describes app-password authentication and account restrictions for Google Workspace; this research has not independently confirmed the exact current eligibility and setup path for a personal Gmail account in this user's circumstances.
 - Supabase's current custom SMTP guide states a default low rate limit of 30 messages/hour after enabling custom SMTP (adjustable in Auth rate-limit settings). Google personal Gmail's 500/day ceiling is also relevant. Neither limit proves that Gmail will accept every application-generated message or that Gmail inbox placement will be reliable at scale.
 - This route depends on the mailbox remaining secure and under project control. Its SMTP credential would be a secret stored only in Supabase's protected Auth configuration, never in frontend JavaScript, GitHub, this document, or chat.
-
 ### Assessment
 This is the strongest no-custom-domain, potentially $0 candidate found so far because it may solve the actual visible-sender confusion without replacing Supabase Auth:
 - Keep Supabase as the identity and verification system.
@@ -897,8 +892,7 @@ Findings:
 1. Ask the user for the new Gmail address only; never ask for the password or App Password.
 2. Guide the user to open Supabase Dashboard and select **Pylearn-Dev** (verify project ref `rhtfripfqwccbhcwgoxy`, not production).
 3. Open **Authentication → SMTP Settings** (dashboard labels may vary slightly), enable custom SMTP, and enter the host, port/security mode, username, sender email, sender name, and App Password privately.
-4. Save settings in Pylearn-Dev only. Do not change email-confirmation/auto-confirm behavior or production settings.
-5. Run a controlled test signup to an inbox the user controls, then inspect Auth logs and the actual received message. Verify delivery, visible From name/address, subject/body, verification action/link destination, and inbox/spam placement. A successful API response alone is not delivery proof.
+4. Save settings in Pylearn-Dev only. Do not change email-confirmation/auto-confirm behavior or production settings.5. Run a controlled test signup to an inbox the user controls, then inspect Auth logs and the actual received message. Verify delivery, visible From name/address, subject/body, verification action/link destination, and inbox/spam placement. A successful API response alone is not delivery proof.
 6. If authentication fails, stop and inspect the non-secret error details; do not ask the user to paste the App Password or weaken Google account security.
 7. Only after real delivery is verified, proceed to branded email templates and feature-branch/preview UX. Production changes require separate explicit approval.
 
@@ -960,3 +954,66 @@ Findings:
 | EMAIL-SMTP-10 | Configure Gmail custom SMTP and test real delivery | Pylearn-Dev only | test(auth): validate PyLearn Gmail SMTP sender in dev | PENDING — not started | Awaiting correct dashboard page and sender address |
 | EMAIL-TEMPLATE-07 | Brand Auth templates and verification UX after delivery test | Feature branch / Pylearn-Dev preview | feat(auth): brand verification email templates | PENDING — not started | Not tested |
 | PROD-REVIEW-08 | Review production SMTP/template rollout separately | Production | No production commit planned | PENDING — separate explicit approval required | Not authorized |
+
+
+## Session record — mandatory per-conversation checkpoint rule reaffirmed; Gmail SMTP field-by-field guidance (2026-11-09)
+
+### User's continuity instruction reaffirmed
+The user explicitly restated that **every conversation and every change**, including seemingly minor or non-substantive exchanges, must be recorded in this canonical file: `docs/PYLEARN_WEAKNESSES_UPDATED.md`. The record must be detailed, organized, and include:
+- What the user and assistant discussed and did.
+- Actions/attempts made, including unsuccessful attempts and blockers.
+- Decisions, approvals, constraints, and reasons.
+- What changed and what did not change.
+- Exact next actions and outstanding questions.
+- Git commit SHA and file blob SHA after every document update, with the saved content fetched back from GitHub for verification.
+
+This is a user-mandated operating rule. Do not treat a conversational response as exempt. At the end of each interaction/change, append a concise but sufficiently detailed session record, commit it to the canonical audit branch, then re-fetch the file and verify the saved record and report the resulting commit/blob identifiers. If a GitHub write or verification cannot be completed, state that plainly; never imply the checkpoint was saved.
+
+### Current SMTP dashboard state — user report
+- The user has now located the SMTP settings page.
+- The user reports entering the dedicated PyLearn Gmail address in the sender email/from-address field.
+- The port displayed by the dashboard is currently `465`.
+- The user is asking what to enter for Sender name, Host, SMTP username, and Password, and whether port 465 should be retained or changed.
+- No save has yet been reported. No SMTP connection test or actual email delivery has been performed.
+- The exact dedicated Gmail address has not been supplied in chat and is not needed to give the field instructions. Never request the password or App Password in chat.
+
+### Field-by-field instructions provided
+For **Pylearn-Dev only** (project ref `rhtfripfqwccbhcwgoxy`; do not select production project `vzgbxoxscmlmacxciwze`):
+- **Sender email / From email:** the dedicated PyLearn Gmail address the user already entered. It must be the same Gmail account used as the SMTP username.
+- **Sender name:** `PyLearn` (display name only; do not enter the email address here).
+- **SMTP host:** `smtp.gmail.com`.
+- **Port:** retain `465` if the dashboard's connection/security mode uses SSL or implicit TLS for that port. Gmail supports port 465 with implicit TLS. Do not combine port 465 with STARTTLS. If the UI explicitly requires STARTTLS instead, use port `587` with STARTTLS. Since the user's dashboard already shows 465, the straightforward instruction is to leave 465 when the corresponding SSL/TLS mode is selected/supported.
+- **SMTP username:** the full dedicated PyLearn Gmail address, exactly matching Sender email / From email.
+- **SMTP password:** the Google App Password created for this dedicated Gmail mailbox. Enter it directly into the protected Supabase SMTP password field only. Do not paste it into ChatGPT, GitHub, source code, this handover, screenshots, logs, or any other exposed location. If Google displays the App Password in grouped characters, enter the value as Google provides it; the password is not the ordinary Gmail login password.
+- Keep email confirmation enabled. Do not enable auto-confirm or change unrelated Auth settings.
+- Save only after confirming the selected project is Pylearn-Dev and all fields are correct.
+
+### Security, cost, and production boundaries
+- The user previously reported successfully creating the dedicated Gmail mailbox and Google App Password. These are user-reported facts; credentials have not been inspected.
+- No paid option is approved.
+- No production SMTP settings may be changed. Production remains untouched and requires separate explicit approval for any later rollout.
+- Never record the App Password itself. Only record that the user entered it privately if they report doing so.
+
+### Exact next actions
+1. User enters Sender name `PyLearn`, Host `smtp.gmail.com`, keeps port `465` with SSL/implicit TLS, enters the full dedicated Gmail address as SMTP username, and enters the App Password privately in the password field. Sender email remains the same dedicated Gmail address already entered.
+2. User confirms that the selected project is Pylearn-Dev (`rhtfripfqwccbhcwgoxy`), then saves the custom SMTP settings.
+3. After saving, report the non-secret status/error only; do not share credentials. If the dashboard reports an error, inspect it before making speculative changes.
+4. Run a controlled verification email test to an inbox the user controls. Inspect Supabase Auth logs and the actual received email. Verify delivery, visible From name/address, subject/body, verification action/link destination, and inbox/spam placement. A successful API response alone is not proof of delivery.
+5. Only after successful real delivery, proceed to email template/verification UX work on a feature branch and preview. Android Chrome and Samsung Internet regression remains required.
+6. Production changes remain separately gated by explicit approval.
+
+### Work performed in this interaction
+- Reaffirmed the user's requirement that every conversation/change be documented in this canonical handover, including minor exchanges, attempts, failures, decisions, next steps, and exact Git identifiers.
+- Recovered the current canonical file and confirmed the last known blob SHA before this update: `e139014be12a770cca2cd39709d2ca8cf9d4ff40`.
+- Responded to the user's SMTP field questions with the field values and the port 465 vs 587 TLS distinction above.
+- No SMTP setting was saved or tested by the assistant. No Supabase project, Gmail account, code, database, Vercel deployment, or production resource was changed in this interaction.
+- The next operation is user-side entry/save in the Pylearn-Dev dashboard; the actual SMTP result is not yet known.
+
+### Traceability
+| Task ID | Work | Branch/environment | Commit message | Commit SHA | Blob SHA / verification |
+|---|---|---|---|---|---|
+| DOC-CONTINUITY-13 | Record reaffirmed every-conversation checkpoint rule and current SMTP field instructions | `audit/reward-integrity-phase1-20261107` | `docs: record SMTP field guidance and strict continuity rule` | PENDING until GitHub update succeeds | Starting blob: `e139014be12a770cca2cd39709d2ca8cf9d4ff40`; post-write verification pending |
+| EMAIL-SMTP-10 | Configure Gmail SMTP and test real delivery | Pylearn-Dev `rhtfripfqwccbhcwgoxy` only | `test(auth): validate PyLearn Gmail SMTP sender in dev` | PENDING — user must save settings first | Not configured/tested |
+| EMAIL-TEMPLATE-07 | Brand Auth templates and verification UX after delivery is proven | Feature branch / Pylearn-Dev preview only | `feat(auth): brand verification email templates` | PENDING — not started | Not tested |
+| PROD-REVIEW-08 | Review any production SMTP/template rollout separately | Production | No production commit planned | PENDING — separate explicit approval required | Not authorized |
+
