@@ -432,8 +432,14 @@ let activeProject = null;
 const $ = id => document.getElementById(id);
 
 // Supabase connection: only the project URL and publishable key belong in browser code.
-const SUPABASE_URL = "https://vzgbxoxscmlmacxciwze.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_KQo7xmr50dXipb4dm_i2NA_tNGGg-Lg";
+// Keep Vercel preview deployments isolated from the production Supabase project.
+const IS_PYLEARN_PREVIEW = window.location.hostname.endsWith(".vercel.app");
+const SUPABASE_URL = IS_PYLEARN_PREVIEW
+  ? "https://rhtfripfqwccbhcwgoxy.supabase.co"
+  : "https://vzgbxoxscmlmacxciwze.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = IS_PYLEARN_PREVIEW
+  ? "sb_publishable_uqcJ3-aRnO3p9buWfu4khQ_Rn-s1RTf"
+  : "sb_publishable_KQo7xmr50dXipb4dm_i2NA_tNGGg-Lg";
 const supabaseClient = window.supabase?.createClient
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
   : null;
@@ -528,7 +534,7 @@ async function initializeAuth() {
     const { data, error } = await supabaseClient.auth.signUp({
       email: $("signUpEmail").value.trim(),
       password: $("signUpPassword").value,
-      options: { emailRedirectTo: "https://yabu528.github.io/Pylearn/" }
+      options: { emailRedirectTo: window.location.origin + window.location.pathname }
     });
     button.disabled = false;
     button.textContent = "Create account";
