@@ -787,3 +787,84 @@ Limitations and risks:
 | EMAIL-GMAIL-09 | Confirm whether user accepts a project-only Gmail From address | Awaiting user decision | No implementation commit planned yet | PENDING | Not authorized |
 | EMAIL-SMTP-10 | Configure and test Gmail SMTP on Pylearn-Dev only | Feature/dev environment | `test(auth): validate PyLearn Gmail SMTP sender in dev` | PENDING — requires user approval | Not run |
 | PROD-REVIEW-08 | Review any eventual production email change separately | Production | No production commit planned | PENDING — requires separate explicit approval | Not authorized |
+
+
+## Session record — user approved dedicated Gmail sender route; implementation preparation (2026-11-09)
+
+### User authorization and intent
+The user explicitly approved the proposed arrangement:
+- A separate Gmail mailbox used exclusively for PyLearn.
+- Supabase Auth remains the identity and verification system.
+- Supabase custom SMTP sends Auth emails through that Gmail mailbox.
+- The configured sender display name should be `PyLearn`, with PyLearn-branded subject/body content.
+- No custom domain or DNS ownership is required for this candidate route.
+- The user reiterated that the canonical checkpoint must record not only commit/blob identifiers but also what was done, decisions, current state, and exact upcoming actions.
+- The earlier signup-only OTP limitation remains removed. The email UX/verification method can be selected based on the best overall user experience and security; do not treat OTP as signup-only.
+
+This approval authorizes proceeding with the dedicated-Gmail route as the selected development path. It does not authorize exposing credentials in chat, changing production SMTP, or merging/deploying production changes. No paid service or feature is approved.
+
+### Current official documentation re-check
+Sources reviewed in this session:
+- Supabase custom SMTP: https://supabase.com/docs/guides/auth/auth-smtp
+- Supabase Google SMTP troubleshooting note: https://supabase.com/kb/troubleshooting/using-google-smtp-with-supabase-custom-smtp-ZZzU4Y
+- Google Gmail SMTP connection details: https://developers.google.com/workspace/gmail/imap/imap-smtp
+- Google App Password help: https://support.google.com/mail/answer/185833
+
+Findings:
+1. Supabase custom SMTP accepts SMTP host, port, username, password, From address, and sender display name. Its documented configuration explicitly includes `smtp_sender_name`; setting this to `PyLearn` is the intended branding control.
+2. Supabase's built-in sender is still restricted to pre-authorized organization-team addresses, currently limited to 2 emails/hour, and best-effort. Custom SMTP is required for public recipients.
+3. Google's official SMTP documentation lists `smtp.gmail.com` on port 465 (implicit TLS) and port 587 (STARTTLS). It documents SMTP authentication and OAuth 2.0 XOAUTH2 support.
+4. Google's official help says App Passwords require 2-Step Verification. It warns that App Passwords are not recommended where Sign in with Google/OAuth is supported, and they may be unavailable for accounts using security-key-only 2SV, work/school/organization accounts, or Advanced Protection. Google revokes App Passwords when the account password is changed.
+5. Supabase's SMTP configuration exposes a username/password credential pair; the current official Supabase Google SMTP troubleshooting note describes App Password use in its tested Google Workspace scenario and says the sender address and SMTP username must match the Workspace admin account. This note does not prove that every personal Gmail account will be eligible or accepted. Personal Gmail eligibility and successful Supabase SMTP authentication must be validated with the actual dedicated mailbox before claiming success.
+6. Google's official SMTP documentation states a personal Gmail account has a maximum of 500 messages/day (rolling 24-hour sending limits, shared across clients). This is a hard platform limit, not an SLA, not a guaranteed deliverability rate, and not a promise that Gmail will permit a newly created mailbox to send that volume.
+7. The From address remains the dedicated Gmail address. The display name can be `PyLearn`; do not claim that the underlying sender address is a PyLearn custom-domain address.
+8. Supabase's custom SMTP guide applies a default 30-messages/hour rate limit after custom SMTP is enabled. Do not raise this limit without evidence and separate review.
+
+### Security and implementation boundaries
+- Never ask the user to paste the Gmail password or App Password into chat, a GitHub file, source code, or this checkpoint.
+- The mailbox must be dedicated to PyLearn, not the user's personal inbox.
+- Any App Password, if Google offers it for the dedicated account and the chosen SMTP authentication method, must be entered only into Supabase's protected SMTP password field. Do not store it in the frontend, repository, issue comments, project documentation, logs, or screenshots.
+- Prefer the least-privileged supported connection. Google's official docs support OAuth 2.0 for SMTP, but current Supabase SMTP settings use username/password fields; confirm the practical authentication method before configuring.
+- If App Passwords are unavailable or Google rejects the connection, stop and reassess. Do not weaken Google account security or bypass eligibility restrictions.
+- Configure and test only Pylearn-Dev first. Production project `vzgbxoxscmlmacxciwze` remains untouched.
+- Do not disable email confirmation or set auto-confirm true.
+- No paid provider, plan, domain, or feature may be introduced without new explicit user approval.
+
+### Work performed in this session
+- Re-fetched the latest canonical document before continuing; starting blob SHA was `efd53454d930d598ed2b30ace135ed50822a0470`.
+- Recorded the user's explicit approval of the dedicated Gmail sender route.
+- Rechecked current official Google and Supabase SMTP/App Password documentation.
+- Confirmed the Supabase integration parameters and the Google SMTP ports, account security prerequisites, App Password caveats, and personal Gmail sending ceiling.
+- No Gmail mailbox was created or modified.
+- No Google security settings or App Passwords were created.
+- No Supabase SMTP settings were changed.
+- No source code, templates, database, Edge Function, Vercel deployment, production resource, or user account was changed.
+- No delivery test has yet been performed. The sender branding and inbox delivery remain unverified.
+
+### Exact next actions
+1. The user creates a separate Gmail mailbox dedicated to PyLearn. The user should choose and retain its recovery methods securely; do not send passwords or recovery codes in chat.
+2. The user reports only the new mailbox's email address (not its password or any generated App Password) so the sender identity can be documented without exposing credentials.
+3. Check whether the new account offers a supported secure SMTP authentication method compatible with Supabase. If relying on App Passwords, Google requires 2-Step Verification and may withhold the feature for some account types/configurations. Do not proceed if the account does not offer it.
+4. Prepare the exact Pylearn-Dev SMTP values: host `smtp.gmail.com`; choose port 587 with STARTTLS or 465 with implicit TLS as supported by the Supabase settings; SMTP username and From email are the dedicated Gmail address; sender display name `PyLearn`; SMTP password only entered in the protected Supabase field. Keep the existing email-confirmation protection enabled.
+5. Because the available Supabase integration tools do not expose an Auth SMTP configuration setter, the user may need to enter the credential directly in the Pylearn-Dev Supabase Dashboard's Authentication SMTP settings. Guide the user through the UI without asking them to reveal the secret.
+6. After the user saves settings, inspect Pylearn-Dev Auth logs and run a controlled test to a Gmail inbox. Verify the actual visible From display name and address, subject, body, verification action/link destination, inbox/spam placement, and whether the message arrives. Do not count an API HTTP 200 alone as delivery proof.
+7. Only after the dev test passes, decide the email verification UX and prepare a preview implementation. Test signup, ordinary existing-user sign-in, password recovery/email change where relevant, resend/expiry/error behavior, Android Chrome, and Samsung Internet.
+8. Production SMTP/template changes require a separate explicit approval after review. No production merge/deployment is currently authorized.
+
+### Current status
+- Dedicated Gmail sender route: **approved by user; preparation in progress**.
+- Gmail mailbox: **not yet created/identified**.
+- SMTP credentials: **not generated or shared**.
+- Pylearn-Dev custom SMTP: **not configured**.
+- Actual PyLearn From-name display and Gmail delivery: **not tested**.
+- OTP design: **not constrained to signup-only**; final verification UX remains to be selected after sender delivery is proven.
+- Production: **unchanged and not authorized for modification**.
+
+### Traceability table
+| Task ID | Work | Branch/environment | Planned/actual commit message | Commit SHA | Verification status |
+|---|---|---|---|---|---|
+| EMAIL-GMAIL-09 | Record user approval for dedicated PyLearn Gmail sender | Canonical doc branch `audit/reward-integrity-phase1-20261107` | `docs: record approval for dedicated PyLearn Gmail sender` | PENDING until commit response | User approval explicit; saved-content verification pending |
+| EMAIL-GMAIL-11 | Create/identify dedicated mailbox and confirm supported authentication | User-controlled Google account | No Git commit; mailbox setup is external | PENDING | Not yet done |
+| EMAIL-SMTP-10 | Configure custom SMTP in Pylearn-Dev and verify a real received email | Pylearn-Dev `rhtfripfqwccbhcwgoxy` only | `test(auth): validate PyLearn Gmail SMTP sender in dev` | PENDING — not configured/tested | Awaiting mailbox and protected credential entry |
+| EMAIL-TEMPLATE-07 | Prepare branded Auth email templates and verification UX | Feature branch / Pylearn-Dev preview only | `feat(auth): brand verification email templates` | PENDING — not implemented | Awaiting successful delivery test and design review |
+| PROD-REVIEW-08 | Separate production email review and rollout | Production | No production commit planned | PENDING — requires separate explicit approval | Not authorized |
