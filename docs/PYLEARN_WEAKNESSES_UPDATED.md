@@ -1152,3 +1152,73 @@ The earlier investigation is recorded in the preceding session notes (around the
 
 - Verified checkpoint commit SHA: 9a9a4854c45bb8470976a880a642a97f16f46022.
 - Verified checkpoint blob SHA: 143c61aa2917782670ffa29c516faf4e04f780b1 (re-fetched from GitHub and matched the update response).
+
+
+## Session record — signup-email failure traced to preview using production Supabase; preview routing corrected (2026-11-09)
+
+### User report
+- The user reports that they waited approximately 30 minutes after the latest preview signup attempt and received no confirmation email, including no message in Spam.
+- The user was understandably frustrated by the wasted testing time and asked for the issue to be fixed and all progress saved.
+- Do not ask the user to repeat another signup until the environment-routing correction is deployed and the recipient address has been privately checked.
+
+### Root cause found from direct log and source inspection
+- The last preview signup attempt did **not** use Pylearn-Dev. The root `index.html` loads root `script.js`; the script hard-coded the **production** Supabase URL `https://vzgbxoxscmlmacxciwze.supabase.co` and production publishable key.
+- The latest production Auth log contains a `mail.send` confirmation event at `2026-11-09T18:51:28Z`, using Supabase's default sender `noreply@mail.app.supabase.io`. The corresponding request referer was the production GitHub Pages site. This confirms the test was routed to production, not the dev project where the user had saved Gmail SMTP.
+- Pylearn-Dev logs show an Auth configuration reload at `2026-11-09T18:38:22Z`. The reload reported the email limiter changing from `2/1h` to `30`, consistent with custom SMTP being enabled. This is strong corroboration that the user's custom SMTP save was applied to Dev, but no signup/mail-send event occurred in Dev after that reload during the failed test window.
+- Therefore the previous claim that the preview test validated the Dev SMTP setup was incorrect. The preview deployment itself was ready, but its frontend still targeted production Supabase. This was the primary configuration mistake.
+- A second independent issue appears in the latest production Auth log: the recorded recipient domain is `gmile.com`, not `gmail.com`. The full email address is intentionally not recorded here. If the user intended to use a Gmail inbox, this domain spelling would also prevent delivery to that inbox. Do not assume this was the user's intended address; ask them to check it privately before the next test.
+- These two facts explain why the previous test could not validate the saved Gmail SMTP configuration: it went to production's default sender, and the logged recipient domain also appears mistyped.
+
+### Code correction applied on the feature/audit branch
+- Updated root `script.js` and `preview/script.js`.
+- Both scripts now detect a Vercel preview host using `window.location.hostname.endsWith(".vercel.app")`.
+- On Vercel preview hosts, the client now uses the Pylearn-Dev project URL `https://rhtfripfqwccbhcwgoxy.supabase.co` and its public publishable key.
+- On the canonical production site, the client continues to use the existing production project URL `https://vzgbxoxscmlmacxciwze.supabase.co` and production publishable key.
+- Signup confirmation redirect is now derived from the current page origin and path (`window.location.origin + window.location.pathname`) so a Dev signup returns to the same preview host instead of redirecting to the production GitHub Pages app.
+- This is an environment-isolation fix. No production Supabase settings, credentials, Auth templates, database, or production deployment were changed.
+- Public publishable keys are used only in the browser as intended; no service-role key, SMTP password, Gmail App Password, or other secret was added to source control.
+
+### Verification performed
+- Re-fetched both changed GitHub files after writing them and confirmed the preview selector, Dev URL, and dynamic signup redirect are present.
+- Root `index.html` was inspected and confirmed to load root `script.js`, proving the root script was the one used by the Vercel preview page.
+- Fetched the deployed preview's actual `/script.js` and confirmed the served asset contains the Dev URL, production URL, preview switch, and dynamic signup redirect.
+- Vercel deployment is READY:
+  - Deployment ID: `dpl_EgFvgJY9VRdifuq22admXCuu2v4H`
+  - Preview URL: `https://pylearn-1i82hcrkx-yabu528s-projects.vercel.app`
+  - Stable branch alias returned by Vercel: `https://pylearn-git-audit-reward-integrity-pha-4fbac1-yabu528s-projects.vercel.app`
+  - Branch: `audit/reward-integrity-phase1-20261107`
+  - Deployed commit: `1bd3b06cb7a9fd41511cce27ec97393be774f21e`
+- The Dev project is ACTIVE_HEALTHY. Dev log reload evidence is consistent with custom SMTP activation.
+- No post-fix signup has been submitted yet. Email delivery is not yet verified, and the issue must not be described as fully resolved until a message arrives and its confirmation link is tested.
+
+### Required next test — avoid another wasted wait
+1. Before submitting, privately check that the recipient address entered into the preview has the intended domain. If it is a Gmail inbox, confirm the domain is exactly `gmail.com`; do not share the full address in chat.
+2. Add the stable preview alias above to Pylearn-Dev Authentication > URL Configuration > Redirect URLs if it is not already allowed. This ensures the dynamic confirmation redirect can return to the Dev preview. Do not add a broad wildcard unless the user explicitly chooses that trade-off.
+3. Open the stable preview alias above and make one signup attempt only.
+4. Immediately after submission, inspect Pylearn-Dev Auth logs for a new `user_confirmation_requested` and `mail.send` event. The sender should no longer be `noreply@mail.app.supabase.io`; it should reflect the configured dedicated Gmail SMTP sender. If no Dev event appears, stop and diagnose before asking the user to wait.
+5. If a Dev mail event appears but no message arrives, inspect the fresh SMTP/Auth error logs before another attempt. Do not repeat a 30-minute wait without first confirming the request reached Dev and SMTP accepted it.
+6. After receipt, verify sender identity, Inbox/Spam placement, confirmation link, and return to the same preview host.
+7. Production remains strictly untouched; any production SMTP change requires separate explicit approval. No paid option is approved.
+
+### What changed / what did not
+- Corrected the frontend environment selection so Vercel previews use Pylearn-Dev while the canonical GitHub Pages site continues using production.
+- Corrected signup redirect handling so the confirmation flow targets the same preview origin.
+- Recorded the production log's recipient-domain discrepancy without storing the full address.
+- No Supabase Auth setting was changed by the assistant in this session; the user-saved Dev SMTP settings remain as previously configured.
+- No production backend/source setting or production deployment was changed.
+- The preview deployment is ready, but actual email delivery remains pending one correctly addressed test.
+
+### Traceability
+| Task ID | Work | Branch/environment | Commit / deployment | Verification |
+|---|---|---|---|---|
+| EMAIL-ROOTCAUSE-15 | Trace missing message to preview frontend hard-coding production Supabase; corroborate via production and Dev logs | Production logs read-only; Dev logs read-only | Production event 2026-11-09T18:51:28Z; Dev reload 2026-11-09T18:38:22Z | Auth sender and project IDs confirm environment mismatch |
+| EMAIL-ISOLATION-16 | Route Vercel preview to Dev Supabase and preserve production routing on canonical site | audit/reward-integrity-phase1-20261107 | Root script commit 7b6738c03a4d2ec3b691d83205108c6f550d309a; preview script commit 1bd3b06cb7a9fd41511cce27ec97393be774f21e | GitHub re-fetch plus deployed asset inspection |
+| EMAIL-REDIRECT-17 | Make signup confirmation redirect follow current preview origin | audit/reward-integrity-phase1-20261107 | Included in above commits | Deployed script contains dynamic redirect |
+| EMAIL-TEST-18 | Verify one correct signup through Dev Gmail SMTP | Pylearn-Dev | Pending user test | Must see Dev mail event and actual email receipt |
+| PROD-REVIEW-09 | Any production SMTP or auth change | Production | Not authorized | Requires separate explicit approval |
+
+### File identifiers for code changes
+- Root `script.js` blob SHA: `6f5ba7dabdf679e98ff96d0af74b05be52ff24fb` (re-fetched and matched).
+- `preview/script.js` blob SHA: `a29d8229050a9c10af31c8da68fee2cd574f291f` (re-fetched and matched).
+- Current canonical document blob before this session record: `af7cb128b4d2285345f690bcfffceb7c9e678c5f`.
+- This document's commit/blob identifiers will be added after the documentation write and re-fetch.
