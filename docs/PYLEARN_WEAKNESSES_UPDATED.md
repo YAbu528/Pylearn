@@ -918,3 +918,45 @@ Findings:
 | EMAIL-SMTP-10 | Configure Gmail custom SMTP and test real delivery | Pylearn-Dev only | `test(auth): validate PyLearn Gmail SMTP sender in dev` | PENDING — not started | Awaiting mailbox address and private dashboard configuration |
 | EMAIL-TEMPLATE-07 | Brand Auth templates and verification UX after delivery test | Feature branch / Pylearn-Dev preview | `feat(auth): brand verification email templates` | PENDING — not started | Not tested |
 | PROD-REVIEW-08 | Review production SMTP/template rollout separately | Production | No production commit planned | PENDING — separate explicit approval required | Not authorized |
+
+## Session record — Supabase SMTP settings navigation issue and updated dashboard path (2026-11-09)
+
+### User-reported blocker
+- The user reports they could not find the SMTP settings option in the Supabase Dashboard while attempting to configure the approved dedicated Gmail sender.
+- No SMTP values have been entered and no settings have been saved.
+- No App Password or Gmail password was shared in chat.
+- The user explicitly reiterated that the step-by-step assistance and important PyLearn-relevant progress must also be recorded in this same canonical document, not merely the final commits/blob identifiers.
+
+### Updated official navigation research
+- Rechecked the current Supabase official custom SMTP guide: https://supabase.com/docs/guides/auth/auth-smtp (updated 2026-10-31).
+- Current guidance says to open the project's Authentication settings page to enable and configure custom SMTP.
+- Current dashboard navigation is described by supporting references as: open the project; select Authentication in the left sidebar; open Emails (under Notifications in the newer sidebar); then select the SMTP Settings tab. If the page opens on Templates, look for the SMTP Settings tab or a Set up SMTP action.
+- Supabase production checklist also names the location as Authentication → Emails → SMTP Settings.
+- Dashboard wording/layout may vary; this is navigation guidance, not confirmation that the user has reached the right screen.
+
+### Safe next-step instructions
+1. Confirm the selected project is Pylearn-Dev, project ref rhtfripfqwccbhcwgoxy. Do not enter anything in production project vzgbxoxscmlmacxciwze.
+2. In the left sidebar, expand Authentication if collapsed.
+3. Look for Emails under the Authentication/Notifications group. Do not confuse it with Sign In / Providers or URL Configuration.
+4. Open Emails, then select SMTP Settings. If the page opens on Templates, look for a nearby SMTP Settings tab or Set up SMTP action.
+5. If using a narrow mobile browser layout and the menu is not visible, expand the sidebar using its menu icon. A desktop-site view may help if the dashboard is hiding navigation.
+6. Before entering credentials, confirm the page title/tab and selected project. The App Password must be typed directly by the user into the protected password field and must never be shared in chat or recorded in this document.
+7. If the SMTP tab still cannot be found, ask for a screenshot with sensitive data and account details hidden; do not proceed by guessing or changing another setting.
+
+### Configuration status and boundaries
+- Dedicated Gmail mailbox: user reports it has been created; address not yet supplied.
+- Google App Password: user reports it has been generated; secret remains private.
+- Pylearn-Dev SMTP: NOT CONFIGURED.
+- SMTP delivery test: NOT RUN.
+- Sender display name PyLearn: NOT configured or verified.
+- Email confirmation remains enabled; do not switch on auto-confirm.
+- No paid option introduced or approved.
+- Production remains untouched; no production change authorized.
+
+### Traceability
+| Task ID | Work | Branch/environment | Commit message | Commit SHA | Verification |
+|---|---|---|---|---|---|
+| EMAIL-SMTP-12 | Record dashboard navigation blocker and current Supabase SMTP settings path | Canonical documentation branch audit/reward-integrity-phase1-20261107 | docs: record Supabase SMTP settings navigation guidance | PENDING until commit response | User-reported navigation blocker; official docs checked; no config changed |
+| EMAIL-SMTP-10 | Configure Gmail custom SMTP and test real delivery | Pylearn-Dev only | test(auth): validate PyLearn Gmail SMTP sender in dev | PENDING — not started | Awaiting correct dashboard page and sender address |
+| EMAIL-TEMPLATE-07 | Brand Auth templates and verification UX after delivery test | Feature branch / Pylearn-Dev preview | feat(auth): brand verification email templates | PENDING — not started | Not tested |
+| PROD-REVIEW-08 | Review production SMTP/template rollout separately | Production | No production commit planned | PENDING — separate explicit approval required | Not authorized |
