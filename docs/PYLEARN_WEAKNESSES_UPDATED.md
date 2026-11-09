@@ -537,3 +537,83 @@ Ask whether the user owns or can manage DNS for any custom domain (not merely th
 - Signup source still uses confirmation-link `signUp`; ordinary sign-in still uses `signInWithPassword`.
 - No OTP UI or `verifyOtp`/resend handler has been implemented.
 - The next implementation step remains blocked on establishing a viable free, authenticated email sender. Keep production untouched and require explicit approval before connecting any provider.
+
+
+## Standing project continuity and evidence rule — user-mandated (2026-11-09)
+
+This rule is mandatory for every future PyLearn session and must be read before project work resumes.
+
+### Canonical record
+- The single source of truth is this file: `docs/PYLEARN_WEAKNESSES_UPDATED.md`.
+- Repository: `YAbu528/Pylearn`.
+- Canonical handover branch: `audit/reward-integrity-phase1-20261107`, unless a later entry explicitly changes it.
+- Do not create a parallel weakness report, replace this record with a summary, or rely only on chat memory.
+- Before making a project change, fetch and read the latest version of this file. Continue from its exact latest checkpoint.
+- After every substantive inspection, discovery, attempt, failure, decision, implementation, test, or change in next steps, append a dated, structured entry here. Record negative results and unsuccessful attempts, not just successes.
+- Save the entry to GitHub with a clear commit message. Then fetch the file again and verify that the new entry was actually saved. Report the commit SHA and new blob SHA.
+- Never say an entry was saved, committed, deployed, tested, or fixed unless the corresponding operation succeeded and was independently checked.
+- If a change cannot be committed immediately, state that clearly and preserve the exact unsaved work in the chat until it can be recorded. Do not silently treat an unsaved note as part of the canonical document.
+
+### Required structure for every work entry
+Record:
+1. Date and session purpose.
+2. Starting branch, commit SHA, file path and relevant blob SHA.
+3. User decisions, constraints and approvals, including explicit refusals and cost limits.
+4. What was inspected, including exact files/configuration/resources and relevant versions or identifiers.
+5. Every attempt made, with outcome; include failures, errors, limitations and what was not established.
+6. Changes actually made, with exact files, branch and commit SHA. If no changes were made, say so explicitly.
+7. Tests actually run, environment/device, expected result and observed result. Separate inspected, tested, user-reported and unverified states.
+8. Production/development impact and confirmation of what was not touched.
+9. Current status and unresolved risks.
+10. Exact next actions in plain English, in order.
+11. A traceability table containing a stable task ID, planned/actual commit message, branch, commit SHA (or explicitly “PENDING — not committed”), and verification status. Never invent a SHA or attach a future commit SHA before it exists.
+
+### Strict verification and safety boundaries
+- Inspection is not testing. A successful deployment is not proof of correct runtime behavior. A user report is not independent verification. Label evidence accurately.
+- Never describe a weakness as fixed until the relevant behavior has been tested and the result observed. If only source inspection was performed, say “inspected, not runtime-tested.”
+- Keep production untouched unless the user gives separate explicit approval for the specific production change.
+- Do not incur costs, select paid plans, enable paid features, or create billable resources without the user's explicit approval. The user's prior rejection of the US$0.01344/hour Supabase development branch remains binding.
+- Use the existing free Pylearn-Dev environment and feature preview where appropriate; use synthetic accounts/data only.
+- Keep work on a feature branch and preview first. Do not merge or deploy to production without a separate review and explicit approval.
+- Do not expose secrets, passwords, OTPs, API keys, private user data, or full email addresses in this document.
+- If a chat is approaching its context limit, create and verify a complete checkpoint here before switching chats. The next chat must retrieve this file first and continue from the last verified entry.
+
+### User's latest email-delivery constraint
+- The user confirmed they do **not** own or have access to DNS settings for any custom domain.
+- This is now a firm constraint unless the user later changes it. Do not assume a custom domain can be acquired, configured, or used.
+- The required signup behavior remains: six-digit email code only for new account registration; ordinary existing-user email/password sign-in remains unchanged.
+- The user has not authorized any paid email service. No paid option is allowed.
+- No email provider has been selected or connected, and no SMTP credentials exist in this workflow.
+
+## Session record — no custom-domain DNS access; email path decision pending (2026-11-09)
+
+### User clarification
+The user explicitly answered that they do not own or have access to DNS settings for any custom domain. This removes the custom-domain authentication route previously considered for free SMTP providers. The user also issued the strict canonical-record rule above and requires every discovery, attempt, failure, decision, next action and commit reference to be saved in this file for future-chat continuity.
+
+### Current evidence-based position
+- Supabase built-in SMTP remains restricted to authorized team addresses and is not an acceptable public signup mail route.
+- Mailjet sender-address-only verification does not provide authenticated domain identity; its own guidance warns against free-webmail sender addresses. A personal Gmail sender is not an acceptable dependable public service workaround.
+- Brevo's documented sender/domain restrictions do not meet the requested branded sender requirement without a domain.
+- Resend's public-user sending path requires a verified domain; its test sender is not a public signup solution.
+- The user has no custom-domain DNS access, and no provider has been authorized or connected.
+- Therefore, **a dependable free public signup email route that also presents an authenticated PyLearn sender identity has not been established**. Do not present the earlier provider candidates as a working solution.
+- The six-digit OTP UI and verification handler remain unimplemented. The existing signup flow still uses Supabase confirmation-link behavior; ordinary password sign-in uses `signInWithPassword`.
+- No code, Auth configuration, database, Edge Function, Vercel deployment, or production resource was changed as part of this decision.
+
+### Next move — research alternatives before implementation
+1. Investigate whether a no-cost, no-user-domain route can meet public Gmail delivery and signup-only six-digit OTP, using a provider-managed sender identity (for example, a managed authentication email service). Check current official pricing, free-tier limits, sender requirements, account eligibility and whether it can integrate without replacing or weakening the existing Supabase account model.
+2. Consider whether a managed sender that displays its own service identity is acceptable. Do **not** assume this relaxes the user's PyLearn sender-branding requirement; ask before adopting it if that is the only free route.
+3. Compare the cost and migration risks of keeping Supabase Auth versus an alternative identity provider. Do not migrate users or change auth architecture during research.
+4. If no acceptable free route exists, present the real constraint and ask the user to choose which requirement (sender branding, no-domain requirement, or public email OTP) may be relaxed. Do not silently disable email verification, auto-confirm accounts, substitute a link, or impose OTP on existing sign-ins.
+5. Only after a feasible route and user approval are established, implement on `feat/server-authoritative-rewards-20261107`, deploy only to Pylearn-Dev and the Vercel preview, and run the complete signup/sign-in/mobile test matrix. Production remains untouched.
+
+### Traceability / planned work
+| Task ID | Work | Branch | Planned commit message | Commit SHA | Status |
+|---|---|---|---|---|---|
+| EMAIL-ALT-01 | Research managed-sender free alternatives and Supabase-compatible integration | `feat/server-authoritative-rewards-20261107` (research first; no code change) | `docs: evaluate free signup email delivery without custom domain` | PENDING — not committed | Next |
+| EMAIL-OTP-02 | Implement six-digit signup-only OTP if a compliant route is approved | `feat/server-authoritative-rewards-20261107` | `feat(auth): add signup-only email OTP verification` | PENDING — not authorized/implemented | Blocked |
+| EMAIL-TEST-03 | Preview and Android regression tests after implementation | Feature preview / Pylearn-Dev only | `test(auth): verify signup OTP and existing sign-in flows` | PENDING — not run | Blocked |
+| PROD-REVIEW-04 | Review production rollout separately | Production | No production commit planned | PENDING — requires separate explicit approval | Not authorized |
+
+### Record update status
+This entry is being appended to the canonical handover on `audit/reward-integrity-phase1-20261107`. It records the user's DNS clarification and continuity rule. It does not claim that the email-delivery issue is solved.
