@@ -1017,3 +1017,39 @@ For **Pylearn-Dev only** (project ref `rhtfripfqwccbhcwgoxy`; do not select prod
 | EMAIL-TEMPLATE-07 | Brand Auth templates and verification UX after delivery is proven | Feature branch / Pylearn-Dev preview only | `feat(auth): brand verification email templates` | PENDING — not started | Not tested |
 | PROD-REVIEW-08 | Review any production SMTP/template rollout separately | Production | No production commit planned | PENDING — separate explicit approval required | Not authorized |
 
+
+
+## Session record — Gmail SMTP settings accepted by Supabase; delivery verification pending (2026-11-09)
+
+### User-reported result
+- The user reports that after entering the dedicated PyLearn Gmail SMTP settings in the Supabase dashboard, Supabase accepted the changes and displayed a successful update confirmation.
+- This is evidence that the dashboard saved the SMTP configuration, but it is not evidence that Gmail authentication, outbound delivery, sender identity, verification-link generation, or inbox receipt have been tested.
+
+### Current configuration context
+- Target environment: **Pylearn-Dev** (Supabase project ref `rhtfripfqwccbhcwgoxy`).
+- Production project `vzgbxoxscmlmacxciwze` remains untouched; no production change is authorized by this step.
+- SMTP values previously guided: sender name `PyLearn`; sender email = dedicated PyLearn Gmail address; host `smtp.gmail.com`; port `465` with implicit SSL/TLS (or port `587` only if explicitly configured for STARTTLS); username = full dedicated Gmail address; password = Google App Password entered privately in Supabase.
+- No Gmail address or App Password was shared in chat or recorded in this document. Never request or store the App Password.
+
+### Verification status
+- Supabase dashboard save: **user-reported successful**.
+- Actual test verification email sent: **not yet performed**.
+- Inbox/spam receipt: **not yet verified**.
+- Sender display name/address: **not yet verified from a received message**.
+- Verification URL destination and confirmation flow: **not yet verified**.
+- SMTP/Auth logs: **not yet inspected**.
+- No code, database schema, Auth provider, email template, or production settings were changed in this step.
+
+### Next actions
+1. Run a controlled sign-up test in the Pylearn-Dev preview using an email inbox the user controls. Do not ask the user to disclose the mailbox address in chat; they can enter it directly into the preview.
+2. Confirm whether the app reports that a confirmation email was sent and whether the message arrives in Inbox or Spam.
+3. Inspect the received message's sender display name/address, content, and verification-link destination without sharing private tokens or full personal URLs in chat.
+4. Review Supabase Auth logs for SMTP errors if delivery fails or is delayed. Do not infer successful delivery from the dashboard save or API response alone.
+5. Only after this test passes, proceed to email-template UX review on a preview branch and test on Android Chrome and Samsung Internet.
+6. Keep all work on Pylearn-Dev/preview. Do not modify production without explicit user approval.
+
+### Interaction traceability
+- This record documents the user's report that Supabase accepted and successfully updated the SMTP settings, the distinction between configuration-save success and delivery verification, and the next safe test sequence.
+- Previous checkpoint commit: `5495dd1682a88f7d5ddb7d7290089e44b7170852`.
+- Previous checkpoint blob: `ee1bea661b6b3d49fe9511cacf4444d2155bb904`.
+- Current record's resulting commit/blob are recorded in the next checkpoint after GitHub returns them and the updated file is re-fetched.
