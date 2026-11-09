@@ -1221,4 +1221,5 @@ The earlier investigation is recorded in the preceding session notes (around the
 - Root `script.js` blob SHA: `6f5ba7dabdf679e98ff96d0af74b05be52ff24fb` (re-fetched and matched).
 - `preview/script.js` blob SHA: `a29d8229050a9c10af31c8da68fee2cd574f291f` (re-fetched and matched).
 - Current canonical document blob before this session record: `af7cb128b4d2285345f690bcfffceb7c9e678c5f`.
-- This document's commit/blob identifiers will be added after the documentation write and re-fetch.
+- Verified documentation commit SHA: 5d78ab91addffb1bca43a3433d2ed1479bfc4bf3.
+- Verified documentation blob SHA: 6e2304dbabc294d0624b08ae48a4ab48d7fa8d6d (re-fetched from GitHub and matched the update response).
