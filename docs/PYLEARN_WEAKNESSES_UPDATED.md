@@ -726,3 +726,64 @@ Verified:
 | EMAIL-BRAND-06 | Establish a recognizable PyLearn sender identity for public email | Research first; no provider change | `docs: investigate PyLearn-branded auth email sender` | PENDING — research ongoing | Official docs reviewed; actual Gmail inbox sender not yet verified |
 | EMAIL-TEMPLATE-07 | Brand Supabase Auth email subject/body clearly as PyLearn | Feature branch / Pylearn-Dev only, after approval | `feat(auth): brand verification email templates` | PENDING — not implemented | Not tested |
 | PROD-REVIEW-08 | Review any eventual production email change separately | Production | No production commit planned | PENDING — requires separate explicit approval | Not authorized |
+
+
+## Session record — Gmail SMTP identified as a possible no-domain branded sender (2026-11-09)
+
+### Purpose
+Continue EMAIL-BRAND-06 after the user removed the signup-only OTP restriction. Investigate whether PyLearn can keep Supabase Auth while replacing the visible Supabase sender with a PyLearn display name, without a custom domain or paid email service. Research only; no mailbox or SMTP credentials were created or connected.
+
+### Candidate: dedicated project mailbox using Gmail SMTP
+Official references reviewed:
+- Google Gmail SMTP settings: https://developers.google.com/workspace/gmail/imap/imap-smtp
+- Google personal Gmail sending limits: https://support.google.com/mail/answer/22839
+- Supabase custom SMTP setup and sender-name setting: https://supabase.com/docs/guides/auth/auth-smtp
+- Supabase guidance on Google SMTP with Supabase: https://supabase.com/kb/troubleshooting/using-google-smtp-with-supabase-custom-smtp-ZZzU4Y
+
+Verified findings:
+- Google documents `smtp.gmail.com` as its outgoing SMTP server for sending mail on behalf of an authenticated Gmail user; supported ports include 465 (SSL) and 587 (STARTTLS).
+- Google's documentation lists a personal Gmail sending limit of up to 500 messages/day, shared across the account's clients. This is a quota, not a deliverability guarantee or a transactional-email SLA.
+- Supabase custom SMTP accepts an SMTP host/account and supports the `smtp_sender_name` setting. The official example sets this to the application's name. Thus, in principle, Supabase Auth can keep handling account verification while the outbound sender display name is set to `PyLearn`.
+- A dedicated project-only Gmail mailbox could avoid exposing the user's personal mailbox and does not require PyLearn to own a custom domain. The visible From address would still be that Gmail address, while the display name could be `PyLearn`; it would not be a custom `@pylearn...` address.
+- Google's SMTP service authenticates as a Gmail user. Supabase's Google SMTP troubleshooting note describes app-password authentication and account restrictions for Google Workspace; this research has not independently confirmed the exact current eligibility and setup path for a personal Gmail account in this user's circumstances.
+- Supabase's current custom SMTP guide states a default low rate limit of 30 messages/hour after enabling custom SMTP (adjustable in Auth rate-limit settings). Google personal Gmail's 500/day ceiling is also relevant. Neither limit proves that Gmail will accept every application-generated message or that Gmail inbox placement will be reliable at scale.
+- This route depends on the mailbox remaining secure and under project control. Its SMTP credential would be a secret stored only in Supabase's protected Auth configuration, never in frontend JavaScript, GitHub, this document, or chat.
+
+### Assessment
+This is the strongest no-custom-domain, potentially $0 candidate found so far because it may solve the actual visible-sender confusion without replacing Supabase Auth:
+- Keep Supabase as the identity and verification system.
+- Use a separate, project-only Gmail sender account rather than the user's personal mailbox.
+- Set the Supabase custom SMTP sender display name to `PyLearn`.
+- Customize the Auth email subject/body so recipients can recognize that they requested a PyLearn account verification.
+- Use the Gmail address as the visible sender address; do not imply it is a PyLearn-owned domain.
+- Keep verification links or OTP codes according to the final UX/security design. The user's removal of the signup-only restriction means OTP use is no longer constrained to signup alone.
+
+Limitations and risks:
+- Gmail is not a dedicated transactional email provider; delivery reputation, throttling, account restrictions, and future policy changes remain risks.
+- The sender address will be a Gmail address, not a custom PyLearn domain.
+- The sender mailbox must be project-specific and securely managed; do not expose a personal mailbox.
+- This is a candidate, not a confirmed solution: no credentials have been entered, no custom SMTP config has been saved, and no test email has been received in Gmail.
+- No account creation, provider connection, paid feature, or code/config change is authorized by this research.
+
+### Next actions
+1. Ask the user whether a separate Gmail mailbox used only for PyLearn is acceptable as the visible From address, with the display name `PyLearn`.
+2. If accepted, verify the current Google account eligibility and exact authentication method without asking the user to reveal any password or app password in chat.
+3. Before connecting, explain that the Gmail address itself will remain visible to recipients and that Gmail's personal sending quota is up to 500 messages/day; do not promise production-scale delivery.
+4. With explicit approval, configure only Pylearn-Dev first, store credentials in protected project configuration, and send a test verification message to a synthetic/controlled Gmail recipient.
+5. Inspect the actual received message's From name/address, subject, body, link destination, and Gmail spam placement. Test signup and the chosen verification flows in Android Chrome and Samsung Internet.
+6. Do not change production Auth SMTP or production email templates without a separate explicit approval.
+
+### Current status
+- Signup-only OTP requirement: removed by user decision.
+- Sender-branding concern: still central.
+- Dedicated Gmail SMTP with `smtp_sender_name = PyLearn`: promising, not yet approved or tested.
+- Existing Supabase Auth remains the recommended identity architecture.
+- No mailbox, SMTP credential, provider connection, Auth setting, code, database, Edge Function, Vercel deployment, or production resource was changed.
+
+### Traceability update
+| Task ID | Work | Branch | Planned/actual commit message | Commit SHA | Verification |
+|---|---|---|---|---|---|
+| EMAIL-BRAND-06 | Evaluate project-only Gmail SMTP as free branded sender without custom DNS | Canonical documentation branch; read-only research | `docs: evaluate Gmail SMTP for PyLearn sender identity` | PENDING until commit response | Official docs reviewed; no account or delivery test |
+| EMAIL-GMAIL-09 | Confirm whether user accepts a project-only Gmail From address | Awaiting user decision | No implementation commit planned yet | PENDING | Not authorized |
+| EMAIL-SMTP-10 | Configure and test Gmail SMTP on Pylearn-Dev only | Feature/dev environment | `test(auth): validate PyLearn Gmail SMTP sender in dev` | PENDING — requires user approval | Not run |
+| PROD-REVIEW-08 | Review any eventual production email change separately | Production | No production commit planned | PENDING — requires separate explicit approval | Not authorized |
