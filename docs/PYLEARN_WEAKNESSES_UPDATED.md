@@ -1012,7 +1012,7 @@ For **Pylearn-Dev only** (project ref `rhtfripfqwccbhcwgoxy`; do not select prod
 ### Traceability
 | Task ID | Work | Branch/environment | Commit message | Commit SHA | Blob SHA / verification |
 |---|---|---|---|---|---|
-| DOC-CONTINUITY-13 | Record reaffirmed every-conversation checkpoint rule and current SMTP field instructions | `audit/reward-integrity-phase1-20261107` | `docs: record SMTP field guidance and strict continuity rule` | PENDING until GitHub update succeeds | Starting blob: `e139014be12a770cca2cd39709d2ca8cf9d4ff40`; post-write verification pending |
+| DOC-CONTINUITY-13 | Record reaffirmed every-conversation checkpoint rule and current SMTP field instructions | `audit/reward-integrity-phase1-20261107` | `docs: record SMTP field guidance and strict continuity rule` | `4bb28fdd1e73c38b986dd4dbf1cce8e4b8416bca` | New file blob: `772a35a8d6193b23e45381ee8435c46df353e99e`; re-fetched from GitHub and verified the new section and SMTP instructions are present |
 | EMAIL-SMTP-10 | Configure Gmail SMTP and test real delivery | Pylearn-Dev `rhtfripfqwccbhcwgoxy` only | `test(auth): validate PyLearn Gmail SMTP sender in dev` | PENDING — user must save settings first | Not configured/tested |
 | EMAIL-TEMPLATE-07 | Brand Auth templates and verification UX after delivery is proven | Feature branch / Pylearn-Dev preview only | `feat(auth): brand verification email templates` | PENDING — not started | Not tested |
 | PROD-REVIEW-08 | Review any production SMTP/template rollout separately | Production | No production commit planned | PENDING — separate explicit approval required | Not authorized |
