@@ -1910,3 +1910,12 @@ Google's grouped spaces are presentation separators. For the Supabase SMTP passw
 3. Perform one controlled signup from the audit preview, not production.
 4. Inspect the matching Pylearn-Dev Auth log immediately. A successful UI message alone is not proof of delivery.
 5. If the log again shows 535, stop repeated signup attempts and investigate the Gmail account/App Password eligibility and exact account alignment. If SMTP succeeds, check inbox/spam and then test confirmation and sign-in.
+
+
+### App Password spacing report checkpoint traceability
+- Repository: YAbu528/Pylearn
+- Branch: audit/reward-integrity-phase1-20261107
+- Path: docs/PYLEARN_WEAKNESSES_UPDATED.md
+- Commit SHA for the report write: 57d3d87311e555408e88cdb5da88e704fc0eea30
+- Blob SHA for the report write: 9f16f00a5efb02a0f8d749d75071ca7168dc9bbe
+- Independent re-fetch after report write: verified; fetched blob SHA exactly matched the write response and the new report heading was present.
