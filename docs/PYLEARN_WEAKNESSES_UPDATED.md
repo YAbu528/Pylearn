@@ -2298,3 +2298,6 @@ This record corrects the assistant's repeated domain question by restoring the u
 ### Scope and result
 - This was read-only inspection and documentation. No signup retry, SMTP setting change, password rotation, provider account creation, source edit, database write, Edge Function deployment, Vercel change, production action, or paid resource was used.
 - Pylearn-Dev remains ACTIVE_HEALTHY. The SMTP authentication failure remains unresolved; the next diagnostic is whether the Google Account password was changed after the saved App Password was generated.
+
+### Traceability — Gmail SMTP technical review
+The preceding technical-review record links the read-only Pylearn-Dev project-health check, screenshot-visible smtp.gmail.com:465 settings, user's sender/username alignment confirmation, official Google port and error-code guidance, and the primary-account-password/App-Password revocation rule to the next diagnostic question. GitHub saved this record on branch audit/reward-integrity-phase1-20261107 as commit d4339325535f67574c7a46215e29789aed9a0707, producing blob c1e31d6654825c2a7f51396604078e436946a2b7. An independent fetch of the same repository, branch and path returned the exact same blob SHA and confirmed the section was present. These identifiers verify the saved review; they do not mean SMTP has been repaired or tested again.
