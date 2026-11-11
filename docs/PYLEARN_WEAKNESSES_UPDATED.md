@@ -2207,3 +2207,28 @@ The Supabase warning is about provider suitability and deliverability; it does n
 
 ### Traceability — recommended signup-email path
 The decision record above ties the recommendation to the 22:23 Ethiopia-time Gmail 535 signup failure, the user's screenshot, their confirmation of sender/username account alignment, and current Google/Supabase guidance. GitHub saved the explanation on branch audit/reward-integrity-phase1-20261107 as commit 0779b960e3052913344e570f8b46e9e00679d791, producing document blob 54b555c0df5ae442b2f71c46eb9c97f8ded02b06. An independent fetch of the same repository, branch and path returned the exact same blob SHA and confirmed the decision section is present. This records a recommendation only; no provider or SMTP setting was changed.
+
+## Session record — personal Gmail confirmed; project-memory documentation requirement (2026-11-11)
+
+### User clarification
+- The user explicitly confirmed the SMTP account is a normal personal Gmail account, not Google Workspace.
+- This settles the account-type question. The existing Gmail SMTP route should not be treated as the recommended long-term transactional email solution for PyLearn.
+- The user also explicitly requested that the canonical document preserve literally every conversation and act as ChatGPT's memory for the project.
+
+### Documentation continuity commitment and limits
+- Treat docs/PYLEARN_WEAKNESSES_UPDATED.md on the audit branch as the canonical **PyLearn project continuity record**. For every substantive project exchange, preserve the user's requirements and clarifications, decisions, proposed and rejected approaches, actions taken, failures, test evidence, outcomes, unresolved questions, and next steps. Include enough context that a new assistant session can resume without asking the user to repeat established project history.
+- Keep entries chronological and structured. Distinguish user-reported facts from independently verified connector/log/source evidence, and distinguish recommendations from approved actions. Attach Git commit/blob identifiers to the specific explanation they evidence; independently re-fetch and verify each write and its traceability follow-up.
+- Do not claim that the document can contain every word of every ChatGPT conversation verbatim or function as ChatGPT's actual internal/global Memory. It is an external project handover record and may summarize routine wording rather than transcribe every message. If the user needs exact verbatim preservation of a particular exchange, explicitly identify and append that transcript when available and requested.
+- Never store passwords, App Passwords, API keys, service-role keys, OTPs, recovery codes, or other secrets. Avoid storing full personal email addresses or unnecessary personal information. Record safe configuration facts and evidence without secret values.
+- The canonical document supplements rather than replaces ChatGPT's own Memory or the source repository. At the start of future PyLearn sessions, read the latest complete canonical file before continuing.
+
+### SMTP decision after personal-account confirmation
+- The user's personal Gmail account and its App Password are not a suitable foundation to rely on for public transactional signup email. The observed Gmail 535 5.7.8 rejection remains an authentication failure; the Supabase warning is a separate provider-suitability/deliverability warning.
+- Supabase's current documentation says its built-in email service is limited to pre-authorized team addresses and currently 2 messages/hour, so it is not a replacement for public signup email. It can be used only for limited internal/dev exploration, not as a public signup solution.
+- Resend currently advertises a free tier of 3,000 emails/month and 100/day, but sending requires a verified sending domain and DNS control. Therefore it is not yet an actionable solution unless the user already has access to a domain they can configure. Do not purchase a domain, register a paid service, add a payment card, or enable billing. Confirm current terms before setup.
+- Recommended next step: ask whether the user already owns or has legitimate DNS-management access to any domain (including an existing project/domain), without suggesting a purchase. If yes, evaluate whether a free provider can use it. If no, investigate safe no-cost alternatives and their limitations before recommending a path; do not disable email confirmation or weaken account security just to bypass SMTP.
+
+### Current state and scope
+- Pylearn-Dev remains the only test environment. Production project vzgbxoxscmlmacxciwze remains untouched.
+- No new signup attempts, SMTP changes, provider account creation, domain purchase, DNS change, source modification, database write, or paid resource was used in this exchange.
+- The current personal Gmail App Password must remain private; no secret value is recorded.
