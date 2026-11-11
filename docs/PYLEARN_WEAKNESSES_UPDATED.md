@@ -2156,3 +2156,25 @@ This record documents the user's reported UI error and the matching Pylearn-Dev 
 
 ### Traceability — controlled signup failure record
 The preceding session record preserves the exact user-visible signup error and the matching server-side Gmail 535 rejection from Pylearn-Dev. GitHub saved that explanation on branch audit/reward-integrity-phase1-20261107 as commit 285d35cc6eded0d65782d4fdadb94dbe9ba14a49, producing canonical document blob fc6d6fd97578420c68af587daea169c2ef74a84e. An independent fetch of the same repository, branch and path returned the exact same blob SHA and confirmed the section was present. These identifiers therefore evidence the saved failure record and its verified persistence; they do not imply that SMTP was repaired or that an email was delivered.
+
+## Session record — Supabase Gmail-provider warning reviewed; account alignment confirmed (2026-11-11)
+
+### Screenshot evidence and user clarification
+- The user supplied a screenshot of Pylearn-Dev Authentication SMTP settings. Visible fields include sender name PyLearn, SMTP host smtp.gmail.com, and port 465. A Supabase warning beneath the host says the entered SMTP provider is designed for personal rather than transactional email and that email deliverability may be impacted.
+- The user explicitly confirmed that the SMTP sender email and SMTP username are the same Gmail address, and that the App Password was generated while signed into that same Google account. This is user-reported confirmation; no email addresses or secrets are copied into this record.
+- The screenshot does not expose the SMTP username, sender email, password, or all remaining SMTP fields, so those values have not been independently read back.
+
+### Technical interpretation
+- The Supabase warning is a **provider suitability/deliverability warning**, not an SMTP credential-validation error. It warns that a personal Gmail account is not designed as a transactional email service and may have deliverability, sending-volume, or policy limitations.
+- The warning does **not**, by itself, explain the exact observed Gmail response **535 5.7.8 Username and Password not accepted**. That response is an SMTP authentication rejection, which occurs before a confirmation email can be successfully sent. The warning may become relevant later if authentication succeeds but messages are delayed, filtered, rate-limited, or rejected for sender/deliverability reasons.
+- The earlier matching Pylearn-Dev Auth event at 2026-11-11T19:22:59Z remains the decisive evidence for this attempt: POST /signup returned HTTP 500 because Gmail SMTP returned 535 5.7.8. No email receipt or confirmation-link redirect was established.
+- Since the user has now confirmed the account/username/sender alignment, that mismatch is no longer the leading explanation. The remaining SMTP authentication problem is unresolved; do not claim the App Password is invalid or expired without evidence.
+
+### Decision and safe next step
+- Do not keep retrying signup. Do not change host, port 465, TLS mode, sender identity, or production configuration speculatively.
+- The Gmail personal-provider warning is a longer-term suitability concern. For a public transactional signup system, a dedicated transactional email provider is generally more appropriate, but any provider choice must be free, compatible with the user's budget, and explicitly approved before setup. Do not create a paid account or enable billing.
+- Continue diagnosing Gmail's 535 response using official current provider guidance and read-only checks before changing settings. Never request or store the App Password.
+- Pylearn-Dev remains the only test target; production project vzgbxoxscmlmacxciwze remains untouched. No SMTP setting, source code, database, Edge Function, Gmail account, Vercel configuration, or paid resource was changed during this review.
+
+### Traceability — warning and account-alignment review
+This record preserves the screenshot's visible warning, the user's confirmation of sender/username/account alignment, and the distinction between provider deliverability suitability and the logged SMTP 535 authentication failure. Commit/blob identifiers and independent fetch verification will be attached in the follow-up traceability entry.
