@@ -2123,3 +2123,7 @@ The session record above was appended to explain the user's corrected credential
 - Record commit: `fdedf11724f891e4bfc9035bbb04c110eb72464e`
 - Record blob: `20df67e82e0ed0390050560076c6de05b980588c`
 - Independent same-path re-fetch: exact blob match; new section present.
+
+
+### Post-checkpoint deployment refresh — latest branch alias verified READY
+After the documentation record and its traceability follow-up were committed, the audit preview alias was looked up again to ensure it had not become stale during the writes. Vercel returned the same branch alias `pylearn-git-audit-reward-integrity-pha-4fbac1-yabu528s-projects.vercel.app`, with deployment ID `dpl_HXU4gjJxVJLYMYeYuzM6GvFtG4rr`, state `READY`, and Git branch `audit/reward-integrity-phase1-20261107`. The deployment metadata points to documentation-record commit `fdedf11724f891e4bfc9035bbb04c110eb72464e`; the deployment is therefore current with the latest canonical documentation record. This verifies the branch alias is available and READY after the checkpoint writes. It does not test signup, SMTP authentication, email delivery, or the deployed app's runtime behavior.
