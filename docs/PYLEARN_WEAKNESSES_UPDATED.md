@@ -1701,8 +1701,8 @@ The assistant cannot initiate a real signup as the user because that requires th
 
 ### Follow-on traceability note — identifiers inserted into the structured report
 The write that inserted the identifiers above has its own GitHub result:
-- Commit SHA: to be filled after independent verification.
-- Blob SHA: to be filled after independent verification.
+- Commit SHA: `319d3c81019b7e4a1a0627bc28e588699d73bfb2`.
+- Blob SHA: `a291e51b9cf9772a0d7c64d0ac630deb6528459d`.
 
 
 # Structured session report — SMTP signup response versus server log (2026-11-11)
