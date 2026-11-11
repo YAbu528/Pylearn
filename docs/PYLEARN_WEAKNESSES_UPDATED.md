@@ -2152,3 +2152,7 @@ A read-only query of Pylearn-Dev Auth logs for 2026-11-11 19:15–19:35 UTC foun
 
 ### Traceability — controlled signup failure
 This record documents the user's reported UI error and the matching Pylearn-Dev Auth log evidence at 19:22:59Z. The Git commit and resulting blob identifiers will be attached to this explanation in the immediate traceability follow-up after an independent same-branch/same-path re-fetch.
+
+
+### Traceability — controlled signup failure record
+The preceding session record preserves the exact user-visible signup error and the matching server-side Gmail 535 rejection from Pylearn-Dev. GitHub saved that explanation on branch audit/reward-integrity-phase1-20261107 as commit 285d35cc6eded0d65782d4fdadb94dbe9ba14a49, producing canonical document blob fc6d6fd97578420c68af587daea169c2ef74a84e. An independent fetch of the same repository, branch and path returned the exact same blob SHA and confirmed the section was present. These identifiers therefore evidence the saved failure record and its verified persistence; they do not imply that SMTP was repaired or that an email was delivered.
