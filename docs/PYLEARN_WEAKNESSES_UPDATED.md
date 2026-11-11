@@ -2204,3 +2204,6 @@ The Supabase warning is about provider suitability and deliverability; it does n
 - Pylearn-Dev only; production project vzgbxoxscmlmacxciwze remains untouched.
 - No signup retry, SMTP configuration change, provider account creation, domain purchase/verification, source change, database write, or paid resource was used for this recommendation.
 - No password, App Password, OTP, or private email address is stored here.
+
+### Traceability — recommended signup-email path
+The decision record above ties the recommendation to the 22:23 Ethiopia-time Gmail 535 signup failure, the user's screenshot, their confirmation of sender/username account alignment, and current Google/Supabase guidance. GitHub saved the explanation on branch audit/reward-integrity-phase1-20261107 as commit 0779b960e3052913344e570f8b46e9e00679d791, producing document blob 54b555c0df5ae442b2f71c46eb9c97f8ded02b06. An independent fetch of the same repository, branch and path returned the exact same blob SHA and confirmed the decision section is present. This records a recommendation only; no provider or SMTP setting was changed.
