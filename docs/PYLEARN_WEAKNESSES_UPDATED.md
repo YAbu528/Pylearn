@@ -1877,3 +1877,36 @@ The follow-up write that filled the preceding report's identifiers was also inde
 - Commit SHA: `79e0ad97b19fc81fbd7a2f59db36047c168323b6`
 - Blob SHA: `5f0ef5f3f25ec575bf10c0620bc91c6086a5bb8f`
 - Verification: fetched blob matched; report and permanent handover section were present. This checkpoint update corrects the missed insertion of the preceding write's IDs; no project implementation state changed.
+
+
+# Structured session report — Google App Password spacing and replacement decision (2026-11-11)
+
+## User clarification and decision
+The user clarified that they did not need to generate another App Password because the password they had was believed to be correct. They also clarified that Google displays each generated App Password with spaces in fixed groups. The user revoked the earlier App Password and decided to continue with the newly generated App Password instead. The user asked whether those displayed spaces should be included when entering the password into the Supabase SMTP password field.
+
+## Technical guidance given
+Google's grouped spaces are presentation separators. For the Supabase SMTP password field, enter the App Password as one continuous 16-character string, removing the spaces between the groups. Do not add leading or trailing spaces. This is a formatting instruction only; it does not change the password itself. The App Password must remain private and must never be pasted into ChatGPT, GitHub, screenshots, logs or this document.
+
+## Current status — what is and is not confirmed
+- The user reports that the earlier App Password has been revoked.
+- The user intends to use the newly generated App Password.
+- The user has not yet confirmed in this conversation that the new password has been entered and saved in Pylearn-Dev's SMTP settings without spaces.
+- No new signup attempt or Auth log result is reported in this checkpoint.
+- The previous confirmed Pylearn-Dev Auth event remains the 2026-11-11 01:40:44 UTC event: POST user_confirmation_requested, HTTP 500, Gmail SMTP 535 5.7.8 authentication rejection. This earlier failure does not prove whether the newly generated password will work.
+- Do not claim SMTP is fixed or email delivery works until a fresh controlled preview signup and matching server-side evidence confirm it.
+
+## Environment and scope
+- Repository: YAbu528/Pylearn
+- Branch: audit/reward-integrity-phase1-20261107
+- Canonical file: docs/PYLEARN_WEAKNESSES_UPDATED.md
+- SMTP target: Pylearn-Dev Supabase project ref rhtfripfqwccbhcwgoxy
+- Production project ref vzgbxoxscmlmacxciwze is out of scope.
+- This documentation update does not change Supabase settings, application code, deployments, production resources or paid resources.
+- No password or other secret is included in this report.
+
+## Next controlled steps
+1. In Pylearn-Dev only, replace the SMTP password with the newly generated Google App Password entered as a continuous string with all display spaces removed; save the SMTP settings.
+2. Do not send the password to ChatGPT. Tell the assistant only when the setting has been saved.
+3. Perform one controlled signup from the audit preview, not production.
+4. Inspect the matching Pylearn-Dev Auth log immediately. A successful UI message alone is not proof of delivery.
+5. If the log again shows 535, stop repeated signup attempts and investigate the Gmail account/App Password eligibility and exact account alignment. If SMTP succeeds, check inbox/spam and then test confirmation and sign-in.
