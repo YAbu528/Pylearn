@@ -1497,3 +1497,46 @@ This was a read-only inspection. No Supabase Auth setting, SMTP credential, data
 |---|---|---|---|---|
 | SMTP-ACCESS-CHECK-20261111 | Inspect available Supabase actions, project metadata and latest Auth logs | Pylearn-Dev `rhtfripfqwccbhcwgoxy` | Read-only | Project remains ACTIVE_HEALTHY; Auth logs still show Gmail 535; no SMTP settings read/write action is exposed |
 | DOC-SMTP-ACCESS-LIMIT-20261111 | Record user request, connector limitation and safe next step | `audit/reward-integrity-phase1-20261107` | Commit/blob IDs recorded after successful write and re-fetch | Starting blob `a7ac9b062265c0c0c6f34040910b7cb0fb8ca252` |
+
+
+## Session record — SMTP encryption mode clarification (2026-11-11)
+
+### User update
+The user privately checked the Pylearn-Dev SMTP settings and confirmed:
+- SMTP host: `smtp.gmail.com` (the user initially typed the host with uppercase letters; DNS hostnames are case-insensitive, but the conventional lowercase spelling is preferred).
+- Port: `465`.
+- SMTP username: the full Gmail address.
+- SMTP password: the Google App Password generated for that exact Gmail account.
+- Sender email: identical to the SMTP username.
+- Sender name: `PyLearn`.
+- The user could not find a separate setting labelled implicit SSL or TLS.
+
+### Documentation check and technical conclusion
+- Current Supabase custom SMTP documentation lists the SMTP host, port, user, password and From address/name configuration. Its documented configuration example does not include a separate SSL/TLS-mode field.
+- Google's official Gmail SMTP documentation specifies `smtp.gmail.com:465` as **implicit SSL/TLS**. Port `587` is the alternative that uses TLS via STARTTLS.
+- Therefore, for the selected Gmail host and port 465, the transport mode is determined by the port/protocol; the user does not need to find or enable a separate implicit-TLS dropdown in the Supabase dashboard.
+- The confirmed host/port combination is correct. Do not change to port 587 merely because the dashboard has no explicit TLS selector.
+- The earlier Auth log error `535 5.7.8 Username and Password not accepted` is an SMTP authentication rejection, not a TLS-mode error. The user's confirmation of the visible fields does not by itself prove Gmail now accepts the saved App Password.
+- Do not request or receive the App Password or full email address in chat.
+
+### Current next step
+1. If the user has not already done so, press Save on the Pylearn-Dev SMTP settings page even though the visible values are unchanged.
+2. Then perform one controlled signup attempt from the exact audit preview deployment only; do not use the GitHub Pages production site for this test.
+3. Inspect Pylearn-Dev Auth logs once for the result. A successful SMTP send should no longer show Gmail's `535` rejection; then the user should check inbox and spam for the confirmation message.
+4. If `535` persists, investigate the App Password/account authentication separately (including whether the App Password remains valid and belongs to the exact mailbox). Do not treat the absence of a TLS dropdown as the cause.
+5. Keep production untouched; no paid option or billable resource is authorized.
+
+### Sources consulted
+- Supabase official guide, Send emails with custom SMTP: https://supabase.com/docs/guides/auth/auth-smtp
+- Google official Gmail SMTP documentation: https://developers.google.com/workspace/gmail/imap/imap-smtp
+- Google Workspace Help, Send email from a printer, scanner, or app: https://knowledge.workspace.google.com/admin/gmail/send-email-from-a-printer-scanner-or-app
+
+### Changes and verification
+- This checkpoint records the user's report and documentation-based clarification only.
+- No SMTP setting, credential, database row, application source file, Vercel setting, deployment or production resource was changed.
+- No signup was triggered by the assistant in this session.
+
+### Traceability
+| Task ID | Work | Branch/environment | Commit | Blob / evidence |
+|---|---|---|---|---|
+| SMTP-TLS-MODE-CLARIFICATION-20261111 | Verify whether Supabase requires a separate implicit SSL/TLS selector for Gmail port 465 | Pylearn-Dev configuration guidance; audit branch documentation | Commit/blob IDs recorded after write and independent re-fetch | Supabase custom SMTP guide + Google's official port/encryption table |
