@@ -2232,3 +2232,6 @@ The decision record above ties the recommendation to the 22:23 Ethiopia-time Gma
 - Pylearn-Dev remains the only test environment. Production project vzgbxoxscmlmacxciwze remains untouched.
 - No new signup attempts, SMTP changes, provider account creation, domain purchase, DNS change, source modification, database write, or paid resource was used in this exchange.
 - The current personal Gmail App Password must remain private; no secret value is recorded.
+
+### Traceability — personal Gmail and project-memory requirement
+The preceding record captures the user's explicit confirmation that the SMTP account is personal Gmail, the user's request for the canonical document to serve as the durable PyLearn project continuity record, the limits on verbatim/global-memory claims, and the next no-cost email-provider decision. GitHub saved that explanation on branch audit/reward-integrity-phase1-20261107 as commit 8bfa52148bfeb6ab3c0652d54202fc796f54c2c0, producing blob d0970ea1d1f0894bc56f5096ffc68c46eb0b249b. An independent fetch of the same repository, branch and path returned the exact same blob SHA and confirmed the record was present. This verifies persistence of the project record; it does not make the document ChatGPT's internal Memory or mean every conversation word is transcribed verbatim.
