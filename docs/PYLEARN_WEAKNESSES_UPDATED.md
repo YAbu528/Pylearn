@@ -1467,3 +1467,33 @@ The immediately preceding diagnosis write is now recorded with its returned GitH
 - Commit SHA: `8144d81a971c13d9775b364cb28e8ab174bd1aa0`.
 - New canonical document blob SHA: `8276c61fdddd8df2590da244b5259a00ff4cc6f5`.
 - The exact file was re-fetched from `audit/reward-integrity-phase1-20261107`; the new diagnosis section and all 1,463 lines were present. The re-fetched blob matched `8276c61fdddd8df2590da244b5259a00ff4cc6f5`.
+
+
+## Session record — user asks assistant to inspect SMTP settings directly (2026-11-11)
+
+### User request
+The user asked whether the assistant could check the Pylearn-Dev SMTP settings directly, noting that the assistant has access to the Supabase account and this specific project.
+
+### What was checked directly
+- Re-read the currently exposed Supabase connector action catalogue. It includes project metadata, database/SQL, logs, Edge Functions, keys and other project operations, but **does not expose an Auth SMTP settings read action or an Auth SMTP settings update action**.
+- Re-read Pylearn-Dev project metadata: project ref `rhtfripfqwccbhcwgoxy`, name `Pylearn-Dev`, status `ACTIVE_HEALTHY`, region `eu-west-1`.
+- Queried recent `auth_logs`. The relevant signup attempts still show Gmail SMTP response `535 5.7.8 Username and Password not accepted`, HTTP 500, from the audit preview referrer.
+- No newer signup attempt after the 01:12:30Z SMTP failure was identified in the recent Auth log results. A later localhost request at 01:17:36Z returned 200 but was not a signup failure and did not expose SMTP configuration.
+- This confirms the failure diagnosis, but it does **not** reveal the currently saved SMTP username, sender address, host, port, TLS mode or password.
+
+### Access limitation — important clarification
+The user has granted the Supabase connector access to the project, but "project access" does not mean every Supabase dashboard setting is exposed as a tool action. In this chat the connector has no Auth SMTP settings retrieval/update action. SQL cannot read Auth SMTP provider secrets, and the assistant must not try to extract secrets from internal database tables or logs. No available safe action can independently inspect the saved SMTP credential values.
+
+Therefore the assistant cannot truthfully claim it has checked the actual saved SMTP fields or correct them. The user must inspect those fields in the dashboard, or use a supported dashboard-control workflow that is explicitly available and authorized. Do not ask the user to reveal any secret in chat.
+
+### User-facing next step
+Ask the user to open Pylearn-Dev → Authentication → SMTP Settings and privately verify the full Gmail username, sender address, App Password for that same mailbox, host `smtp.gmail.com`, port `465`, and implicit SSL/TLS. If the password is uncertain, replace it privately with a new App Password and save. Then the assistant can inspect the next Auth log event to confirm whether Gmail's 535 rejection has stopped. Do not ask for another signup until the settings have been checked.
+
+### No changes made
+This was a read-only inspection. No Supabase Auth setting, SMTP credential, database row, source file, Vercel setting, deployment or production resource was changed. No paid option was used or authorized.
+
+### Traceability
+| Task ID | Work | Branch/environment | Commit | Blob / result |
+|---|---|---|---|---|
+| SMTP-ACCESS-CHECK-20261111 | Inspect available Supabase actions, project metadata and latest Auth logs | Pylearn-Dev `rhtfripfqwccbhcwgoxy` | Read-only | Project remains ACTIVE_HEALTHY; Auth logs still show Gmail 535; no SMTP settings read/write action is exposed |
+| DOC-SMTP-ACCESS-LIMIT-20261111 | Record user request, connector limitation and safe next step | `audit/reward-integrity-phase1-20261107` | Commit/blob IDs recorded after successful write and re-fetch | Starting blob `a7ac9b062265c0c0c6f34040910b7cb0fb8ca252` |
