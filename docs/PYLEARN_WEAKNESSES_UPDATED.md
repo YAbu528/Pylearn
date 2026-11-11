@@ -2000,3 +2000,45 @@ Wait for the user to confirm that the newly generated Google App Password has be
 | REWARD-E2E-19 | Authenticated reward end-to-end tests | Feature preview + Pylearn-Dev | `test(rewards): verify authenticated learning reward flow` | PENDING | Not run |
 | MOBILE-REGRESSION-20 | Android Chrome and Samsung Internet regression | Preview only | `test(mobile): verify preview auth and learning sync` | PENDING | Not run |
 | PROD-REVIEW-21 | Separate production rollout review | Production | No production change planned | PENDING — explicit approval required | Not authorized |
+
+
+## Session record — SMTP App Password correction and preview-test readiness (2026-11-11)
+
+### User's latest correction
+The user corrected the previous App Password history:
+- The older Google App Password was **not revoked** and remains the older credential.
+- The user generated a newer App Password and then **revoked that newer App Password**.
+- The user followed the prior instruction to remove Google's display-grouping spaces and reports that they saved the SMTP settings in Supabase.
+- The user now wants to proceed with a preview test.
+
+### Important credential-state clarification
+The user has not yet explicitly identified which credential was entered into the Supabase SMTP password field when saving the settings. Because the newly generated password was revoked, it must not be assumed to be valid. The older password was not revoked, but it must not be assumed to be the one saved in Supabase. The only safe next step is to confirm, without revealing the secret, that the password currently saved in Pylearn-Dev is the older, still-active App Password (entered as one continuous string with display spaces removed). Do not ask the user to paste or show any password.
+
+### Evidence and interpretation
+- This is a user-reported correction; the assistant has not independently inspected the Google App Password page or the stored Supabase SMTP password (the exposed connector does not reveal the secret).
+- No new signup attempt, SMTP send, Auth log inspection or email-receipt test has been performed after this correction.
+- The prior confirmed Dev Auth log still showed Gmail SMTP error `535 5.7.8 Username and Password not accepted` for the earlier test. That result predates the latest reported Supabase save and does not determine whether the currently saved active credential is correct.
+- A successful settings-save action alone does not establish SMTP authentication or email delivery.
+
+### Exact next action — one confirmation before testing
+Ask the user only this: **When you saved the Supabase SMTP settings, did you enter the older App Password that is still active (not the newer one you revoked), with the display spaces removed?**
+- If yes: perform one controlled signup from the audit preview and immediately inspect the matching Pylearn-Dev Auth log.
+- If no or uncertain: stop before signup; have the user privately enter the older still-active App Password as one continuous string, save Pylearn-Dev SMTP settings, and then confirm.
+- Do not run repeated signup attempts. Do not alter SMTP host, port or TLS settings speculatively.
+- Do not use production Supabase or the production GitHub Pages site for this test.
+
+### Scope and files
+- Repository: `YAbu528/Pylearn`
+- Branch: `audit/reward-integrity-phase1-20261107`
+- Canonical file: `docs/PYLEARN_WEAKNESSES_UPDATED.md`
+- SMTP target: Pylearn-Dev project ref `rhtfripfqwccbhcwgoxy` (Free plan).
+- Production project ref `vzgbxoxscmlmacxciwze` remains untouched.
+- No application source, Supabase setting, database row, Edge Function, Gmail account, Vercel deployment or paid resource was changed by the assistant in this step.
+- No secret is recorded here.
+
+### Traceability for this documentation update
+- Starting canonical blob fetched immediately before write: `5b264d0ba99c649aaa516dc1963f6886436945df`.
+- Commit message: `docs: correct Gmail app password history and preview gate`.
+- Commit SHA: PENDING — populate from GitHub write response.
+- New blob SHA: PENDING — populate from GitHub write response.
+- Independent same-branch/same-path re-fetch: PENDING — must match the write response blob SHA exactly before reporting this checkpoint as saved.
