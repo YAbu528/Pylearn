@@ -2181,3 +2181,26 @@ This record preserves the screenshot's visible warning, the user's confirmation 
 
 ### Traceability — SMTP warning and account-alignment record
 The preceding session record documents the user's screenshot and confirms the warning is distinct from the SMTP authentication rejection, while preserving the user's confirmation that sender address, SMTP username and App Password Google account align. GitHub saved that explanation on branch audit/reward-integrity-phase1-20261107 as commit aa35a2a5c2aa80d08157143574127bd741d1038e, producing blob 070322e0947f881aef4bf5581a0429ee6775cff3. An independent fetch of the same path and branch returned the exact same blob SHA and confirmed the section was present. These identifiers evidence the saved analysis and its verified persistence; they do not indicate that SMTP authentication has been fixed.
+
+## Decision record — recommended next path for signup email (2026-11-11)
+
+### Evidence reviewed
+- Pylearn-Dev Auth log for the controlled preview signup at 2026-11-11T19:22:59Z returned HTTP 500 with Gmail SMTP 535 5.7.8 Username and Password not accepted.
+- User screenshot shows Supabase's warning that smtp.gmail.com is a personal-email provider rather than a transactional-email provider; visible settings include host smtp.gmail.com and port 465.
+- User confirms sender address and SMTP username are the same and the active App Password was generated in that same Google account.
+- Current Google documentation categorizes 535 5.7.8/5.7.80 as username/password not accepted; this is distinct from later-stage delivery/reputation errors. Current Supabase Knowledge Base article 'Using Google SMTP with Supabase Custom SMTP' (updated 2026-11-04) describes its tested Google SMTP setup using a Google Workspace admin account, sender and SMTP username matching that admin account, and an App Password. The user's screenshot warning indicates their present Gmail route is not recommended for transactional delivery.
+
+### Recommended next steps — do not retry signup yet
+1. Pause further signup attempts and preserve the current Pylearn-Dev settings as evidence. Do not change production.
+2. Establish one missing fact without exposing private details: is the configured sender a personal consumer Gmail account, or a Google Workspace mailbox managed under a domain? The Supabase Google SMTP troubleshooting article specifically documents a Workspace-admin setup; the personal Gmail warning means this distinction matters.
+3. If it is a personal consumer Gmail account, stop investing more attempts in this route. Recommend moving Dev email testing to a genuinely free transactional SMTP provider, but first compare current free-tier eligibility, domain-verification requirements, sending limits, and whether a custom domain is required. Do not create an account, add a card, verify a domain, or incur any cost without the user's explicit approval. No provider selected yet.
+4. If it is a Google Workspace mailbox, do one read-only check against the current official Google/Supabase requirements and the exact Workspace admin identity before considering a single controlled configuration correction. Do not rotate or paste secrets, and do not change port/TLS speculatively.
+5. Once a supported provider is configured on Pylearn-Dev only, run exactly one controlled signup, inspect the matching Auth log, then separately confirm inbox receipt and the confirmation redirect. A successful API response alone is not proof of receipt.
+
+### Why this is the recommendation
+The Supabase warning is about provider suitability and deliverability; it does not itself cause Gmail's observed 535 authentication rejection. The user's account-alignment confirmation reduces the likelihood of a simple username mismatch, but it does not prove that the credential is accepted by Gmail. Supabase's current Google SMTP troubleshooting notes a Workspace-admin setup, while the dashboard warns against personal Gmail for transactional email. Therefore the next efficient decision is to establish account type and avoid repeated blind retries.
+
+### Scope and safety
+- Pylearn-Dev only; production project vzgbxoxscmlmacxciwze remains untouched.
+- No signup retry, SMTP configuration change, provider account creation, domain purchase/verification, source change, database write, or paid resource was used for this recommendation.
+- No password, App Password, OTP, or private email address is stored here.
