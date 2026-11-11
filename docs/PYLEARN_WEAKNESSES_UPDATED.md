@@ -2267,3 +2267,34 @@ The preceding record captures the user's explicit confirmation that the SMTP acc
 
 ### Traceability — corrected no-domain constraint and provider decision
 This record corrects the assistant's repeated domain question by restoring the user's already-stated 2026-11-09 constraint: no custom domain or DNS access, no paid service, and a dedicated PyLearn Gmail sender. It records the current provider eligibility checks and the recommendation not to create accounts or weaken email verification. GitHub saved the explanation on branch audit/reward-integrity-phase1-20261107 as commit 257a1b237c38f0a89fa2e49fd6822dbfb066b5ab, producing blob 7c025d56b5e3780d7b4fa66419b76133f618f94c. An independent fetch of the same repository, branch and path returned the exact same blob SHA and confirmed the correction is present. These identifiers evidence the saved correction and decision; no configuration or application change was made.
+
+## Technical review — Gmail SMTP field evidence and next diagnostic (2026-11-11)
+
+### Read-only project inspection
+- Re-fetched the canonical project document before work; starting blob was e4b35aeb3033772c31176f3d1c39c3d2a9a75c4c.
+- Read-only Supabase project inspection confirms Pylearn-Dev project rhtfripfqwccbhcwgoxy is ACTIVE_HEALTHY in eu-west-1. This confirms project health, not SMTP credential validity.
+- The Supabase connector exposes project metadata and logs but does not expose the saved Custom SMTP username/password or all Auth SMTP dashboard settings. The password is intentionally not retrieved or recorded.
+
+### Configuration facts that can be established
+- User screenshot visibly shows SMTP host smtp.gmail.com, port 465, and sender name PyLearn.
+- User separately confirmed sender email and SMTP username are identical, and the App Password was generated from that same personal Google account.
+- Google documents smtp.gmail.com port 465 with implicit SSL/TLS and port 587 with STARTTLS. Therefore the visible host and port are valid documented settings; there is no evidence-based reason to change 465 to 587.
+- Supabase's current Google SMTP troubleshooting article (updated 2026-11-04) describes a tested Workspace-admin setup and recommends an App Password. That article is specifically Workspace-oriented and does not establish support/reliability for a personal Gmail account. Supabase's dashboard warning separately cautions that personal Gmail is not intended for transactional email.
+- Google's official SMTP error table identifies 535 5.7.80 as 'Username and Password not accepted'; 534 5.7.90 is the distinct 'Application-specific password required' response. Our captured error was 535 5.7.8 (same 535 username/password rejection family), not a TLS negotiation error.
+
+### Most relevant remaining check
+- Google states that changing the primary Google Account password revokes all App Passwords. This is a concrete way an App Password that was once active can become invalid without a username mismatch.
+- Next ask only whether the user changed their main Google Account password at any time after creating the older App Password currently saved in Pylearn-Dev. Do not ask them to reveal any password or repeat the already-confirmed account alignment.
+- If the Google Account password was changed afterward, the older App Password is no longer valid; only then discuss replacing it with a newly generated App Password and carefully saving it to Dev. If the Google Account password was not changed, do not immediately generate another one: inspect the saved SMTP password entry privately in Supabase (clear and re-enter only if the user still has the exact active App Password securely available), then make at most one controlled Dev test after agreeing on the step.
+- Do not change host or port based on current evidence. Do not retry signup until the diagnostic check is resolved. Never disable email confirmation or weaken account security.
+
+### Sources consulted
+- Google Gmail SMTP error codes: https://support.google.com/mail/answer/3726730 — 535 5.7.80 is username/password not accepted; 534 5.7.90 is app-password-required.
+- Google IMAP/POP/SMTP settings: https://developers.google.com/workspace/gmail/imap/imap-smtp — smtp.gmail.com uses port 465 implicit SSL/TLS or 587 STARTTLS.
+- Google App Password guidance: https://support.google.com/mail/answer/185833 — App Passwords are 16-digit passcodes, require 2-Step Verification, and are revoked when the primary Google Account password changes.
+- Supabase Google SMTP troubleshooting: https://supabase.com/kb/troubleshooting/using-google-smtp-with-supabase-custom-smtp-ZZzU4Y — updated 2026-11-04; describes tested Workspace admin email alignment and App Password use.
+- Supabase Custom SMTP docs: https://supabase.com/docs/guides/auth/auth-smtp — default mail service is team-address-only and limited, so not a public signup alternative.
+
+### Scope and result
+- This was read-only inspection and documentation. No signup retry, SMTP setting change, password rotation, provider account creation, source edit, database write, Edge Function deployment, Vercel change, production action, or paid resource was used.
+- Pylearn-Dev remains ACTIVE_HEALTHY. The SMTP authentication failure remains unresolved; the next diagnostic is whether the Google Account password was changed after the saved App Password was generated.
