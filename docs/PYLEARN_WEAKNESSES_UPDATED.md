@@ -1693,6 +1693,13 @@ The assistant cannot initiate a real signup as the user because that requires th
 - Exact path: `docs/PYLEARN_WEAKNESSES_UPDATED.md`
 - Starting blob SHA: `4625b47d7e693563d0f42bc63c22d6332ed2e4de`
 - Commit message: `docs: record detailed SMTP post-save log audit`
-- Commit SHA: to be recorded from the successful GitHub write response below.
-- New blob SHA: to be recorded from the successful GitHub write response below.
-- Verification requirement: immediately re-fetch the same path from the same branch; confirm this report's heading and all sections are present; confirm fetched blob equals the write response's content SHA. Never call the checkpoint complete unless all three checks pass.
+- Commit SHA: `19ea774ef07cdb9e41b75a06dc6b8306dd88c08e`.
+- New blob SHA: `51872a46cdf6f319175da0813714bb1899216ad4`.
+- Independent re-fetch: completed from the same branch and exact path; the fetched blob matched `51872a46cdf6f319175da0813714bb1899216ad4`. The structured report heading, full change ledger and verification section were all present.
+- This second write fills in the identifiers inside this report itself. Its own new commit/blob identifiers are recorded in the follow-on traceability note immediately below after the second write is verified.
+
+
+### Follow-on traceability note — identifiers inserted into the structured report
+The write that inserted the identifiers above has its own GitHub result:
+- Commit SHA: to be filled after independent verification.
+- Blob SHA: to be filled after independent verification.
