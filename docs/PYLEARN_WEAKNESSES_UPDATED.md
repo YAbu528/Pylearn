@@ -2113,3 +2113,13 @@ A UI success message, HTTP 200, or log entry alone does not prove actual email r
 3. Use the exact audit preview link above and Pylearn-Dev only for the next signup.
 4. Wait for the user's report that the one signup attempt was submitted; then inspect the matching Auth log. Do not assume success.
 5. Keep production untouched and do not introduce paid services.
+
+
+### Traceability — preview preparation and evidence-ledger instruction
+The session record above was appended to explain the user's corrected credential history, the user's permanent instruction that hashes must substantiate explanations, and the actual preview-preparation inspections. GitHub committed that full explanation as commit `fdedf11724f891e4bfc9035bbb04c110eb72464e`, creating canonical-file blob `20df67e82e0ed0390050560076c6de05b980588c`. The same branch/path was then fetched again; the fetched blob exactly matched `20df67e82e0ed0390050560076c6de05b980588c`, confirming the complete record was saved. These identifiers evidence the complete session record above, not just a standalone code-only checkpoint.
+- Repository: `YAbu528/Pylearn`
+- Branch: `audit/reward-integrity-phase1-20261107`
+- Path: `docs/PYLEARN_WEAKNESSES_UPDATED.md`
+- Record commit: `fdedf11724f891e4bfc9035bbb04c110eb72464e`
+- Record blob: `20df67e82e0ed0390050560076c6de05b980588c`
+- Independent same-path re-fetch: exact blob match; new section present.
