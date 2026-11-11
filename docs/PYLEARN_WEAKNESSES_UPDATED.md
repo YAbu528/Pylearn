@@ -2042,3 +2042,14 @@ Ask the user only this: **When you saved the Supabase SMTP settings, did you ent
 - Commit SHA: PENDING — populate from GitHub write response.
 - New blob SHA: PENDING — populate from GitHub write response.
 - Independent same-branch/same-path re-fetch: PENDING — must match the write response blob SHA exactly before reporting this checkpoint as saved.
+
+
+### Follow-up traceability — SMTP App Password correction record
+The preceding record was independently re-fetched from the same repository, branch and path. The fetched blob SHA exactly matched the GitHub write response, and the new section was present.
+- Repository: `YAbu528/Pylearn`
+- Branch: `audit/reward-integrity-phase1-20261107`
+- Path: `docs/PYLEARN_WEAKNESSES_UPDATED.md`
+- Main record commit SHA: `91b2fa2cbfa983d2ea44d340aa53df0613107b5a`
+- Main record blob SHA: `528200c1a6a89b6a5b2148170b8c5d591984b31e`
+- Verification: exact blob match and section presence confirmed.
+- This traceability follow-up records identifiers only; it makes no application or SMTP configuration change.
