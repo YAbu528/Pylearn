@@ -1460,3 +1460,10 @@ This section corrects the prior table's PENDING entry; it does not alter the his
 | REWARD-E2E-19 | Authenticated reward-flow tests | Feature preview + Pylearn-Dev | PENDING | Blocked on working email confirmation/sign-in |
 | MOBILE-REGRESSION-20 | Android Chrome and Samsung Internet regression | User Android device + preview | PENDING | Not run |
 | PROD-REVIEW-21 | Production rollout review | Production | PENDING — separate explicit approval required | Not authorized |
+
+
+### Traceability completion — SMTP diagnosis checkpoint
+The immediately preceding diagnosis write is now recorded with its returned GitHub identifiers:
+- Commit SHA: `8144d81a971c13d9775b364cb28e8ab174bd1aa0`.
+- New canonical document blob SHA: `8276c61fdddd8df2590da244b5259a00ff4cc6f5`.
+- The exact file was re-fetched from `audit/reward-integrity-phase1-20261107`; the new diagnosis section and all 1,463 lines were present. The re-fetched blob matched `8276c61fdddd8df2590da244b5259a00ff4cc6f5`.
