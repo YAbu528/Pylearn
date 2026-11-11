@@ -1703,3 +1703,167 @@ The assistant cannot initiate a real signup as the user because that requires th
 The write that inserted the identifiers above has its own GitHub result:
 - Commit SHA: to be filled after independent verification.
 - Blob SHA: to be filled after independent verification.
+
+
+# Structured session report — SMTP signup response versus server log (2026-11-11)
+
+## 1. User's observed result
+
+The user performed the requested controlled signup attempt from the audit preview. The page displayed the message:
+
+> "You're sending confirmation link."
+
+This is recorded as the exact user-reported on-screen result. The user did not share their email address or password in the conversation, and neither is retained in this report.
+
+## 2. Exact server-side check
+
+Immediately after the user reported the result, the assistant queried the Pylearn-Dev unified Auth logs.
+
+- Supabase project: Pylearn-Dev
+- Project ref: `rhtfripfqwccbhcwgoxy`
+- Log source: `auth_logs`
+- Query window: from 2026-11-11 01:30:00 UTC onward, newest first, limit 30
+- Selected fields: timestamp, HTTP method, path, status, error, referer and auth action
+- The query returned one matching signup/confirmation event in that interval.
+
+### Matching event
+
+| Field | Result |
+|---|---|
+| Timestamp | 2026-11-11 01:40:44 UTC |
+| Method | POST |
+| Auth action | `user_confirmation_requested` |
+| Request path | Auth request path recorded as `/` in the structured attributes |
+| HTTP status | 500 |
+| Error | Gmail SMTP `535 5.7.8 Username and Password not accepted` |
+| Referer | Audit preview deployment |
+| Project | Pylearn-Dev (`rhtfripfqwccbhcwgoxy`) |
+
+The raw log included an account identifier. It is intentionally omitted from this document to avoid retaining a personal email address.
+
+## 3. Interpretation — UI message is not proof of email delivery
+
+The browser displayed a confirmation-link message, but the matching server-side Auth event records an SMTP authentication failure and HTTP 500. Therefore:
+
+- The user successfully reached the signup/confirmation-request flow from the intended audit preview.
+- Supabase Auth attempted to request/send the confirmation message.
+- Gmail rejected the SMTP authentication with `535 5.7.8 Username and Password not accepted`.
+- The visible "sending confirmation link" text is not evidence that Gmail accepted the message or that an email was delivered.
+- Email delivery is **not confirmed**. The evidence currently indicates that this attempt failed at the SMTP authentication stage.
+- This remains the same core failure as the earlier 01:12 UTC attempts, despite the user having saved the SMTP settings and despite the Auth API configuration-reload event.
+
+The error is an SMTP username/password authentication rejection. It is not evidence that port 465 or the absence of a separate TLS selector is wrong. The user's privately confirmed host/port combination remains `smtp.gmail.com:465`; do not switch ports solely because of this 535 response.
+
+## 4. Current evidence-based status
+
+**Confirmed**
+1. A new user-controlled signup attempt occurred after the prior log audit.
+2. It originated from the audit preview deployment and reached Pylearn-Dev.
+3. Supabase Auth emitted `user_confirmation_requested`.
+4. The request ended with HTTP 500 and Gmail `535 5.7.8 Username and Password not accepted`.
+5. The page's confirmation-link message did not correspond to a confirmed successful SMTP send in the server log.
+
+**Not confirmed**
+1. That Gmail accepted the saved App Password.
+2. That a confirmation email was delivered.
+3. That the user received a confirmation email.
+4. That email confirmation and subsequent sign-in work end-to-end.
+
+## 5. Next diagnostic step
+
+Do not repeat signup attempts yet. First investigate the Gmail SMTP credential privately in the Google account that owns the sender mailbox:
+
+1. Confirm privately that the App Password was generated for the exact mailbox used as the SMTP username and sender address.
+2. Check whether that App Password is still valid and whether it was copied into the SMTP password field exactly, without added spaces or omitted characters.
+3. If uncertain, generate a fresh App Password for that same mailbox and replace the saved SMTP password privately in Pylearn-Dev. Never send the password or full email address in chat.
+4. After the user confirms the private check/update is complete, perform one controlled signup attempt and inspect the new Auth log once.
+5. If Gmail still returns 535, stop repeated signup attempts and investigate Gmail account/App Password eligibility or authentication restrictions before trying again.
+
+No further SMTP configuration changes were made by the assistant during this session. No user account was created by the assistant.
+
+## 6. Scope and safety
+
+- Work was limited to read-only Auth log inspection and the GitHub handover document.
+- Only the audit preview and Pylearn-Dev were involved.
+- Production was not accessed or changed.
+- No paid service, upgrade, subscription or billable resource was used or authorized.
+- No credentials, full email address, or other secret are recorded here.
+- No source code, database row, SMTP setting, Vercel setting or deployment was changed.
+
+## 7. Permanent handover and checkpoint-saving rules for every future ChatGPT conversation
+
+**This section is a standing instruction for every future assistant/chat continuing the PyLearn project. It is not limited to SMTP work. The next assistant must read and follow it before making project changes.**
+
+### Canonical destination
+- Repository: `YAbu528/Pylearn`
+- Canonical file: `docs/PYLEARN_WEAKNESSES_UPDATED.md`
+- Working branch for this current audit stream: `audit/reward-integrity-phase1-20261107`
+- Do not silently switch branches. If the active branch changes, record why and identify the new branch explicitly.
+
+### Before every document edit
+1. Fetch the latest version of the canonical file from the exact branch and path.
+2. Read the relevant existing sections and preserve the entire existing document.
+3. Compare the fetched blob SHA with the latest known checkpoint SHA. If it differs unexpectedly, stop, inspect the change and reconcile; never blindly overwrite.
+4. Build the update from the freshly fetched full content, not an old local copy or remembered text.
+
+### What every session record must contain
+Write a structured, chronological explanation in plain English. Do not write only a code-style summary or a list of commit IDs. Include, as applicable:
+- Date and objective.
+- User's request, correction, decision or authorization.
+- Exact repository, branch, file path, environment and project ref involved.
+- What was inspected and the exact tools/actions or queries used (without secrets).
+- What was attempted, including failed attempts and their exact error/result.
+- Findings and evidence, with timestamps and relevant status/error codes.
+- Technical interpretation: what the evidence proves and what it does not prove.
+- Changes made and their before/after state.
+- Tests performed, test device/browser where relevant, and observed results.
+- Anything not tested or still uncertain.
+- Explicit scope boundaries: what was not changed, especially production, paid resources and secrets.
+- Concrete next step and any user action required.
+- A chronological change/evidence ledger where it improves traceability.
+
+### After every document write — mandatory independent verification
+1. Capture the GitHub update response's commit SHA and new content blob SHA.
+2. Immediately fetch the same exact file again from the same branch and path.
+3. Verify that the fetched blob SHA exactly matches the update response's content SHA.
+4. Inspect the re-fetched content and confirm the newly added/edited section is actually present and complete.
+5. If either the SHA comparison or content check fails, stop. Do not claim the checkpoint was saved successfully; diagnose and retry safely.
+6. Record the exact repository, branch, path, commit SHA and blob SHA in the document's traceability/checkpoint section. When recording a write's own identifiers requires a follow-up write, repeat the same fetch-before-write and fetch-after-write verification sequence for that follow-up.
+7. Also report the verified identifiers to the user in the conversation so they can independently trace the checkpoint.
+
+### Continuity rules for the next chat
+- At the start of a new PyLearn conversation, read this canonical document first and use it as the project handover source.
+- Continue from the latest verified checkpoint, not from assumptions or stale summaries.
+- If the user reports a new test result, inspect the relevant live evidence before deciding whether it passed.
+- Never say a feature, fix, deployment, email, or test is successful unless the evidence actually verifies it.
+- Keep user explanations understandable and sufficiently detailed; preserve failed attempts and lessons learned, not only successful outcomes.
+- Never store credentials, App Passwords, full email addresses, OTPs or other secrets in the document.
+- Never modify production or create paid/billable resources without separate explicit authorization.
+- Keep preview-first testing and the user's Android-only testing constraints in view.
+- Do not ask the user to repeat instructions that are already recorded here.
+
+## 8. Change and evidence ledger
+
+| Step | Action | Result | Environment | Evidence |
+|---|---|---|---|---|
+| 1 | User submitted one controlled signup attempt | UI displayed "You're sending confirmation link." | Audit preview | User report, 2026-11-11 |
+| 2 | Queried Pylearn-Dev Auth logs after the attempt | One matching event at 01:40:44 UTC | Pylearn-Dev | Read-only log query |
+| 3 | Compared UI result with server-side result | HTTP 500; Gmail 535 authentication rejection | Audit preview → Pylearn-Dev | Auth event timestamp, status and error |
+| 4 | Determined delivery status | Email delivery not confirmed; log indicates SMTP failure | Pylearn-Dev | Matching Auth event |
+| 5 | Added permanent checkpoint-saving instructions for future chats | Standing rules now documented in canonical handover | GitHub audit branch | This structured report |
+| 6 | Re-fetched and verified the updated document | Pending identifiers below | Same branch and path | Must match the write response blob SHA |
+
+## 9. GitHub checkpoint and independent verification
+
+- Repository: `YAbu528/Pylearn`
+- Branch: `audit/reward-integrity-phase1-20261107`
+- Exact path: `docs/PYLEARN_WEAKNESSES_UPDATED.md`
+- Starting blob SHA verified before this write: `a291e51b9cf9772a0d7c64d0ac630deb6528459d`
+- Commit message: `docs: record signup SMTP result and permanent handover rules`
+- Commit SHA: to be filled after the write response.
+- New blob SHA: to be filled after the write response.
+- Independent re-fetch: mandatory; record whether the fetched blob matched the returned content SHA and whether this report plus the permanent handover rules were present.
+
+## 10. Close-out
+
+The new signup attempt did not demonstrate successful email delivery. The matching Pylearn-Dev Auth log still shows Gmail rejecting SMTP authentication with 535. The permanent checkpoint-saving protocol has been added so future ChatGPT conversations know exactly where and how to preserve project work. The next action is a private verification of the Gmail App Password/account alignment before another controlled test.
