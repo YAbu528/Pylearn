@@ -1330,3 +1330,62 @@ The earlier investigation is recorded in the preceding session notes (around the
 ### Traceability
 - Canonical document blob fetched before this record: `ff83602f35f6e1a3694b24112066a9a1e0f519ec`.
 - This checkpoint records the user's confirmation and the permission inspection result. Documentation commit/blob IDs follow only after successful GitHub write and re-fetch verification.
+
+
+## Session record — full handover recovery and continuation readiness (2026-11-11)
+
+### User instruction
+The user explicitly required strict continuation from this canonical file and that every attempt, failure, decision, comment, change, test and next step be recorded in plain English, with exact branch, commit SHA, blob SHA and independent GitHub re-fetch verification. This remains mandatory.
+
+### Canonical recovery
+- Repository: `YAbu528/Pylearn`; canonical branch: `audit/reward-integrity-phase1-20261107`; path: `docs/PYLEARN_WEAKNESSES_UPDATED.md`.
+- The repository has 42 branches. The exact path was checked on all 42, not only `main`. The file exists on exactly one branch: `audit/reward-integrity-phase1-20261107`; it was absent at this path on the other 41, including `main`.
+- The first all-branch batch exceeded the tool execution call limit and did not return a complete result. The checks were repeated in smaller batches, and all 42 branches were checked.
+- The complete 1,333-line, 134,343-character handover was fetched and read in eight consecutive ranges (lines 1–1333).
+- Starting canonical blob SHA: `fd4091fb50519883da30a259062d9be136226e7e`.
+- Latest prior document commit: `cfc15430eeff4b72c7393320104991a7e8d9573a`, message `docs: record redirect added and supabase permission capability check`, dated 2026-11-09 19:38:57 UTC; parent `9d3640447a761400217ecd4421c96391179bad31`.
+
+### Companion documents read in full
+- `docs/SERVER_AUTHORITATIVE_REWARDS_DESIGN.md` on `feat/server-authoritative-rewards-20261107`: 234 lines; blob `6b6e31e18ea25a8e8ab644083d3a7d4607c782fe`.
+- `docs/SERVER_AUTHORITATIVE_REWARDS_CONTRACT.md` on the same branch: 126 lines; blob `c2af4f92fff34c2a09a23f9592c44df2dd9e153e`.
+- Both confirm the server-authoritative reward boundary is implemented in Pylearn-Dev and integrated on the feature branch, but authenticated browser tests and Android regression remain pending. Production rollout is not authorized.
+
+### Current read-only checks
+- Pylearn-Dev `rhtfripfqwccbhcwgoxy`: `ACTIVE_HEALTHY`, region `eu-west-1`, PostgreSQL 17.
+- `verify-learning-activity`: `ACTIVE`, version 1, `verify_jwt=true`.
+- Latest Vercel deployment for audit branch commit `cfc15430eeff4b72c7393320104991a7e8d9573a`: ID `dpl_JDiE3zxYmDEW1rMx3GJNt1kto6Fu`, URL `https://pylearn-cp0p9kbal-yabu528s-projects.vercel.app`, status `READY`. This is a documentation-checkpoint deployment, not proof of runtime signup behavior.
+- Known audit preview branch alias: `https://pylearn-git-audit-reward-integrity-pha-4fbac1-yabu528s-projects.vercel.app/`.
+- The user previously reported adding this audit alias to Pylearn-Dev Auth Redirect URLs while preserving the feature-branch entry. The allowlist has not been independently read back through the available connector.
+- A read-only unified-log query exposed only `pgbouncer_logs` and `postgres_logs`; it did not expose Auth logs in that result. No recent signup or SMTP/Auth event was verified in this recovery.
+- No fresh signup, email receipt, sender identity, confirmation-link, authenticated reward request or mobile test was performed.
+
+### Exact continuation point recovered
+1. The user reports that a dedicated PyLearn Gmail mailbox and Google App Password were created. No secret was shared.
+2. The user reports that custom SMTP settings were saved successfully in **Pylearn-Dev only**: sender name `PyLearn`, host `smtp.gmail.com`, port `465` with implicit SSL/TLS, and the dedicated Gmail address as sender and SMTP username.
+3. The user reports adding the audit preview redirect URL in Pylearn-Dev. This remains user-reported, not independently read back.
+4. Earlier email tests failed. One earlier Vercel preview was found to be using production Supabase; preview routing was corrected on the audit branch and the deployed script was inspected in the prior checkpoint.
+5. The next step is one controlled signup from the audit-branch preview, then inspect Inbox/Spam/All Mail, visible sender name/address, message body and confirmation-link destination. If no message arrives, stop and diagnose before retrying.
+6. Use a synthetic development account and an inbox controlled by the user. Do not ask for or record passwords, App Passwords, OTPs or full private email addresses.
+7. After delivery is verified, continue authenticated reward-flow tests, then Android Chrome and Samsung Internet regression. Keep all work on preview/Pylearn-Dev. Production remains untouched and requires separate explicit approval.
+
+### Failed documentation-write attempt in this session
+- An initial attempt to append this recovery record returned a remote connection error before a commit result was returned.
+- The canonical file was fetched again immediately afterward. It still had the original blob SHA `fd4091fb50519883da30a259062d9be136226e7e`, 1,333 lines, and no new section. Therefore that attempt did **not** save or change the file. A new write is being attempted from the freshly fetched blob.
+
+### Changes and boundaries
+- No application source, migration, database row, Edge Function, Auth/SMTP setting, Gmail account, Vercel configuration or production resource was changed.
+- This documentation checkpoint is the only intended write. No paid option or billable resource was introduced.
+
+### Traceability
+| Task ID | Work | Branch/environment | Commit message | Commit SHA | Blob / verification |
+|---|---|---|---|---|---|
+| HANDOVER-RECOVERY-20261111 | Check exact file path on all 42 branches and read complete handover | `audit/reward-integrity-phase1-20261107` | `docs: record full handover recovery and continuation state` | PENDING | Starting blob `fd4091fb50519883da30a259062d9be136226e7e`; lines 1–1333 read |
+| COMPANION-READ-20261111 | Read design and contract completely | `feat/server-authoritative-rewards-20261107` | Read-only | No source commit | Blobs `6b6e31e18ea25a8e8ab644083d3a7d4607c782fe`, `c2af4f92fff34c2a09a23f9592c44df2dd9e153e` |
+| ENV-RECHECK-20261111 | Recheck Dev project, verifier, preview deployment and log-source availability | Pylearn-Dev + Vercel | Read-only | No source commit | Dev healthy; verifier active/JWT required; preview READY; Auth logs not exposed in queried unified-log sources |
+| EMAIL-TEST-18 | One controlled signup and actual Gmail delivery/redirect verification | Audit preview + Pylearn-Dev | No code commit planned | PENDING — user test not yet performed | No receipt or Auth event verified |
+| REWARD-E2E-19 | Authenticated reward, negative-case, duplicate, retry and account-switch tests | Feature preview + Pylearn-Dev | `test(rewards): verify authenticated learning reward flow` | PENDING | Blocked on authenticated browser session |
+| MOBILE-REGRESSION-20 | Android Chrome and Samsung Internet regression | User Android device + preview | `test(mobile): verify preview auth and learning sync` | PENDING | Not run |
+| PROD-REVIEW-21 | Review any production rollout | Production | No production change planned | PENDING — separate explicit approval required | Not authorized |
+
+### Exact next action
+Open the audit-branch preview alias and make **one** signup using a development-only test account and an inbox you control. Privately verify the recipient address spelling first. Report only the on-screen result and whether the email arrived; do not share the address, password, App Password or verification code.
