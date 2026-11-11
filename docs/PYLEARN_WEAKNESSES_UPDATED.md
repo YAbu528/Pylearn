@@ -1931,3 +1931,72 @@ The report write and its first traceability follow-up were independently verifie
 - Traceability follow-up commit: `74c4e70da57acac16098a9d882adee8643a8af5e`
 - Blob after that follow-up: `c2a96c56d359c239fbc3d9afe182844242a03eab`
 - Verification: the branch head was independently read as commit `74c4e70da57acac16098a9d882adee8643a8af5e`; the canonical file was fetched from the same branch and contained the complete spacing/replacement report and the traceability details above.
+
+
+## Session record — new-chat full handover recovery and continuation (2026-11-11)
+
+### User request
+The user explained that the previous PyLearn conversation had reached its message/context limit and that this new conversation must continue from the complete canonical handover rather than asking them to repeat project history. They explicitly instructed the assistant to read the entire `PYLEARN_WEAKNESSES_UPDATED.md` document, including its operating rules, before continuing.
+
+### Canonical document recovery and full read
+- Repository: `YAbu528/Pylearn`.
+- Canonical branch: `audit/reward-integrity-phase1-20261107`.
+- Exact path: `docs/PYLEARN_WEAKNESSES_UPDATED.md`.
+- The complete UTF-8 document was fetched from the exact branch/path and read in consecutive line ranges covering lines 1–1934.
+- Document size at retrieval: 1,934 lines and approximately 186,982 characters.
+- Starting/current blob SHA observed on the fetched file: `4df1f962f895c4b2f8bef10cdd00dccb2a8d5d00`.
+- The read included the reward-integrity audit baseline, implementation and test history, SMTP/provider research, environment-routing correction, Gmail SMTP troubleshooting, all permanent checkpoint rules, and the latest 2026-11-11 App Password-spacing decision.
+- The user’s latest App Password clarification is preserved: the previously used App Password was revoked; a newly generated App Password is intended for use; Google's displayed grouping spaces are separators and must be removed when entering the password into Supabase. The new password must remain private.
+
+### Companion reward-integrity documents read
+To satisfy the handover's explicit instruction to read the linked Phase 2 design/contract documents before continuing:
+- `docs/SERVER_AUTHORITATIVE_REWARDS_DESIGN.md` was fetched in full from `feat/server-authoritative-rewards-20261107`: 234 lines; blob SHA `6b6e31e18ea25a8e8ab644083d3a7d4607c782fe`.
+- `docs/SERVER_AUTHORITATIVE_REWARDS_CONTRACT.md` was fetched in full from the same branch: 126 lines; blob SHA `c2af4f92fff34c2a09a23f9592c44df2dd9e153e`.
+- Both confirm that the reward evidence/XP boundary is implemented in isolated Pylearn-Dev and integrated on the feature branch, but authenticated browser end-to-end tests and Android regression remain pending. Production rollout remains separately gated.
+
+### Recovered operating rules — mandatory
+1. Treat this canonical document as the single source of truth. Do not create a parallel report or ask the user to repeat information already recorded.
+2. Before each document edit, fetch the latest complete file from the exact canonical branch/path, compare its blob SHA with the latest known checkpoint, inspect unexpected changes, and preserve all existing content.
+3. For every substantive inspection, discovery, attempt, failure, decision, implementation, test, or change in next steps, append a dated, chronological, plain-English structured record. The user's standing instruction is to record even minor interactions; never silently omit a meaningful exchange.
+4. Include exact repository, branch, file path, environment/project ref, relevant commit/blob identifiers, user decisions/approvals/refusals, actions and failed attempts, evidence, interpretation, changes made/not made, tests and results, unresolved risks, production/cost boundaries, and exact next actions.
+5. After every document write, capture the returned commit SHA and content blob SHA; immediately fetch the same file from the same branch/path; compare the fetched blob SHA exactly with the write response; inspect the new section for completeness; and report the verified identifiers to the user. If write or verification fails, say so plainly and do not claim it was saved.
+6. Never claim that a fix, test, email, deployment or configuration succeeded unless the relevant result was actually inspected. Distinguish user-reported, source-inspected, deployed, runtime-tested and independently verified states.
+7. Keep all work preview-first on the appropriate feature/audit branch and Pylearn-Dev. Production project `vzgbxoxscmlmacxciwze` must remain untouched unless the user separately and explicitly approves a specific production action.
+8. No paid service, plan, add-on, billable resource or paid Supabase branch may be used without new explicit approval. The previously declined US$0.01344/hour Supabase branch remains declined.
+9. Use synthetic development accounts/data. Never copy production user data into Pylearn-Dev.
+10. Never store or request passwords, Google App Passwords, OTPs, service-role keys, private tokens, or full private email addresses in chat or this document.
+11. Preserve existing accounts, OAuth providers, XP totals/events, achievements, progress, notes, bookmarks, reviews, challenge history, RLS isolation, JWT checks, idempotency and cross-device sync. Never backfill trusted reward evidence from old client-writable flags or reset/recalculate historical XP.
+12. Keep the user's Android-only test constraints in view: Android Chrome and Samsung Internet are required regression targets.
+
+### Current technical state recovered
+- Production Supabase project: `vzgbxoxscmlmacxciwze`; production remains untouched and no rollout is authorized.
+- Development Supabase project: `Pylearn-Dev`, ref `rhtfripfqwccbhcwgoxy`, Free plan, region `eu-west-1`; use synthetic accounts only.
+- Dev Edge Function: `verify-learning-activity`, ACTIVE version 1, `verify_jwt=true`.
+- Reward implementation: additive private evidence tables/RPC and JWT-verified Edge Function deployed to Dev; frontend integration committed on `feat/server-authoritative-rewards-20261107`. SQL assertions, synthetic Auth bootstrap, security advisor and GitHub source checks passed as recorded in the companion docs.
+- Still pending: authenticated browser reward-flow tests, retry/idempotency/account-switch runtime tests, and Android Chrome/Samsung Internet regression.
+- The preview-to-Dev routing correction is on the audit branch. The exact audit preview alias recorded in the handover is `https://pylearn-git-audit-reward-integrity-pha-4fbac1-yabu528s-projects.vercel.app/`. Do not use the GitHub Pages production site for development signup testing.
+- SMTP: user previously reported saving dedicated Gmail SMTP in Pylearn-Dev with sender name `PyLearn`, host `smtp.gmail.com`, port `465`, full dedicated Gmail address as username and sender address, and a Google App Password. Auth logs later showed Gmail `535 5.7.8 Username and Password not accepted`; the actual saved fields cannot be independently read with the currently exposed Supabase connector.
+- Most recent user clarification: the earlier App Password was revoked and a new one generated. Remove Google's display spaces so the password is entered as one continuous string in the Pylearn-Dev SMTP password field. The user has not yet confirmed in the latest checkpoint that this new password was saved there.
+- Do not change port 465 solely because there is no separate TLS selector: Gmail port 465 uses implicit SSL/TLS. Do not run another signup until the user confirms the new App Password has been privately entered and saved in Pylearn-Dev.
+- After that confirmation, perform only one controlled signup from the audit preview and immediately inspect Pylearn-Dev Auth logs. A UI message or HTTP 200 alone is not proof of email delivery; the user must confirm actual receipt and the sender/link must be checked.
+- Email OTP/branding research is historical and contains evolving decisions. The later clarification removed the signup-only OTP restriction; do not revive earlier superseded signup-only requirements. The dedicated Gmail sender route was approved for Dev testing, but public delivery and actual visible sender branding remain unverified.
+
+### Work performed in this new conversation
+- Located the canonical file on `audit/reward-integrity-phase1-20261107`.
+- Read the entire canonical handover and both companion reward-integrity documents in full.
+- No application source, Supabase setting, database row, Edge Function, Gmail account, Vercel setting, deployment or production resource was changed during this read/recovery.
+- No signup or SMTP test was run in this conversation.
+- This entry records continuity recovery only; it does not claim SMTP or reward-flow completion.
+
+### Exact continuation step
+Wait for the user to confirm that the newly generated Google App Password has been entered into the Pylearn-Dev SMTP password field as a continuous string with display spaces removed and that the settings are saved. Then run one controlled audit-preview signup and inspect the matching Dev Auth log before deciding whether any further action is needed.
+
+### Traceability
+| Task ID | Work | Branch/environment | Commit message | Commit SHA | Blob SHA / verification |
+|---|---|---|---|---|---|
+| HANDOVER-READ-20261111-NEWCHAT | Fetch and read the complete canonical handover | `audit/reward-integrity-phase1-20261107` | Read-only before this checkpoint | No source commit | Starting blob `4df1f962f895c4b2f8bef10cdd00dccb2a8d5d00`; complete lines 1–1934 read |
+| REWARD-DOCS-READ-20261111 | Read companion design and contract in full | `feat/server-authoritative-rewards-20261107` | Read-only | No source commit | Design blob `6b6e31e18ea25a8e8ab644083d3a7d4607c782fe`; contract blob `c2af4f92fff34c2a09a23f9592c44df2dd9e153e` |
+| SMTP-NEW-APP-PASSWORD-20261111 | Continue Dev SMTP verification using the replacement App Password | Pylearn-Dev only | No code commit planned | PENDING — awaiting user's confirmation that the new password was privately saved | No signup/test performed in this conversation |
+| REWARD-E2E-19 | Authenticated reward end-to-end tests | Feature preview + Pylearn-Dev | `test(rewards): verify authenticated learning reward flow` | PENDING | Not run |
+| MOBILE-REGRESSION-20 | Android Chrome and Samsung Internet regression | Preview only | `test(mobile): verify preview auth and learning sync` | PENDING | Not run |
+| PROD-REVIEW-21 | Separate production rollout review | Production | No production change planned | PENDING — explicit approval required | Not authorized |
