@@ -2264,3 +2264,6 @@ The preceding record captures the user's explicit confirmation that the SMTP acc
 
 ### Scope
 - This was research and documentation only. No signup was retried; no SMTP fields, project settings, source, database, Edge Function, Gmail account, Vercel configuration, or production resource was changed. No provider account was created and no paid resource was used.
+
+### Traceability — corrected no-domain constraint and provider decision
+This record corrects the assistant's repeated domain question by restoring the user's already-stated 2026-11-09 constraint: no custom domain or DNS access, no paid service, and a dedicated PyLearn Gmail sender. It records the current provider eligibility checks and the recommendation not to create accounts or weaken email verification. GitHub saved the explanation on branch audit/reward-integrity-phase1-20261107 as commit 257a1b237c38f0a89fa2e49fd6822dbfb066b5ab, producing blob 7c025d56b5e3780d7b4fa66419b76133f618f94c. An independent fetch of the same repository, branch and path returned the exact same blob SHA and confirmed the correction is present. These identifiers evidence the saved correction and decision; no configuration or application change was made.
