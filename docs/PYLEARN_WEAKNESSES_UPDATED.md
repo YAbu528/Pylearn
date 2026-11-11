@@ -2131,3 +2131,24 @@ After the documentation record and its traceability follow-up were committed, th
 
 ### Traceability — final READY preview refresh inspection
 The post-checkpoint deployment lookup described immediately above returned deployment `dpl_HXU4gjJxVJLYMYeYuzM6GvFtG4rr` in READY state for the stable audit branch alias and linked it to documentation record commit `fdedf11724f891e4bfc9035bbb04c110eb72464e`. This follow-up attaches the deployment observation to the canonical history. GitHub saved that explanation in commit `8d6ba4579f8a4f47fb12a9b59377ce9119b4b192`, creating blob `6dd1336a7b282923d445ffe5f0ff572305a24e32`; a same-branch/same-path re-fetch returned the exact same blob SHA, verifying that this deployment refresh evidence is preserved.
+
+## Session record — controlled SMTP signup still rejected by Gmail (2026-11-11)
+
+### User-reported test
+- The user submitted the single requested controlled signup from the audit preview and reported local Ethiopia time **22:23** with UI error: **“Error sending confirmation link”**.
+- The test target was Pylearn-Dev (project ref rhtfripfqwccbhcwgoxy), not production.
+- The user had previously confirmed that the older, still-active Google App Password (not the newer revoked one) was saved in Pylearn-Dev, with Google's display spaces removed. That credential state remains user-reported; the connector cannot reveal the saved secret.
+
+### Matching server-side evidence
+A read-only query of Pylearn-Dev Auth logs for 2026-11-11 19:15–19:35 UTC found one matching user_confirmation_requested event at **2026-11-11T19:22:59Z** (22:22:59 Ethiopia time), on POST /signup, with the audit preview as referer. The Auth request completed with **HTTP 500** and error code unexpected_failure. The nested SMTP error is Gmail **535 5.7.8 “Username and Password not accepted”**. This is a direct match for the user's 22:23 UI failure.
+
+### Interpretation and next action
+- This confirms the failure occurs while Supabase Auth attempts to send the confirmation email through Gmail SMTP; the request does not reach successful confirmation-email sending.
+- The saved credential was reported as active and correctly de-spaced, but Gmail still rejects SMTP authentication. Therefore we must not claim the App Password works, that the email was delivered, or that the confirmation redirect was tested.
+- **Stop further signup attempts for now.** Repeated attempts will not help and may trigger account/provider limits.
+- Do not change the SMTP port, host, TLS mode, sender identity, or production settings speculatively. Do not ask the user to paste the App Password.
+- Next diagnosis should be read-only and evidence-led: privately verify that the exact Google account owning the active App Password is the same dedicated Gmail address configured as the SMTP username; check Google's account security that the App Password remains present/active and whether the account has a security restriction. Do not share secrets or screenshots containing secrets. If account/credential alignment is confirmed and Gmail continues to reject it, check current official Google SMTP/App Password requirements before any configuration change.
+- Production Supabase project vzgbxoxscmlmacxciwze remains untouched. No source, database, Edge Function, SMTP setting, Gmail account, Vercel configuration, or paid resource was changed by the assistant during this diagnosis.
+
+### Traceability — controlled signup failure
+This record documents the user's reported UI error and the matching Pylearn-Dev Auth log evidence at 19:22:59Z. The Git commit and resulting blob identifiers will be attached to this explanation in the immediate traceability follow-up after an independent same-branch/same-path re-fetch.
