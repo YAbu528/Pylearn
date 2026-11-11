@@ -1389,3 +1389,74 @@ The user explicitly required strict continuation from this canonical file and th
 
 ### Exact next action
 Open the audit-branch preview alias and make **one** signup using a development-only test account and an inbox you control. Privately verify the recipient address spelling first. Report only the on-screen result and whether the email arrived; do not share the address, password, App Password or verification code.
+
+
+## Session record — confirmation-email failure diagnosis and preview isolation verification (2026-11-11)
+
+### User report
+The user tested account creation and received the UI error **"Error sending confirmation email"**. The user also questioned whether the preview was actually connected to Pylearn-Dev or was using the live/production version. The user reiterated the strict documentation requirement: record attempts, failures, comments, findings and decisions in plain English with exact commit/blob traceability.
+
+### Important finding — the preview did use Pylearn-Dev, not production
+Read-only checks establish the actual routing for the failed request:
+
+- The browser request's Auth log was recorded by Supabase project ref `rhtfripfqwccbhcwgoxy`, whose project name is `Pylearn-Dev`, status `ACTIVE_HEALTHY`, region `eu-west-1`.
+- The failed Auth request log's referrer was the audit preview hostname:
+  `https://pylearn-git-audit-reward-integrity-pha-4fbac1-yabu528s-projects.vercel.app/`.
+- The audit branch `script.js` blob `6f5ba7dabdf679e98ff96d0af74b05be52ff24fb` explicitly checks `window.location.hostname.endsWith(".vercel.app")`. For a Vercel hostname it selects the Pylearn-Dev URL `https://rhtfripfqwccbhcwgoxy.supabase.co` and the corresponding Pylearn-Dev publishable key. Non-Vercel hosts select production ref `vzgbxoxscmlmacxciwze`.
+- The Vercel deployment currently serving the audit alias was read back as READY and tied to Git branch `audit/reward-integrity-phase1-20261107`, commit `3ffff87673a9fd237836786ffb8d7de42b9a6c98`, deployment ID `dpl_6pyrx8Bawpncz2jfajfbaCPaHgyk`. Its alias is the same audit preview hostname shown in the Auth log.
+- The HTML file blob on that branch is `2d296b774e979b82909d9afecaed6233e96c04fa`; it loads `script.js`.
+- Therefore, this specific signup attempt demonstrably reached Pylearn-Dev. It was not routed to the production Supabase project. The UI and branding may look like the live site because the preview deploys the same site source, but the backend selected by this Vercel preview is Pylearn-Dev.
+- Caution: the routing condition is broad: any hostname ending in `.vercel.app` uses Dev, while GitHub Pages and non-Vercel/custom hosts use production. Do not test account creation on the GitHub Pages live URL. Keep using the exact audit preview alias above.
+
+### Exact SMTP root cause from Pylearn-Dev Auth logs
+- The Auth log source is available as `auth_logs` (and `auth_audit_logs`); the earlier recovery query had only checked the then-visible source list and did not surface Auth logs. This session discovered Auth logs with `select distinct source from logs`.
+- The relevant Auth request was `POST /signup`, returned HTTP 500 / `unexpected_failure`, with the SMTP provider response:
+  `535 5.7.8 Username and Password not accepted` from Gmail (`gsmtp`, BadCredentials).
+- Several signup requests in the same short test window show the same SMTP authentication rejection. The user-facing generic "Error sending confirmation email" is the frontend-visible result; the detailed provider rejection is only visible in Auth logs.
+- This is an SMTP authentication failure. It is not an Auth redirect URL problem, not a Vercel environment variable issue, and not evidence that the request reached production.
+- The request was rejected by Gmail at SMTP authentication, before the message could be handed off for delivery. No confirmation email could be delivered by those failed requests.
+- The log records a test recipient string, but it is intentionally not copied into this handover to avoid retaining the user's private email address. The user should privately verify the recipient spelling before any later controlled test; that is a separate check from the SMTP credential rejection.
+- No credentials, App Password, OTP, full email address or IP address are stored in this record.
+
+### SMTP settings context and current diagnosis
+The user previously reported configuring **Pylearn-Dev only** with sender name `PyLearn`, host `smtp.gmail.com`, port `465` using implicit SSL/TLS, and the dedicated Gmail mailbox as sender and SMTP username. The user also reported generating a Google App Password. Those settings and secret values cannot be independently read back through the currently exposed Supabase connector actions.
+
+The Gmail SMTP 535 response means Gmail rejected the SMTP login. Most likely causes to check manually in Pylearn-Dev Auth → SMTP Settings are:
+1. SMTP username must be the full dedicated Gmail address, not only the mailbox name.
+2. SMTP password must be the Google App Password for that exact mailbox, not its ordinary Google account password. Re-enter the App Password carefully; do not share it in chat.
+3. The From/sender email should be the same Gmail mailbox used for SMTP authentication.
+4. Keep host `smtp.gmail.com`, port `465`, and implicit SSL/TLS as currently intended. Do not switch ports or TLS modes while the credential mismatch remains unresolved.
+5. Confirm the Google account still accepts that App Password and that it has not been revoked. If uncertain, create a fresh App Password privately and replace the saved SMTP password in Pylearn-Dev only. Never paste it into chat or GitHub.
+
+No need to change the redirect allowlist, frontend code, Vercel environment variables or production project to fix this particular error. The Vercel project environment-variable listing returned no project variables; this is expected because Supabase Auth SMTP credentials belong in the Pylearn-Dev project's Auth configuration, not in Vercel frontend variables.
+
+### Documentation/tool attempts and failures in this diagnosis
+- First log query attempted to select a nonexistent `log_level` column and failed with `Field "log_level" does not exist`. Retried using `timestamp`, `event_message` and `log_attributes`; this succeeded and exposed the Gmail 535 error.
+- A later narrow log query using an assumed path filter returned no rows; the earlier successful Auth log query remains the evidence for the SMTP failure. No claim is based on that empty query.
+- Supabase project details, Vercel deployment metadata, Vercel project environment-variable names (without decrypting values), GitHub source and Auth logs were inspected read-only.
+- No Auth setting, SMTP credential, frontend source, database row, Edge Function, Vercel variable, production setting or deployment was changed in this diagnosis.
+- No further signup was attempted after discovering the SMTP 535 error. Do not repeat signup until the credential settings have been privately checked and corrected.
+
+### Documentation correction for the prior handover write
+The previous traceability table temporarily contained `PENDING` for the handover-recovery commit because the GitHub response arrived after the document text was authored. The successful write was independently verified by re-fetching the file:
+- Recovery commit SHA: `3ffff87673a9fd237836786ffb8d7de42b9a6c98`.
+- Recovery document blob SHA: `37a52ea8f59fb10a6ce73fb36fb418d38b66eac5`.
+- Verified content: 1,392 lines, 141,701 characters, including `HANDOVER-RECOVERY-20261111`.
+This section corrects the prior table's PENDING entry; it does not alter the historical commit or blob identifiers.
+
+### Current next step
+1. User privately reopens Pylearn-Dev → Authentication → SMTP Settings and checks the full Gmail username, sender address, exact App Password for that mailbox, host, port and SSL/TLS mode as listed above.
+2. If any credential is uncertain, user replaces only the Pylearn-Dev SMTP password with a newly generated App Password and saves the settings. Do not share any secret with the assistant.
+3. Only after the SMTP settings are saved should one controlled signup be attempted from the exact audit preview alias. Then inspect Pylearn-Dev Auth logs once to verify that the 535 error is gone, and check the inbox/spam folders.
+4. Continue authenticated reward tests only after email confirmation and sign-in succeed. Android Chrome/Samsung Internet regression remains pending.
+5. Production remains untouched and any production rollout still requires separate explicit approval. No paid option or billable resource is authorized.
+
+### Traceability
+| Task ID | Work | Branch/environment | Commit / deployment | Blob / evidence |
+|---|---|---|---|---|
+| EMAIL-DIAG-20261111 | Inspect signup failure, Auth logs, source routing and Vercel deployment | Audit preview + Pylearn-Dev | Read-only; deployment `dpl_6pyrx8Bawpncz2jfajfbaCPaHgyk`, source commit `3ffff87673a9fd237836786ffb8d7de42b9a6c98` | `script.js` blob `6f5ba7dabdf679e98ff96d0af74b05be52ff24fb`; Gmail SMTP 535 log response |
+| EMAIL-TEST-18 | First controlled signup test | Audit preview + Pylearn-Dev | No code commit | Failed: Gmail rejected SMTP login; do not retry before correcting credentials |
+| HANDOVER-RECOVERY-20261111-LEDGER-CORRECTION | Replace temporary PENDING traceability entry with verified IDs | `audit/reward-integrity-phase1-20261107` | Recovery commit `3ffff87673a9fd237836786ffb8d7de42b9a6c98` | Verified recovery blob `37a52ea8f59fb10a6ce73fb36fb418d38b66eac5`; this new diagnosis checkpoint's commit/blob IDs follow after write and re-fetch |
+| REWARD-E2E-19 | Authenticated reward-flow tests | Feature preview + Pylearn-Dev | PENDING | Blocked on working email confirmation/sign-in |
+| MOBILE-REGRESSION-20 | Android Chrome and Samsung Internet regression | User Android device + preview | PENDING | Not run |
+| PROD-REVIEW-21 | Production rollout review | Production | PENDING — separate explicit approval required | Not authorized |
