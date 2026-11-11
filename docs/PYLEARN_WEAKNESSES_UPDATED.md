@@ -1860,10 +1860,20 @@ Write a structured, chronological explanation in plain English. Do not write onl
 - Exact path: `docs/PYLEARN_WEAKNESSES_UPDATED.md`
 - Starting blob SHA verified before this write: `a291e51b9cf9772a0d7c64d0ac630deb6528459d`
 - Commit message: `docs: record signup SMTP result and permanent handover rules`
-- Commit SHA: to be filled after the write response.
-- New blob SHA: to be filled after the write response.
-- Independent re-fetch: mandatory; record whether the fetched blob matched the returned content SHA and whether this report plus the permanent handover rules were present.
+- Commit SHA: `3fc4b3232dcea0005570938ee43dfa042f780301`.
+- New blob SHA: `44c2b8cc3216fad5303cb933c3946fc72f420b0c`.
+- Independent re-fetch: completed from the same branch and exact path; the fetched blob matched the returned content SHA. The SMTP result report and permanent handover rules were present.
 
 ## 10. Close-out
 
 The new signup attempt did not demonstrate successful email delivery. The matching Pylearn-Dev Auth log still shows Gmail rejecting SMTP authentication with 535. The permanent checkpoint-saving protocol has been added so future ChatGPT conversations know exactly where and how to preserve project work. The next action is a private verification of the Gmail App Password/account alignment before another controlled test.
+
+
+### Follow-up checkpoint traceability — completion of identifiers
+The follow-up write that filled the preceding report's identifiers was also independently re-fetched from the same branch and path. Its returned blob SHA matched the fetched blob:
+- Repository: `YAbu528/Pylearn`
+- Branch: `audit/reward-integrity-phase1-20261107`
+- Path: `docs/PYLEARN_WEAKNESSES_UPDATED.md`
+- Commit SHA: `79e0ad97b19fc81fbd7a2f59db36047c168323b6`
+- Blob SHA: `5f0ef5f3f25ec575bf10c0620bc91c6086a5bb8f`
+- Verification: fetched blob matched; report and permanent handover section were present. This checkpoint update corrects the missed insertion of the preceding write's IDs; no project implementation state changed.
