@@ -1919,3 +1919,15 @@ Google's grouped spaces are presentation separators. For the Supabase SMTP passw
 - Commit SHA for the report write: 57d3d87311e555408e88cdb5da88e704fc0eea30
 - Blob SHA for the report write: 9f16f00a5efb02a0f8d749d75071ca7168dc9bbe
 - Independent re-fetch after report write: verified; fetched blob SHA exactly matched the write response and the new report heading was present.
+
+
+### Follow-up checkpoint traceability — App Password spacing report
+The report write and its first traceability follow-up were independently verified. This entry records both commits and the blob at the end of the first traceability follow-up:
+- Repository: `YAbu528/Pylearn`
+- Branch: `audit/reward-integrity-phase1-20261107`
+- Path: `docs/PYLEARN_WEAKNESSES_UPDATED.md`
+- Report write commit: `57d3d87311e555408e88cdb5da88e704fc0eea30`
+- Report write blob: `9f16f00a5efb02a0f8d749d75071ca7168dc9bbe`
+- Traceability follow-up commit: `74c4e70da57acac16098a9d882adee8643a8af5e`
+- Blob after that follow-up: `c2a96c56d359c239fbc3d9afe182844242a03eab`
+- Verification: the branch head was independently read as commit `74c4e70da57acac16098a9d882adee8643a8af5e`; the canonical file was fetched from the same branch and contained the complete spacing/replacement report and the traceability details above.
