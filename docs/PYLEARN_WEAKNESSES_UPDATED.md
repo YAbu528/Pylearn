@@ -2178,3 +2178,6 @@ The preceding session record preserves the exact user-visible signup error and t
 
 ### Traceability — warning and account-alignment review
 This record preserves the screenshot's visible warning, the user's confirmation of sender/username/account alignment, and the distinction between provider deliverability suitability and the logged SMTP 535 authentication failure. Commit/blob identifiers and independent fetch verification will be attached in the follow-up traceability entry.
+
+### Traceability — SMTP warning and account-alignment record
+The preceding session record documents the user's screenshot and confirms the warning is distinct from the SMTP authentication rejection, while preserving the user's confirmation that sender address, SMTP username and App Password Google account align. GitHub saved that explanation on branch audit/reward-integrity-phase1-20261107 as commit aa35a2a5c2aa80d08157143574127bd741d1038e, producing blob 070322e0947f881aef4bf5581a0429ee6775cff3. An independent fetch of the same path and branch returned the exact same blob SHA and confirmed the section was present. These identifiers evidence the saved analysis and its verified persistence; they do not indicate that SMTP authentication has been fixed.
