@@ -2235,3 +2235,32 @@ The decision record above ties the recommendation to the 22:23 Ethiopia-time Gma
 
 ### Traceability — personal Gmail and project-memory requirement
 The preceding record captures the user's explicit confirmation that the SMTP account is personal Gmail, the user's request for the canonical document to serve as the durable PyLearn project continuity record, the limits on verbatim/global-memory claims, and the next no-cost email-provider decision. GitHub saved that explanation on branch audit/reward-integrity-phase1-20261107 as commit 8bfa52148bfeb6ab3c0652d54202fc796f54c2c0, producing blob d0970ea1d1f0894bc56f5096ffc68c46eb0b249b. An independent fetch of the same repository, branch and path returned the exact same blob SHA and confirmed the record was present. This verifies persistence of the project record; it does not make the document ChatGPT's internal Memory or mean every conversation word is transcribed verbatim.
+
+## Correction and decision — no custom domain/DNS access was already established (2026-11-11)
+
+### User correction and prior-context recovery
+- The user is correct: on 2026-11-09 they had already explicitly stated that they do not own or have access to DNS settings or any custom domain. They also approved a dedicated PyLearn Gmail sender, no custom domain, and no paid service. The assistant failed to carry this binding constraint forward and asked the same domain-ownership question again on 2026-11-11. Apologize and do not ask this again unless the user later changes the constraint.
+- Current hard constraints: no custom domain, no DNS access, no paid service, no card/billing activation, no production changes. The user wants a fast, practical solution rather than repeated questions or lengthy provider discussion.
+
+### Re-evaluation of provider options under the actual constraints
+- Resend is not actionable because its sending-domain verification requires domain ownership/DNS control; do not recommend it again unless the user obtains domain access.
+- Brevo's current documentation says domain authentication is required for Gmail/Yahoo/Microsoft sender requirements and cannot authenticate a free Gmail domain. Not suitable for this no-domain setup.
+- SMTP2GO advertises a free 1,000-email/month tier and supports single-sender verification in some cases, but its current signup documentation says Gmail/Outlook/Yahoo shared-domain addresses cannot be used to register and requires a work/domain-based address. It is therefore not a reliable eligible route for this user; do not send the user to sign up for it.
+- Supabase's default email service sends only to organization team-member addresses and is currently limited to 2 emails/hour. It is useful for limited internal testing only, not public PyLearn signup.
+- Therefore, based on current verified provider requirements, no suitable public transactional-email provider has yet been established that satisfies all three constraints: free, no custom domain/DNS, and public-recipient signup confirmation. Do not pretend one has been found.
+
+### Recommended fastest path
+- Do not create another provider account or repeat signup attempts yet. Keep the existing dedicated personal Gmail route as the only already-configured no-domain/no-paid candidate while diagnosing the observed SMTP authentication rejection; the user has already confirmed the sender address, SMTP username, and Google account that generated the active App Password all match.
+- The server log's Gmail 535 5.7.8 is an authentication failure. Google's official SMTP error table identifies 535 5.7.80 as Username and Password not accepted; this is distinct from the 534 5.7.90 response indicating an application-specific password is required. The user has already supplied an App Password, so do not ask them to regenerate one or repeat account-alignment checks without new evidence.
+- The next assistant action should be a focused, read-only technical review of the exact Pylearn-Dev SMTP field configuration and relevant Supabase/Gmail official troubleshooting, without exposing or requesting the secret. The connector cannot read the saved SMTP password; be explicit about that limitation. Only propose a single change if a specific mismatch is found. If no supported fix can be established, preserve working Google/Microsoft/GitHub OAuth sign-in and explain that public email/password signup confirmation remains blocked under current no-domain/no-paid constraints rather than weakening verification or security.
+- Never turn off email confirmation, bypass verification, or introduce an insecure client-side confirmation mechanism merely to make signup appear to work.
+
+### Evidence and references reviewed
+- Supabase Custom SMTP documentation: https://supabase.com/docs/guides/auth/auth-smtp — default mail service is team-address-only, best-effort, currently 2 messages/hour.
+- Supabase Auth testing-flow documentation: https://supabase.com/docs/guides/auth/testing-auth-flows — confirms the default hosted email service restrictions.
+- Google Gmail SMTP error codes: https://support.google.com/mail/answer/3726730 — identifies 535 5.7.80 as username/password not accepted and 534 5.7.90 as application-specific password required.
+- Brevo domain-authentication FAQ: https://help.brevo.com/hc/en-us/articles/17286219877778-FAQs-About-domain-authentication-Brevo-code-DKIM-DMARC — personal Gmail domains cannot be authenticated as owned sender domains.
+- SMTP2GO free plan and signup requirements: https://support.smtp2go.com/hc/en-gb/articles/223087947-Free-Plan and https://support.smtp2go.com/hc/en-gb/articles/12922807451289-Migrating-to-SMTP2GO-FAQ — free quota exists, but Gmail shared-domain addresses are not accepted for signup.
+
+### Scope
+- This was research and documentation only. No signup was retried; no SMTP fields, project settings, source, database, Edge Function, Gmail account, Vercel configuration, or production resource was changed. No provider account was created and no paid resource was used.
