@@ -2053,3 +2053,63 @@ The preceding record was independently re-fetched from the same repository, bran
 - Main record blob SHA: `528200c1a6a89b6a5b2148170b8c5d591984b31e`
 - Verification: exact blob match and section presence confirmed.
 - This traceability follow-up records identifiers only; it makes no application or SMTP configuration change.
+
+
+## Session record — active App Password confirmed; preview prepared; evidence-ledger rule clarified (2026-11-11)
+
+### User confirmation and permanent documentation instruction
+The user confirmed that the SMTP password saved in Pylearn-Dev is the **older Google App Password that remains active**, not the newer App Password that was revoked. The active password was entered as one continuous string with Google's display-grouping spaces removed, and the user reports that the Supabase SMTP settings were saved.
+
+The user also clarified a permanent documentation requirement: Git commit SHAs and content blob SHAs must never be dumped into a detached list as if the codes alone were the record. Each identifier must be attached directly to an explanation of the specific action/change it evidences, what was done, the outcome, and what the identifier proves. The document must explain the event first and use the commit/blob identifiers as traceability evidence for that event. This instruction is mandatory for every future checkpoint and every new ChatGPT conversation. A new chat must understand the chronological work and evidence from the explanations, not merely inherit a pile of hashes.
+
+### Credential state — corrected and confirmed by user
+- The older App Password was **not revoked**.
+- The newer App Password was created and subsequently **revoked**.
+- The user confirms that the still-active older App Password is the one saved in Pylearn-Dev SMTP settings.
+- The user confirms that the displayed spaces were removed before saving.
+- No password or secret was shared with the assistant or written into GitHub.
+- This is user-reported confirmation. The Supabase connector cannot reveal the stored SMTP secret, so the assistant cannot independently inspect which password bytes are saved.
+- The previous Gmail 535 errors occurred before this latest confirmation/save and must not be treated as a test of the newly confirmed saved state.
+
+### Preview preparation — inspections and findings
+The assistant prepared the existing audit preview for the next controlled user test; no new deployment or application source change was necessary.
+
+1. **Pylearn-Dev project health:** read-only project lookup returned project ref `rhtfripfqwccbhcwgoxy`, name `Pylearn-Dev`, region `eu-west-1`, status `ACTIVE_HEALTHY`. The project URL lookup returned `https://rhtfripfqwccbhcwgoxy.supabase.co`. This verifies the intended development project is available; it does not verify SMTP.
+2. **Vercel preview deployment:** read-only deployment lookup for the known audit alias returned deployment ID `dpl_FGaN18zcM9xDAhhgWevH71phPxbd`, state `READY`, and alias `pylearn-git-audit-reward-integrity-pha-4fbac1-yabu528s-projects.vercel.app`. Its Git metadata identifies branch `audit/reward-integrity-phase1-20261107` and commit `5e0fb1b5e2ceef723518522aeb20cb437aaff115`. That commit is the documentation traceability follow-up, not a new application-code change; deployment readiness confirms a READY preview deployment exists, not that signup/email works.
+3. **Preview-to-Dev routing source inspection:** fetched `script.js` from the audit branch. Its blob SHA was `6f5ba7dabdf679e98ff96d0af74b05be52ff24fb`. The inspected source uses `window.location.hostname.endsWith(".vercel.app")` to select Pylearn-Dev URL `https://rhtfripfqwccbhcwgoxy.supabase.co` and its publishable key on Vercel preview hosts; non-preview hosts select production. The signup call sets `emailRedirectTo` to the current preview origin plus pathname. This is source inspection of the branch, not a fresh browser runtime test of the deployed script.
+4. **Auth redirect allowlist:** the prior handover records that the user previously added this audit alias to Pylearn-Dev Auth Redirect URLs. The current Supabase connector does not expose a read-back operation for the Auth redirect allowlist, so this setting remains user-reported rather than independently verified.
+5. **Previous Auth failure baseline:** a read-only Auth log query against Pylearn-Dev returned the prior 2026-11-11 01:40:44 UTC signup event from the audit preview: `user_confirmation_requested`, HTTP 500, Gmail SMTP `535 5.7.8 Username and Password not accepted`. Earlier 01:12 UTC attempts also returned 535. These events predate the user's latest confirmation that the still-active older password (without display spaces) was saved. They are historical failure evidence, not a result of the new state. The log output contained personal email identifiers; they are intentionally omitted from this document.
+6. **Log-query attempt:** an initial read-only query selected a nonexistent `status` column and failed with `Field "status" does not exist`. The query was corrected to select `timestamp`, `event_message`, and `log_attributes`, which successfully returned the historical Auth events above. No database writes were made.
+
+### Exact preview link and controlled next test
+Preview URL:
+`https://pylearn-git-audit-reward-integrity-pha-4fbac1-yabu528s-projects.vercel.app/`
+
+The preview is prepared and its Vercel deployment is READY. The next step is one controlled signup by the user from this preview, using a development-only test account/address they control (not an existing production account). The user should submit one signup attempt only, then tell the assistant the approximate local time it was submitted. The assistant will immediately query Pylearn-Dev Auth logs for the matching event and distinguish:
+- Auth signup request accepted by the API,
+- SMTP authentication/send attempt,
+- actual email received by the user,
+- confirmation-link destination and successful confirmation.
+
+A UI success message, HTTP 200, or log entry alone does not prove actual email receipt. The user must confirm whether the email arrived (Inbox and Spam) and whether the confirmation link returns to the audit preview. If the log shows another Gmail 535, stop further signup attempts and diagnose; do not keep retrying or change host/port/TLS speculatively.
+
+### Scope and what was not changed
+- Environment inspected: Pylearn-Dev only, ref `rhtfripfqwccbhcwgoxy`, Free plan.
+- Production project `vzgbxoxscmlmacxciwze` was not changed or used for signup.
+- No application source, database schema/data, Edge Function, SMTP setting, Gmail account, Vercel project setting, deployment configuration, or paid resource was modified by the assistant during preview preparation.
+- No new signup was submitted by the assistant.
+- The preview's current READY deployment was already present; no fresh deployment was triggered.
+
+### Evidence ledger — identifiers tied to what they prove
+- The user's correction and evidence-ledger instruction are recorded in this section; the documentation write is committed as `91b2fa2cbfa983d2ea44d340aa53df0613107b5a`, producing blob `528200c1a6a89b6a5b2148170b8c5d591984b31e`. Those identifiers evidence the previous App Password-history correction and the standing rule about explaining each hash. This current record will be attached to its own commit/blob in the follow-up traceability entry below.
+- The source-inspected audit-branch `script.js` blob `6f5ba7dabdf679e98ff96d0af74b05be52ff24fb` is the exact file version used to verify preview-vs-production project selection and the dynamic signup redirect.
+- The READY Vercel deployment ID `dpl_FGaN18zcM9xDAhhgWevH71phPxbd` is associated with branch `audit/reward-integrity-phase1-20261107`, commit `5e0fb1b5e2ceef723518522aeb20cb437aaff115`, and the audit preview alias above. This proves deployment readiness and branch association, not email delivery.
+- The Pylearn-Dev Auth log event at `2026-11-11T01:40:44Z` is evidence of the prior Gmail 535 failure before the latest credential confirmation; it is not evidence about the newly saved state.
+- The commit/blob for this new record and its independent re-fetch verification are attached below after the write completes.
+
+### Continuity instructions for the next chat
+1. Read this complete canonical document before asking for project history.
+2. Preserve the user's evidence-ledger rule: explain each action, failure, decision, or test in context and attach the commit/blob identifiers to the explanation they evidence. Never present bare hashes as a substitute for the record.
+3. Use the exact audit preview link above and Pylearn-Dev only for the next signup.
+4. Wait for the user's report that the one signup attempt was submitted; then inspect the matching Auth log. Do not assume success.
+5. Keep production untouched and do not introduce paid services.
