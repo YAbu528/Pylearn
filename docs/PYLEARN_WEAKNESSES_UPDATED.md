@@ -2762,3 +2762,40 @@ All three files were independently fetched from feature branch `feat/server-auth
 2. Before authentication testing, separately confirm/add the exact preview origin to the **Dev Supabase Auth Redirect URLs** and ensure the verifier Edge Function CORS allows that origin. These are separate controls and were not changed as part of creating this link.
 3. Continue authenticated synthetic-user preview tests and Android Chrome/Samsung Internet regression only after the redirect/CORS checks are complete.
 4. If the link expires before testing is finished, create/reuse a fresh share link only when the user asks to continue access.
+
+
+## Dedicated preview origin added to Dev verifier CORS (2026-11-17)
+
+### Why this was needed
+- The temporary Vercel share link solved access through Vercel's SSO gate, but it does not change the browser's Origin header.
+- The Dev `verify-learning-activity` Edge Function had an allowlist for the GitHub Pages production origin, the stable PyLearn Vercel domain, and generated deployment URLs matching `pylearn-<deployment>-yabu528s-projects.vercel.app`.
+- The dedicated alias `https://pylearn-preview-eight-roan.vercel.app` did not match that generated-deployment pattern, so browser requests from this preview would be rejected by the function's explicit origin check.
+
+### Change made
+- Added the exact origin `https://pylearn-preview-eight-roan.vercel.app` to both CORS allowlist checks in `supabase/functions/verify-learning-activity/index.ts`:
+  1. The response-header allowlist that decides whether to return `Access-Control-Allow-Origin`.
+  2. The request-origin gate that allows or rejects OPTIONS and POST requests.
+- Kept the allowlist exact. Did not add a broad wildcard for all Vercel domains.
+- Committed the source change to feature branch `feat/server-authoritative-rewards-20261107`.
+- Deployed the same source to the isolated Supabase Dev project `rhtfripfqwccbhcwgoxy` only. The function remains ACTIVE with `verify_jwt=true`.
+
+### Verification
+- GitHub file was independently fetched after commit. Verified blob SHA: `b26bb9a24b6a3e4884bc301a8aefe672be1b4767`.
+- Feature-branch commit: `e743948cf0cf9a41f9d972d877aa35c4870da319`.
+- The exact preview origin appears twice in the verified source, corresponding to both required checks.
+- Supabase Dev deployment returned ACTIVE version 2, SHA-256 `cc3b692597964ff1537dee87e83326ed97677e5c5d21b591b9362d6428b5c6b5`; an independent function read-back confirmed the exact origin is present and version is 2.
+- This is source/deployment read-back verification. A real browser OPTIONS/POST from the preview has not yet been exercised, because the Dev Auth redirect allowlist still needs the user to add the new preview URL and sign in.
+
+### What did not change
+- No Production Supabase project or Edge Function was changed.
+- No database schema, records, XP, achievements, accounts, or user data changed.
+- No Supabase Auth URL Configuration was changed; the available connected actions do not expose that dashboard setting.
+- The existing Dev redirect entry for the older generated preview URL was not removed or replaced.
+
+### Remaining manual step before browser authentication tests
+- In Pylearn-Dev > Authentication > URL Configuration, add this additional Redirect URL:
+  `https://pylearn-preview-eight-roan.vercel.app/**`
+- Do not change the Site URL; it should remain the production PyLearn URL.
+- Keep the existing old generated preview redirect entry as-is for now.
+- Save the setting, then report back. After that, test the temporary preview link's email/password and OAuth callback behavior and exercise the Dev verifier from the browser.
+- Supabase documentation confirms redirectTo destinations must be on the allowlist and that `**` matches nested paths; see https://supabase.com/docs/guides/auth/redirect-urls.
