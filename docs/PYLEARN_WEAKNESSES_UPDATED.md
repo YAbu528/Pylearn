@@ -2520,3 +2520,46 @@ Traceability follow-up verification: the preceding traceability addendum was com
 - Completed: read-only SQL catalog inspection, RPC/function definition and ACL comparison, private schema/table RLS/grant inspection, deployed Edge Function source review, feature-branch migration/contract/frontend review.
 - Not done: no RPC invocation, no exploit attempt, no SQL write, no migration application, no Edge Function deployment/invocation, no Vercel setting change, no browser sign-in, no production data change, and no source-code modification on the feature branch.
 - Production remains unchanged and still has the audited legacy trust-boundary weakness. Dev remains the only environment with the new verified reward transaction.
+
+
+## Challenge reward prerequisite approved and enforced in Dev (2026-11-17)
+
+### User decision
+- The user explicitly approved the recommendation: **a learner must first pass the verified lesson quiz before earning the additional 30 XP from that lesson's objective challenge**.
+- Intended progression is now: verified quiz pass = 15 XP; lesson completion after quiz = 20 XP; supported objective challenge after quiz = 30 XP.
+- This is a server/database rule, not merely a frontend lock. The server-held correct-answer check remains required before the database records challenge evidence.
+
+### Implementation completed in isolated Dev
+- Added migration: `supabase/migrations/20261117170000_require_quiz_before_challenge_reward.sql`.
+- The migration replaces `private.record_verified_learning_event` with a version that checks for existing verified `quiz` evidence for the same user and lesson before accepting a `challenge` event. If absent, it raises `quiz_required`; no challenge evidence, XP event, XP total, streak, or achievement is written.
+- The existing same-lesson quiz prerequisite for the 20 XP lesson event remains in place.
+- The Edge Function already maps database `quiz_required` to HTTP 409, so no Edge Function change was required for this policy.
+- Applied the migration successfully to isolated Supabase Dev project `rhtfripfqwccbhcwgoxy`. **No Production database was changed.**
+- Committed the migration to feature branch `feat/server-authoritative-rewards-20261107`:
+  - Commit: `7bca514e165e53180aad470ea5ac4caf5174dca3`
+  - File blob: `968f4169948af8600a2217ec5629e2c021802484`
+  - Independently fetched the new file and confirmed it contains the quiz prerequisite check.
+
+### Verification
+- Read back the deployed Dev function definition and confirmed the challenge branch includes the `quiz_required` guard.
+- Confirmed function privileges: `anon` cannot execute; `authenticated` cannot execute; `service_role` can execute.
+- Ran a rollback-only SQL transaction test using an existing Dev Auth user:
+  1. Challenge event without verified quiz evidence was required to raise exactly `quiz_required`.
+  2. Inserted quiz evidence inside the same transaction, then submitted the challenge event; the function returned the expected 30 XP.
+  3. Rolled back the entire transaction, leaving no test evidence or reward data behind.
+- First test attempt failed because PostgreSQL inferred unknown/integer argument types for the RPC call. Corrected the test with explicit text/smallint casts; the corrected test passed. This was a test-call typing issue, not an application or database migration failure.
+- Dev Supabase Security Advisor after the migration reported only the already-known warning that leaked-password protection is disabled; no new reward-table/function lint was reported.
+- Supabase changelog checked on 2026-11-17. The current Data API exposure default concerns new public-schema tables and does not change this migration's private-schema design. CLI v3 hosted-change behavior is not relevant to this MCP-applied Dev migration. Reference: https://supabase.com/changelog?types=breaking-change
+
+### Still pending — do not call this end-to-end complete
+- The recommended automated answer-key synchronization test is **not yet implemented**. The verifier's 14 answer indexes still need an automated check against the lesson question/option source or versioned question IDs, so curriculum reordering cannot silently desynchronize the server's accepted answer.
+- Authenticated preview/browser tests and Android Chrome/Samsung Internet regression remain release gates.
+- Production migration, Production Edge Function changes, Production frontend switch, and retirement of the legacy/Python reward endpoints remain unperformed and require a separate reviewed rollout.
+- The existing Dev migration/function is not evidence that Production is fixed.
+
+### Updated next actions
+1. Add an automated answer-key/source synchronization check and run it against the current 14-lesson curriculum.
+2. Confirm the actual Vercel preview origin is in Supabase Dev Auth redirect allowlist; then run authenticated browser tests.
+3. Verify challenge-before-quiz is rejected in the actual Edge Function path, and quiz-then-challenge awards 15 + 30 XP exactly once.
+4. Complete Android Chrome and Samsung Internet regression without disturbing existing account data.
+5. Only after those gates, prepare a separate additive Production migration and rollout plan; do not deploy without explicit approval.
