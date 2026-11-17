@@ -1034,7 +1034,7 @@ const PYLEARN_EMAIL_CONFIG = Object.freeze({
     event.preventDefault();
     if(!form.reportValidity()) return;
     if(honeypot?.value.trim()){
-      toast("Your message could not be submitted. Please try again.","error");
+      toast("We couldn't submit your message. Please try again.","error");
       return;
     }
 
@@ -1056,7 +1056,7 @@ const PYLEARN_EMAIL_CONFIG = Object.freeze({
     if(status) status.textContent="Sending your message…";
 
     try{
-      await window.emailjs.sendForm(
+      const response=await window.emailjs.sendForm(
         PYLEARN_EMAIL_CONFIG.serviceId,
         PYLEARN_EMAIL_CONFIG.templateId,
         form,
@@ -1065,6 +1065,10 @@ const PYLEARN_EMAIL_CONFIG = Object.freeze({
           limitRate:{id:"pylearn-contact-form",throttle:10000}
         }
       );
+      // Treat only the provider's explicit HTTP 200 response as successful submission.
+      if(!response || Number(response.status)!==200){
+        throw new Error("Email provider did not confirm successful submission.");
+      }
       form.reset();
       if(status) status.textContent="";
       closeDialog();
