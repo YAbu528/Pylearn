@@ -2937,3 +2937,11 @@ All three files were independently fetched from feature branch `feat/server-auth
 - Corrected only the GitLab mark sizing: 28×28 px with a 28 px flex basis, while leaving Google, Microsoft, and GitHub icon dimensions unchanged. Added a targeted high-specificity override after the shared provider-logo rule so the GitLab logo is not capped back to 20 px.
 - Kept the existing button dimensions, text, provider order, and OAuth event wiring unchanged. This is a sizing adjustment, not an OAuth behavior change.
 - Browser/device visual verification is still pending; user should inspect the updated Vercel Preview on their Galaxy A15. Do not merge until they approve.
+
+
+### GitLab mark artwork correction after screenshot review (2026-11-17)
+- User supplied a screenshot of the updated preview. The larger mark was no longer being squeezed by CSS, but it still looked like a simple orange/yellow flame rather than the recognizable full GitLab tanuki mark.
+- Inspection of the inline SVG found the red central facet was painted first and then completely covered by the solid orange silhouette. The previous drawing was also a simplified geometry rather than the full multi-facet mark.
+- Replaced the inline SVG artwork with a full seven-facet, three-brand-color GitLab tanuki mark, using red (#E24329), orange (#FC6D26), and amber (#FCA326) facets. Adjusted the SVG viewBox to preserve its intended proportions and retained the 28 px CSS footprint.
+- No provider button layout, labels, spacing, auth handler, or other provider logos were changed. CSS cache-busting was updated so the preview uses the latest styling.
+- Source update committed on `feature/gitlab-sign-in-20261117`; visual verification on the user's device is still pending. Production remains untouched and PR #42 remains unmerged.
