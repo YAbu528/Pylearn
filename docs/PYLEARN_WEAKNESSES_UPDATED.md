@@ -2841,3 +2841,40 @@ All three files were independently fetched from feature branch `feat/server-auth
 - Do not store passwords, API keys, service-role keys, OAuth client secrets, session tokens, bearer preview URLs, or other credentials in this public repository document. Store only non-secret identifiers and safe operational instructions. The temporary Vercel share URL remains private in the conversation and must not be copied into GitHub.
 - Do not include unrelated personal information; this external memory is for PyLearn project context.
 
+
+
+## Protected preview reached through the temporary share link — unauthenticated UI inspection (2026-11-17)
+
+### Access and inspection
+- Reused the already-approved Vercel share link for `https://pylearn-preview-eight-roan.vercel.app/`. Vercel reported the link action as `reused`, with the same reported expiry: **November 18, 2026 at 4:02:19 PM**.
+- The bearer URL itself is deliberately not stored in this repository. Keep it private; do not paste it into public issues, commits, or documentation.
+- A read-only TinyFish browser inspection successfully reached the PyLearn application through the share URL. It did not stop at the Vercel SSO/login page.
+- Run ID: `ed064716-da12-4cc9-8d5f-17eb9461f0e8`; run completed in 37 seconds / 4 steps.
+- The browser inspection did not submit forms, create accounts, enter credentials, or change application settings/data.
+
+### Observed UI
+- The browser agent reported that the actual PyLearn app rendered, including dashboard/lesson content, the Python playground, projects/achievements, and footer links.
+- It reported visible email and password inputs, a Sign in button, and a Create an account link.
+- It also reported visible Google, Microsoft, and GitHub sign-in buttons. This is a factual observation of rendered controls only; it does not prove those OAuth flows work or that preview OAuth credentials are configured. This observation differs from the earlier expectation that social buttons would be hidden in preview, so their click behavior and callback configuration remain unverified.
+- The browser agent reported no visible error message, blocking modal, or obvious page-load failure. Its inspection did not constitute a full console/network trace or prove that all application interactions work. Treat the result as a successful unauthenticated UI-load check only.
+
+### Updated test status
+- Vercel share-link access: **browser-access path confirmed for this inspection**.
+- PyLearn HTML/UI load and sign-in form rendering: **observed in browser**.
+- Supabase Auth redirect allowlist: **user-reported as saved**, not independently read back.
+- Real Supabase sign-in/signup/confirmation: **not tested**.
+- Social OAuth: **not tested**.
+- Dev verifier CORS preflight and authenticated POST: **not tested**.
+- Quiz/lesson/challenge XP flows, idempotency, rate limiting, retry/account switching: **not tested end-to-end in browser**.
+- Android Chrome and Samsung Internet regression: **not yet reported by user**.
+
+### Next action
+- User should open the same private Vercel share URL on the Samsung Galaxy A15 in Chrome and confirm whether the PyLearn preview loads rather than Vercel login. Do not ask the user to send the bearer URL, password, or session token in chat.
+- Once the preview loads on the user's device, proceed with a synthetic Pylearn-Dev account for authentication and reward-flow testing. Preserve all existing user data and keep Production unchanged.
+- Reconcile the unexpected visible social buttons against actual provider behavior before claiming OAuth works.
+
+### Evidence references
+- Feature source CORS change: commit `e743948cf0cf9a41f9d972d877aa35c4870da319`, file blob `b26bb9a24b6a3e4884bc301a8aefe672be1b4767`.
+- Dev verifier: ACTIVE version 2, `verify_jwt=true`, project ref `rhtfripfqwccbhcwgoxy`; deployed source SHA-256 `cc3b692597964ff1537dee87e83326ed97677e5c5d21b591b9362d6428b5c6b5`.
+- This checkpoint is documentation of the browser inspection only; it makes no source, database, Auth, Vercel protection, or Production change.
+
