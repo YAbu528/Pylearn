@@ -2336,3 +2336,56 @@ The preceding technical-review record links the read-only Pylearn-Dev project-he
 
 ### Traceability — priority reset to weakness audit
 This entry records the user's explicit decision on 2026-11-17 to pause PyLearn email branding/SMTP work and resume the existing weakness audit. It identifies authenticated reward-integrity browser validation and Android regression as the next unfinished workstream, grounded in the freshly re-fetched canonical handover, design, contract, and audit-branch source. GitHub saved the record on branch audit/reward-integrity-phase1-20261107 as commit 3833e973afc6cc9e79b38d2ebad1d3f1531bedbb, producing blob 4cc8eb2e065b7a0a2d308e6411a5f00bd57fa097. An independent fetch of the same path and branch returned the exact same blob SHA and confirmed the section was present. This verifies documentation only; no code or runtime test was changed or performed in this checkpoint.
+
+
+## Session checkpoint — email/branding work closed; production reward-path inspection resumed (2026-11-17)
+
+### User's explicit direction and documentation requirement
+- The user reiterated that **all meaningful PyLearn work must be recorded in this canonical `docs/PYLEARN_WEAKNESSES_UPDATED.md` document**, including the decision to stop email-verification/branding work and return to the weakness audit. This checkpoint records that instruction and the work performed after the priority reset.
+- The user explicitly chose to stop pursuing branded signup email and further email-verification/SMTP troubleshooting for now. The previous sections of this document retain the full relevant history: Gmail SMTP setup and authentication failure, provider warning, provider research/constraints, and the decision to pause. Do not restart that work unless the user explicitly asks.
+- Active scope is existing weaknesses: inspect, prioritize, document, and fix safely. Avoid adding unrelated features or creating new problems.
+- Preserve the mandatory workflow: update this document after meaningful work; fetch the latest file before writing; append rather than replace; verify the saved content and blob SHA after writing; clearly distinguish read-only findings from fixes and tests.
+
+### Read-only production reward-path inspection
+Production Supabase project: `vzgbxoxscmlmacxciwze`.
+
+1. **Production Edge Function inventory**
+   - `award-learning-reward`: ACTIVE, version 3, `verify_jwt=true`.
+   - `award-python-run`: ACTIVE, version 1, `verify_jwt=true`.
+   - Development project `rhtfripfqwccbhcwgoxy` has `verify-learning-activity` ACTIVE version 1, `verify_jwt=true`; this newer verifier has not yet been deployed to production.
+   - These are read-only deployment inventory observations.
+
+2. **Confirmed production weakness: `award-python-run`**
+   - The deployed function validates the bearer token using Supabase Auth `getUser(token)` and derives the user ID from the authenticated account. JWT verification is enabled.
+   - After authentication, it directly upserts `{ user_id, achievement_id: "code" }` into `user_achievements` with no server-side Python execution receipt, trusted execution evidence, or other proof that a run occurred.
+   - Therefore, any authenticated caller can request this endpoint and obtain the `code` achievement without the server independently verifying a Python run. This is a confirmed evidence-gating weakness from source inspection; it was **not** tested by invoking/exploiting the endpoint.
+   - The frontend's prior local `state.runs >= 1` trigger and the Phase 2 removal of the frontend call are already documented above. Do not re-enable this reward until a trustworthy execution-evidence design exists.
+
+3. **Production `award-learning-reward` calls legacy RPC**
+   - The deployed function validates the bearer token, derives the user ID from Auth, accepts `lesson_id` and `event_type` from the request body, and calls `public.award_learning_xp` with the authenticated user ID and derived event key.
+   - JWT validation and user-ID derivation are useful protections, but the database RPC must independently verify trusted activity evidence. The actual production RPC was therefore inspected read-only before drawing a conclusion.
+
+4. **Actual production RPC definition and permissions**
+   - Read-only SQL retrieved `public.award_learning_xp(uuid,text,text,text)`.
+   - It is `SECURITY DEFINER`, has an empty `search_path`, and explicitly checks `auth.jwt()->>'role' = 'service_role'`. Those are protections to preserve.
+   - EXECUTE grantees reported by PostgreSQL ACL inspection: `postgres` and `service_role`; no `authenticated` or `anon` grantee was reported.
+   - It validates event type, numeric lesson-ID format, and that the event key equals `lesson_id:event_type`.
+   - **Confirmed core weakness:** before inserting XP, it checks the user's `public.lesson_progress` row and accepts client-writable flags as reward evidence: `quiz_best_score >= 100` for quiz, `completed = true` for lesson, or `challenge_completed = true` for challenge. The RPC does not consult the private server-verified evidence table introduced in Pylearn-Dev.
+   - The old RPC awards 15/20/30 XP for quiz/lesson/challenge respectively, deduplicates using `xp_events(user_id,event_key)`, updates `user_stats`, and derives achievements from progress flags. Existing dedupe and account-stat behavior must be preserved when replacing the trust boundary.
+   - This confirms the production reward path remains vulnerable to forged client-writable progress flags **if** the authenticated caller can reach the service-role-only Edge Function with chosen lesson/event values. The Edge Function is such a caller and forwards the request values, so the client-to-function-to-RPC path requires correction before production rollout.
+   - The fact that direct EXECUTE is limited to service_role does not eliminate this issue: the exposed Edge Function itself is configured to invoke the RPC using its service-role client after authenticating the user.
+
+### Priority and next actions
+1. Keep production unchanged. Do not call the reward endpoints, modify the production RPC, deploy functions, or write production data as part of this audit.
+2. Compare the production RPC and Edge Function behavior against the already-implemented Pylearn-Dev `verify-learning-activity` contract and atomic private-evidence RPC.
+3. Inspect Dev's current RPC definitions and grants alongside production to confirm exact differences, including whether the legacy public RPC fails closed in Dev.
+4. Review the `code` achievement path separately. Keep it deferred until a server-verifiable Python execution receipt can be designed without running arbitrary learner code in a privileged function.
+5. Maintain preview-first development and Android Chrome/Samsung Internet regression. No production fix is authorized by this inspection.
+
+### Scope and evidence status
+- This checkpoint used read-only GitHub file retrieval, read-only Supabase Edge Function listing/source retrieval, and read-only SQL definition/ACL inspection.
+- No production or Dev source was changed, no database migration or write was performed, no Edge Function was invoked, no deployment or Vercel setting was changed, no signup/email test was run, and no paid resource was used.
+- The SQL output explicitly showed the production RPC definition, `SECURITY DEFINER`, empty search_path, and execute grantees. The deployed function source showed the direct `code` achievement upsert. These are source/configuration findings, not exploit demonstrations or end-to-end tests.
+
+### Traceability — production reward-path findings and user instruction
+This section records the user's reminder that the email/verification/branding pause and all subsequent weakness-audit work belong in this canonical document. It also records the read-only production inventory, the `award-python-run` evidence-gating flaw, and the actual production `award_learning_xp` RPC definition and ACL. The starting document blob fetched immediately before this append was `271e085fc24cf0bf45d4cc3660c809bdd555f70c`. The GitHub commit and new blob identifiers are recorded after the write and independently verified below.
