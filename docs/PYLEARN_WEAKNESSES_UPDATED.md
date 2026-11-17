@@ -2569,3 +2569,52 @@ Traceability follow-up verification: the preceding traceability addendum was com
 - Inspected `.github/workflows/pylearn-source-checks.yml` on the feature branch (blob `60d54b3fdf777d7ff381779ae0a934b096d62fe7`).
 - Existing CI checks JavaScript syntax and several reward-boundary grep assertions, but it does **not** parse the 14 lesson quiz question/option arrays or compare their order/content with the Edge Function's `QUIZ_ANSWER_INDEX`.
 - No workflow/source-check file was changed in this checkpoint. The answer-key synchronization guard remains the next code task; it must fail CI when question wording or option order changes without a corresponding server-verification update, and must not pretend to validate semantic correctness of the answer index.
+
+
+## Automated quiz answer-key synchronization check added and CI-verified (2026-11-17)
+
+### Why this was necessary
+- The reward verifier stores the correct answer positions for all 14 lesson quizzes in server-side `QUIZ_ANSWER_INDEX`.
+- The learner-facing questions and option order live separately in `script.js`.
+- If someone changes the question or reorders its options but forgets to update the server-side index, a learner could be marked wrong for choosing the correct visible answer, or a different option could be accepted.
+- The existing GitHub Actions workflow did not compare those two sources. This checkpoint closes that source-drift gap.
+
+### What was added
+1. **Reviewed answer-key manifest:** `supabase/tests/reward-quiz-answer-key.json`.
+   - Records all 14 lesson IDs, exact question wording, exact option order, and the independently reviewed zero-based correct answer index.
+   - The indexes were checked against the meaning of each question and option, not merely copied as an unexplained number list.
+2. **Automated checker:** `scripts/check-reward-quiz-answer-key.mjs`.
+   - Reads the quiz questions/options from `script.js`.
+   - Reads the server's `QUIZ_ANSWER_INDEX` from `supabase/functions/verify-learning-activity/index.ts`.
+   - Compares the frontend question wording and option order against the reviewed manifest.
+   - Compares each server answer index against the reviewed manifest and checks that each index is within the option list.
+   - Fails with a lesson-specific explanation if a question/options list drifts, a quiz is added/removed, or the server index differs.
+   - This is a synchronization check, not an AI or semantic proof of correctness. When curriculum changes, a developer must independently review the correct answer and deliberately update the manifest and server key together.
+3. **CI integration:** `.github/workflows/pylearn-source-checks.yml` now runs `node scripts/check-reward-quiz-answer-key.mjs` before the existing reward-boundary grep checks.
+
+### Exact GitHub evidence
+All three files were independently fetched from feature branch `feat/server-authoritative-rewards-20261107` after creation/update.
+
+| File | Commit containing the change | Verified blob SHA |
+|---|---|---|
+| `supabase/tests/reward-quiz-answer-key.json` | `737146dc14f9609a06e1a970d4ab2d552c93a98d` | `0316aa4b720a34c8c44594283399c95d1e3c44d8` |
+| `scripts/check-reward-quiz-answer-key.mjs` (final corrected version) | `d3aa86cb371673682663fb2f985d1c8a3aefa5ea` | `67eef3738377d31332d60cc6f8ea946c55d3ebd0` |
+| `.github/workflows/pylearn-source-checks.yml` | `c18b357a07c768ff6697c18bbc14bda775f39898` | `7ef80cc7692f5480e4531ae081c060542e706bd8` |
+
+### CI test history — including the failed attempt
+- First workflow run after wiring the new CI step: run 10, commit `c18b357a07c768ff6697c18bbc14bda775f39898`, failed. Inspection showed an escaping error in the newly generated checker source, so the checker regex/string parsing was corrected. This was a test-code defect; no application runtime, reward database, or Production code was changed by that failure.
+- Corrected checker commit: `d3aa86cb371673682663fb2f985d1c8a3aefa5ea`.
+- Final GitHub Actions run: **run 11 passed** for commit `d3aa86cb371673682663fb2f985d1c8a3aefa5ea`. The JavaScript syntax step, new quiz synchronization step, and existing reward-boundary step all completed successfully.
+- Run evidence: https://github.com/YAbu528/Pylearn/actions/runs/44105177401
+
+### What this protects — and what it does not
+- Protects against unnoticed question wording changes, option reordering, adding/removing quizzes, and mismatches between the reviewed answer index and the server's answer-index array.
+- It does not independently determine whether a newly authored question's answer is pedagogically or factually correct. A human must review a changed question and deliberately update the manifest.
+- The check currently targets the 14 existing lesson quiz records and the current server constant. If the lesson curriculum expands, update the checker/manifest deliberately rather than silently extending assumptions.
+- This change is confined to the feature branch and CI. It does not change lesson UI, user records, XP totals, achievements, Supabase Production, or the public GitHub Pages deployment.
+
+### Current next steps
+1. Confirm the actual Vercel preview URL and ensure it is allowed in Pylearn-Dev Auth redirect settings.
+2. Run authenticated preview tests through the real `verify-learning-activity` Edge Function, including challenge-before-quiz rejection and quiz-then-challenge XP exactly once.
+3. Complete Android Chrome and Samsung Internet regression while checking that existing accounts, XP, achievements, progress, notes, bookmarks, reviews, and challenge history remain intact.
+4. Only after the above release gates, prepare the separate Production migration and rollout review. Production remains unchanged and must not be deployed without explicit approval.
