@@ -2701,3 +2701,34 @@ All three files were independently fetched from feature branch `feat/server-auth
 ### Safe next design decision
 - Decide whether "First Code" should remain a server-synced achievement and, if so, whether PyLearn should use a server-controlled execution environment/receipt or another independently verifiable mechanism. If a trustworthy receipt is not practical within the project's cost and hosting constraints, keep the badge unavailable to new signed-in users for now rather than silently reintroducing a forgeable award.
 - Any eventual change must preserve existing `user_achievements` rows and must be tested in Dev first. Production endpoint retirement still requires a reviewed rollout and explicit approval.
+
+
+## Approved preview-access setup attempted — branch domain added, but Vercel SSO still intercepts it (2026-11-17)
+
+### User approval
+- The user explicitly approved creating a dedicated public preview domain/branch alias while keeping the existing Vercel SSO protection in place.
+
+### Domain created and verified
+- Added `pylearn-preview-eight-roan.vercel.app` to Vercel project `pylearn`.
+- Linked the domain directly to Git branch `feat/server-authoritative-rewards-20261107`.
+- Vercel returned `verified = true` and the project-domain read-back independently confirmed the exact domain and branch mapping.
+- Project ID: `prj_HlVIx5aWKT2wYNODSgkARMnP9v7p`.
+- Team ID: `team_vd1mzBoMlw3OpYgGwua9UgW6`.
+- Existing SSO project setting was not modified.
+
+### Browser test result — did not bypass SSO
+- Opened `https://pylearn-preview-eight-roan.vercel.app/` in an ordinary unauthenticated browser.
+- It redirected to Vercel's authentication page (`vercel.com/signup` / Vercel login UI) before PyLearn loaded.
+- PyLearn account sign-in/sign-up UI did not load.
+- Therefore, although Vercel lists this as a verified project domain and branch-specific mapping, it is still subject to the project's SSO protection in actual browser access. Do not assume that every `.vercel.app` project domain is exempt from Vercel Authentication.
+
+### What was not changed
+- Did not disable or weaken project SSO protection.
+- Did not change Supabase Auth redirect settings or Edge Function CORS.
+- Did not sign in, submit forms, create users, or modify application/database data.
+- The branch-specific domain remains attached to the feature branch but is not yet a public unauthenticated route.
+
+### Remaining access requirement
+- To use the `all_except_custom_domains` exception, Vercel appears to require a genuinely user-owned custom domain rather than another Vercel-managed `.vercel.app` hostname. A real custom domain would need to be supplied/owned by the user and verified through DNS.
+- Alternative: create a temporary Vercel shareable protection-bypass URL for the preview. That would leave the project's SSO setting enabled, but anyone possessing the share URL could view the preview until the link expires (new links typically expire after 23 hours). This is a bearer link and should be created only after the user explicitly chooses this access method.
+- Next: ask whether the user has a domain they control that can be attached to Vercel, or whether they approve a temporary shareable preview-access link. After a working access path is chosen, add the exact hostname to Pylearn-Dev Auth Redirect URLs and ensure the verifier Edge Function CORS policy allows that origin before authenticated tests.
