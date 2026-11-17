@@ -2563,3 +2563,9 @@ Traceability follow-up verification: the preceding traceability addendum was com
 3. Verify challenge-before-quiz is rejected in the actual Edge Function path, and quiz-then-challenge awards 15 + 30 XP exactly once.
 4. Complete Android Chrome and Samsung Internet regression without disturbing existing account data.
 5. Only after those gates, prepare a separate additive Production migration and rollout plan; do not deploy without explicit approval.
+
+
+### Source-check workflow inspection (2026-11-17)
+- Inspected `.github/workflows/pylearn-source-checks.yml` on the feature branch (blob `60d54b3fdf777d7ff381779ae0a934b096d62fe7`).
+- Existing CI checks JavaScript syntax and several reward-boundary grep assertions, but it does **not** parse the 14 lesson quiz question/option arrays or compare their order/content with the Edge Function's `QUIZ_ANSWER_INDEX`.
+- No workflow/source-check file was changed in this checkpoint. The answer-key synchronization guard remains the next code task; it must fail CI when question wording or option order changes without a corresponding server-verification update, and must not pretend to validate semantic correctness of the answer index.
