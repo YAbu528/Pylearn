@@ -2393,3 +2393,6 @@ This section records the user's reminder that the email/verification/branding pa
 
 ### Traceability identifiers — email pause and production reward audit
 The checkpoint above was saved on branch `audit/reward-integrity-phase1-20261107` as commit `5bee98de0f38bfc6c16294a589938aa932d35d9a`, producing document blob `9955cd7bf2b03e04ec92db4bab07f800eaab0d64`. An independent fetch immediately after the write returned that exact blob SHA and confirmed the checkpoint section was present. This verifies that the user instruction, email/branding pause, production Edge Function findings, RPC definition/ACL, scope, and next actions were persisted in the canonical document. It does not mean any weakness has been fixed or production changed.
+
+
+Traceability follow-up verification: the preceding traceability addendum was committed as `eb06b01badb747d385c4d2343f8e028a661b7078`, producing blob `7ce318687fa327e4cfec13527493e8ebb33b8569`. A subsequent independent fetch returned blob `7ce318687fa327e4cfec13527493e8ebb33b8569` and confirmed the addendum text. The preceding checkpoint's commit/blob pair is `5bee98de0f38bfc6c16294a589938aa932d35d9a` / `9955cd7bf2b03e04ec92db4bab07f800eaab0d64`.
