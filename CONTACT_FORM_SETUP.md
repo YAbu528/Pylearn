@@ -62,3 +62,17 @@ The success message means EmailJS accepted the submission request. It does not g
 ## Notes
 
 The old mailto return reminder is no longer used by the contact link. The feature remains on the existing preview branch and is not production-ready until the provider is configured and a real test email is received.
+## Delivery confirmation boundary
+
+The website must not infer success from the visitor clicking Send, closing the dialog, or returning from another app. The success toast is shown only after the EmailJS SDK resolves and returns an explicit HTTP 200 response. Any rejection, missing configuration, unavailable SDK, or unexpected response uses the exact failure toast and leaves the visitor's entered fields available for retry.
+
+An HTTP 200 from EmailJS confirms that EmailJS accepted the send request. The browser integration cannot independently confirm that the recipient's mailbox provider placed the message in the inbox, nor detect a later bounce, spam-folder placement, or whether the recipient read it. Therefore the UI wording is **submitted successfully**, not **delivered** or **read**. During the real-send test, verify that the message arrives in the PyLearn support inbox.
+
+## Code audit checkpoint — 2026-11-17
+
+- [x] Audited the form's submit path: success follows the provider response, not the button click.
+- [x] Added an explicit HTTP 200 response check before resetting the form or showing success.
+- [x] Standardized the honeypot rejection to the same exact failure toast as other failed submissions.
+- [x] Confirmed the failure path does not reset the form, so the visitor can retry.
+- [ ] EmailJS identifiers and service/template remain unconfigured; real delivery has not yet been tested.
+- [ ] The named external project-memory file `PyLearn Weaknesses Updated.md` was not found in the repository root or the accessible Library during this checkpoint. This setup document is not a substitute for that requested memory file.
