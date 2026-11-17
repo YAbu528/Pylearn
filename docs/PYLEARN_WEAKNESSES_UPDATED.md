@@ -2389,3 +2389,7 @@ Production Supabase project: `vzgbxoxscmlmacxciwze`.
 
 ### Traceability — production reward-path findings and user instruction
 This section records the user's reminder that the email/verification/branding pause and all subsequent weakness-audit work belong in this canonical document. It also records the read-only production inventory, the `award-python-run` evidence-gating flaw, and the actual production `award_learning_xp` RPC definition and ACL. The starting document blob fetched immediately before this append was `271e085fc24cf0bf45d4cc3660c809bdd555f70c`. The GitHub commit and new blob identifiers are recorded after the write and independently verified below.
+
+
+### Traceability identifiers — email pause and production reward audit
+The checkpoint above was saved on branch `audit/reward-integrity-phase1-20261107` as commit `5bee98de0f38bfc6c16294a589938aa932d35d9a`, producing document blob `9955cd7bf2b03e04ec92db4bab07f800eaab0d64`. An independent fetch immediately after the write returned that exact blob SHA and confirmed the checkpoint section was present. This verifies that the user instruction, email/branding pause, production Edge Function findings, RPC definition/ACL, scope, and next actions were persisted in the canonical document. It does not mean any weakness has been fixed or production changed.
