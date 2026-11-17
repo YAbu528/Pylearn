@@ -79,7 +79,7 @@ Critical rule:
 Branch: `feature/contact-return-feedback-20261117`
 PR: https://github.com/YAbu528/Pylearn/pull/41
 PR state at this checkpoint: open, not merged.
-Latest PR head commit at this checkpoint: `6fe8fab01e48878ca0d5a564acf3164ea8262376`.
+Latest recorded PR head commit before this memory-file update: `87ad77f4d8b2868bbb0510b2e8f5453bd863c810`.
 
 Changed files:
 1. `index.html`
@@ -162,3 +162,15 @@ These are previously raised priorities, not claims that work has already started
 ### How to continue
 
 At the start of a new chat, read this file and `CONTACT_FORM_SETUP.md` before asking the owner to repeat project context. Then inspect the current PR/branch and deployment state because these can change. Continue from the first unchecked item in the relevant task. Update this file after each meaningful action, including failures and the evidence for any claimed test result.
+
+
+### Additional checkpoint — 2026-11-17, continuation
+
+- Created `PyLearn Weaknesses Updated.md` on the feature branch as the persistent project-memory record. It captures project purpose, workflow rules, known completed features, current contact-form work, outstanding weaknesses, and handoff instructions.
+- Cleaned and updated `CONTACT_FORM_SETUP.md` so the root problem, provider-confirmation boundary, setup steps, and test status are consistent. The privacy-policy disclosure is now marked complete.
+- Updated PR #41 to describe the actual problem accurately: the `mailto:` flow gives PyLearn no way to tell whether the visitor sent or cancelled; the selected on-site form lets PyLearn receive a provider response.
+- Latest Vercel deployment verified before this memory-file update: `https://pylearn-orjwpee09-yabu528s-projects.vercel.app`, state READY, commit `87ad77f4d8b2868bbb0510b2e8f5453bd863c810`.
+- Fetched the deployed preview HTML successfully (HTTP 200) and verified it contains the Contact Us opener, contact dialog, contact form, EmailJS browser SDK reference, and the current contact-form script cache reference.
+- This is a static deployment/HTML check only. It does not verify mobile layout, visual quality, form interaction in a real browser, EmailJS configuration, or actual email delivery.
+- No email-provider account was configured and no email was sent. No production changes were made. PR #41 remains open and unmerged.
+- Next action: let the latest documentation commit finish its Vercel preview build, then the owner should manually test the preview on the Samsung phone. Only after UI testing should provider setup and real-send/failure testing proceed.
