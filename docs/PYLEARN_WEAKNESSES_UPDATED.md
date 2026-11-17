@@ -2799,3 +2799,45 @@ All three files were independently fetched from feature branch `feat/server-auth
 - Keep the existing old generated preview redirect entry as-is for now.
 - Save the setting, then report back. After that, test the temporary preview link's email/password and OAuth callback behavior and exercise the Dev verifier from the browser.
 - Supabase documentation confirms redirectTo destinations must be on the allowlist and that `**` matches nested paths; see https://supabase.com/docs/guides/auth/redirect-urls.
+
+
+## User confirmed Dev Auth Redirect URL added (2026-11-17)
+
+### User confirmation
+- The user confirmed they added and saved the exact additional Redirect URL in Pylearn-Dev → Authentication → URL Configuration → Redirect URLs:
+  `https://pylearn-preview-eight-roan.vercel.app/**`
+- This is recorded as a user-reported dashboard change. The connected Supabase management tools do not expose Auth URL Configuration for independent read-back, so do not describe it as independently verified by API.
+- The previously existing redirect entry for the older generated preview hostname was not requested to be removed. The Site URL was not changed.
+
+### Current verified environment state
+- Preview host: `https://pylearn-preview-eight-roan.vercel.app/`, mapped to feature branch `feat/server-authoritative-rewards-20261107`.
+- Vercel SSO remains enabled. The temporary share link is still required for ordinary browser access while it is valid; the raw bearer URL is intentionally excluded from this repository document.
+- Dev verifier function `verify-learning-activity`: ACTIVE version 2, `verify_jwt=true`, deployed to Dev project `rhtfripfqwccbhcwgoxy`.
+- The exact preview origin is present in both CORS allowlist checks in the deployed Dev verifier source. Source commit: `e743948cf0cf9a41f9d972d877aa35c4870da319`; source blob: `b26bb9a24b6a3e4884bc301a8aefe672be1b4767`; deployed source SHA-256: `cc3b692597964ff1537dee87e83326ed97677e5c5d21b591b9362d6428b5c6b5`.
+- The redirect allowlist and function CORS allowlist are separate controls. Both have now been addressed for the dedicated preview origin: CORS was committed/deployed by the assistant; the user reports adding the Auth Redirect URL.
+
+### What remains untested
+- No authenticated browser test has yet been run after the user's redirect-setting confirmation.
+- No actual browser CORS OPTIONS/POST request from the preview origin has yet been observed.
+- No email/password signup/sign-in, confirmation callback, quiz verification, lesson prerequisite, challenge prerequisite, duplicate submission, retry, account-switch, or rate-limit end-to-end browser test has yet passed.
+- Android Chrome and Samsung Internet visual/functional regression is still pending.
+- The user's confirmation does not itself prove that the preview share URL is currently valid or that Vercel's SSO gate will be bypassed on the user's Android browser.
+
+### Immediate next test sequence
+1. User opens the existing private Vercel share link (not the bare hostname) in Android Chrome and confirms whether the PyLearn preview page, rather than Vercel login, loads.
+2. Use a synthetic Dev account only. Do not ask the user to send a password, session token, confirmation link, or bearer share URL in chat.
+3. Test email/password sign-in and sign-up/confirmation redirects. Social OAuth remains hidden in preview because provider credentials were intentionally not copied.
+4. Test verifier flows in Dev: correct quiz earns +15 once; lesson before verified quiz is rejected; lesson after quiz earns +20 once; supported objective challenge before quiz is rejected; after quiz earns +30 once; wrong answers do not award XP; duplicate submissions are idempotent; rate limit and transient retry behave safely.
+5. Test sign-out/account switching and ensure no account's queued event is submitted under another account.
+6. User performs Android Chrome and Samsung Internet regression and reports observations. Preserve all existing visible progress and cloud data.
+7. Record each result here, distinguishing automated evidence from user-reported device observations. Keep Production untouched unless the user separately approves a reviewed rollout.
+
+### External-memory / continuity policy reaffirmed
+- This file is the canonical PyLearn project memory and handover. It must be updated after every meaningful project action, discovery, decision, failure, successful test, deployment, user-provided setup change, and next-step change—not only at the end of a phase.
+- Preserve historical checkpoints rather than silently rewriting history. Add a dated section for each new checkpoint and update the current status/next-entry summary when needed.
+- Record exact repo branch, file path, commit SHA, blob SHA, deployment/function version, project ref, test method/result, and any limitation whenever those values are available.
+- Explicitly label claims as inspected, implemented, deployed, independently verified, or user-reported. Never turn a user-reported dashboard action into an independently verified fact.
+- Include relevant architecture, decisions, constraints, open weaknesses, and recovery instructions so a fresh ChatGPT session can continue without asking the user to repeat project context.
+- Do not store passwords, API keys, service-role keys, OAuth client secrets, session tokens, bearer preview URLs, or other credentials in this public repository document. Store only non-secret identifiers and safe operational instructions. The temporary Vercel share URL remains private in the conversation and must not be copied into GitHub.
+- Do not include unrelated personal information; this external memory is for PyLearn project context.
+
