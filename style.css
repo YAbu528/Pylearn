@@ -458,3 +458,28 @@ body.light .curriculum-card{background:linear-gradient(155deg,#fff,var(--card))}
 body.light .pylearn-footer{background:#eef0f5!important}
 @media(max-width:900px){.pylearn-footer .footer-main{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:28px}.pylearn-footer .footer-brand{grid-column:1/-1}}
 @media(max-width:600px){.pylearn-footer{padding:32px 5% 18px!important}.pylearn-footer .footer-main{grid-template-columns:1fr 1fr;gap:25px 18px}.pylearn-footer .footer-brand{grid-column:1/-1}.pylearn-footer .footer-brand .logo img{width:100px;height:70px}.pylearn-footer .footer-bottom{align-items:flex-start;flex-direction:column;gap:13px}.pylearn-footer .footer-bottom nav{gap:12px 18px}}
+
+
+/* On-site Contact Us dialog */
+.contact-dialog{width:min(560px,calc(100% - 28px));max-width:560px;max-height:min(88vh,820px);margin:auto;padding:26px;overflow-y:auto;border:1px solid var(--line);border-radius:22px;background:var(--panel);color:var(--text);box-shadow:0 28px 90px rgba(0,0,0,.42)}
+.contact-dialog::backdrop{background:rgba(5,8,18,.72);backdrop-filter:blur(5px)}
+.contact-dialog-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:20px}
+.contact-dialog-head h2{margin:7px 0 6px;font-size:25px;letter-spacing:-.03em}
+.contact-dialog-head p{margin:0;color:var(--muted);font-size:13px;line-height:1.55}
+.contact-dialog-close{display:grid;place-items:center;flex:0 0 36px;width:36px;height:36px;border:1px solid var(--line);border-radius:11px;background:var(--card);color:var(--text);font-size:23px;line-height:1;cursor:pointer}
+.contact-form{display:grid;gap:14px}
+.contact-form-row{display:grid;gap:7px}
+.contact-form-row label{font-size:12px;font-weight:800;color:var(--text)}
+.contact-form-row input,.contact-form-row textarea{display:block;width:100%;box-sizing:border-box;padding:12px 13px;border:1px solid var(--line);border-radius:11px;background:var(--card);color:var(--text);font-family:inherit;font-size:14px;font-weight:500;line-height:1.5;outline:0;transition:border-color .18s,box-shadow .18s}
+.contact-form-row textarea{min-height:120px;resize:vertical}
+.contact-form-row input::placeholder,.contact-form-row textarea::placeholder{color:var(--muted);opacity:.8}
+.contact-form-row input:focus,.contact-form-row textarea:focus{border-color:var(--purple2);box-shadow:0 0 0 3px color-mix(in srgb,var(--purple2) 16%,transparent)}
+.contact-form-row input:invalid:not(:placeholder-shown),.contact-form-row textarea:invalid:not(:placeholder-shown){border-color:var(--red)}
+.contact-form-note{margin:0;color:var(--muted);font-size:11px;line-height:1.55}
+.contact-form-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:3px}
+.contact-form-actions button{min-height:42px}
+.contact-form-actions button:disabled{opacity:.65;cursor:wait}
+.contact-form-status{min-height:0;margin:0;color:var(--muted);font-size:12px;line-height:1.5}
+.contact-form-status:empty{display:none}
+.contact-honeypot{position:absolute!important;left:-10000px!important;top:auto!important;width:1px!important;height:1px!important;overflow:hidden!important}
+@media(max-width:600px){.contact-dialog{padding:21px 17px;border-radius:19px}.contact-dialog-head h2{font-size:22px}.contact-form-row textarea{min-height:110px}.contact-form-actions{display:grid;grid-template-columns:1fr 1fr}.contact-form-actions button{width:100%}}

@@ -469,7 +469,7 @@ print("2 + 3 =", 2 + 3)</textarea>
       <b>Resources</b><a href="https://docs.python.org/3/" target="_blank" rel="noopener noreferrer">Python documentation</a><a href="https://docs.python.org/3/tutorial/" target="_blank" rel="noopener noreferrer">Python tutorial</a>
     </nav>
     <nav class="footer-column footer-contact" aria-label="Contact PyLearn">
-      <b>Contact</b><span class="footer-contact-note">Questions, feedback, or support?</span><a class="footer-contact-link" href="mailto:pylearnnotification@gmail.com?subject=PyLearn%20enquiry" aria-label="Contact PyLearn by email">Contact Us</a>
+      <b>Contact</b><span class="footer-contact-note">Questions, feedback, or support?</span><a id="contactFormOpen" class="footer-contact-link" href="#contactDialog" aria-controls="contactDialog" aria-haspopup="dialog">Contact Us</a>
     </nav>
   </div>
   <div class="footer-bottom">
@@ -477,6 +477,40 @@ print("2 + 3 =", 2 + 3)</textarea>
     <nav aria-label="Legal"><a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms of Use</a><a href="https://github.com/YAbu528/Pylearn" target="_blank" rel="noopener noreferrer">Project repository</a></nav>
   </div>
 </footer>
+<dialog id="contactDialog" class="contact-dialog" aria-labelledby="contactDialogTitle">
+  <div class="contact-dialog-head">
+    <div><span class="eyebrow">GET IN TOUCH</span><h2 id="contactDialogTitle">Contact PyLearn</h2><p>Have a question, suggestion, or need help? Send us a message.</p></div>
+    <button class="contact-dialog-close" id="contactDialogClose" type="button" aria-label="Close contact form">×</button>
+  </div>
+  <form id="contactForm" class="contact-form">
+    <div class="contact-form-row">
+      <label for="contactName">Your name</label>
+      <input id="contactName" name="from_name" type="text" autocomplete="name" maxlength="80" placeholder="Enter your name" required>
+    </div>
+    <div class="contact-form-row">
+      <label for="contactEmail">Email address</label>
+      <input id="contactEmail" name="from_email" type="email" autocomplete="email" maxlength="254" placeholder="you@example.com" required>
+    </div>
+    <div class="contact-form-row">
+      <label for="contactSubject">Subject</label>
+      <input id="contactSubject" name="subject" type="text" maxlength="120" placeholder="What is your message about?" required>
+    </div>
+    <div class="contact-form-row">
+      <label for="contactMessage">Message</label>
+      <textarea id="contactMessage" name="message" rows="5" minlength="10" maxlength="5000" placeholder="Write your message here..." required></textarea>
+    </div>
+    <div class="contact-honeypot" aria-hidden="true">
+      <label for="contactWebsite">Leave this field empty</label>
+      <input id="contactWebsite" name="company_website" type="text" tabindex="-1" autocomplete="off">
+    </div>
+    <p class="contact-form-note">Your message will be sent to the PyLearn support inbox. Please don't include passwords or other sensitive information.</p>
+    <div class="contact-form-actions">
+      <button class="ghost" id="contactCancel" type="button">Cancel</button>
+      <button class="primary" id="contactSubmit" type="submit">Send message <span aria-hidden="true">→</span></button>
+    </div>
+    <p id="contactFormStatus" class="contact-form-status" role="status" aria-live="polite"></p>
+  </form>
+</dialog>
 <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"><span class="toast-icon" id="toastIcon">✦</span><span id="toastMessage"></span></div>
 <div id="celebrationModal" class="celebration-backdrop" hidden>
   <section class="celebration-card" role="dialog" aria-modal="true" aria-labelledby="celebrationTitle">
@@ -490,6 +524,7 @@ print("2 + 3 =", 2 + 3)</textarea>
   </section>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="script.js?v=feature-navigation-20261105-1"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@5/dist/email.min.js"></script>
+<script src="script.js?v=onsite-contact-form-20261117-1"></script>
 </body>
 </html>
