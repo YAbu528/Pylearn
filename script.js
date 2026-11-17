@@ -995,24 +995,89 @@ function toast(message,type="info"){
   showNext();
 }
 
-// A mailto link cannot report whether the visitor actually sent the message.
-// Offer a truthful reminder when the visitor returns from their email app.
-(function setupContactReturnFeedback(){
-  const contactLink=$("contactEmailLink");
-  if(!contactLink) return;
-  const pendingKey="pylearn_contact_email_pending";
-  contactLink.addEventListener("click",()=>{
-    try{sessionStorage.setItem(pendingKey,"1");}catch(_){}
+// EmailJS account identifiers are public client-side configuration values.
+// Never place an EmailJS private key or Gmail password in this file.
+const PYLEARN_EMAIL_CONFIG = Object.freeze({
+  publicKey: "",
+  serviceId: "",
+  templateId: ""
+});
+
+(function setupContactForm(){
+  const openLink=$("contactFormOpen");
+  const dialog=$("contactDialog");
+  const closeButton=$("contactDialogClose");
+  const cancelButton=$("contactCancel");
+  const form=$("contactForm");
+  const submitButton=$("contactSubmit");
+  const status=$("contactFormStatus");
+  const honeypot=$("contactWebsite");
+  if(!openLink||!dialog||!form||!submitButton) return;
+
+  const closeDialog=()=>{
+    if(typeof dialog.close==="function" && dialog.open) dialog.close();
+    else dialog.removeAttribute("open");
+  };
+  openLink.addEventListener("click",event=>{
+    event.preventDefault();
+    if(typeof dialog.showModal==="function") dialog.showModal();
+    else dialog.setAttribute("open","");
+    $("contactName")?.focus();
   });
-  document.addEventListener("visibilitychange",()=>{
-    if(document.visibilityState!=="visible") return;
-    let pending=false;
-    try{pending=sessionStorage.getItem(pendingKey)==="1";}catch(_){}
-    if(!pending) return;
-    try{sessionStorage.removeItem(pendingKey);}catch(_){}
-    window.setTimeout(()=>{
-      toast("Welcome back. PyLearn can't confirm whether your email was sent. Check your email app's Sent folder to verify.","info");
-    },350);
+  closeButton?.addEventListener("click",closeDialog);
+  cancelButton?.addEventListener("click",closeDialog);
+  dialog.addEventListener("click",event=>{
+    if(event.target===dialog) closeDialog();
+  });
+
+  form.addEventListener("submit",async event=>{
+    event.preventDefault();
+    if(!form.reportValidity()) return;
+    if(honeypot?.value.trim()){
+      toast("Your message could not be submitted. Please try again.","error");
+      return;
+    }
+
+    const configured=Boolean(
+      PYLEARN_EMAIL_CONFIG.publicKey &&
+      PYLEARN_EMAIL_CONFIG.serviceId &&
+      PYLEARN_EMAIL_CONFIG.templateId
+    );
+    if(!configured || !window.emailjs || typeof window.emailjs.sendForm!=="function"){
+      if(status) status.textContent="The contact form is not connected yet. Please try again later.";
+      toast("We couldn't submit your message. Please try again.","error");
+      return;
+    }
+
+    const originalLabel=submitButton.innerHTML;
+    submitButton.disabled=true;
+    submitButton.setAttribute("aria-busy","true");
+    submitButton.textContent="Sending…";
+    if(status) status.textContent="Sending your message…";
+
+    try{
+      await window.emailjs.sendForm(
+        PYLEARN_EMAIL_CONFIG.serviceId,
+        PYLEARN_EMAIL_CONFIG.templateId,
+        form,
+        {
+          publicKey:PYLEARN_EMAIL_CONFIG.publicKey,
+          limitRate:{id:"pylearn-contact-form",throttle:10000}
+        }
+      );
+      form.reset();
+      if(status) status.textContent="";
+      closeDialog();
+      toast("Your message has been submitted successfully.","success");
+    }catch(error){
+      console.warn("PyLearn contact form submission failed.",error?.status||"");
+      if(status) status.textContent="We couldn't submit your message. Please check your connection and try again.";
+      toast("We couldn't submit your message. Please try again.","error");
+    }finally{
+      submitButton.disabled=false;
+      submitButton.removeAttribute("aria-busy");
+      submitButton.innerHTML=originalLabel;
+    }
   });
 })();
 
