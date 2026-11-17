@@ -2732,3 +2732,33 @@ All three files were independently fetched from feature branch `feat/server-auth
 - To use the `all_except_custom_domains` exception, Vercel appears to require a genuinely user-owned custom domain rather than another Vercel-managed `.vercel.app` hostname. A real custom domain would need to be supplied/owned by the user and verified through DNS.
 - Alternative: create a temporary Vercel shareable protection-bypass URL for the preview. That would leave the project's SSO setting enabled, but anyone possessing the share URL could view the preview until the link expires (new links typically expire after 23 hours). This is a bearer link and should be created only after the user explicitly chooses this access method.
 - Next: ask whether the user has a domain they control that can be attached to Vercel, or whether they approve a temporary shareable preview-access link. After a working access path is chosen, add the exact hostname to Pylearn-Dev Auth Redirect URLs and ensure the verifier Edge Function CORS policy allows that origin before authenticated tests.
+
+
+## Temporary preview access link created and verified (2026-11-17)
+
+### User decision and access method
+- The user explicitly chose a temporary personal/shareable Vercel access link instead of supplying a custom domain.
+- Created/reused a Vercel shareable access link for the existing preview alias:
+  `https://pylearn-preview-eight-roan.vercel.app/`
+- Vercel reported that the share link was **reused**, not newly generated, and gave this expiry: **November 18, 2026 at 4:02:19 PM** (Vercel-reported display time).
+- The actual share URL contains a bearer-style `_vercel_share` secret. **It is intentionally not copied into this public repository document**; the user received it in the ChatGPT conversation. Anyone who obtains that URL can access the protected preview until expiry. Treat it as private and do not post it publicly.
+- This access method does not turn off project-wide Vercel SSO and does not change the project's protection configuration.
+
+### Verification result
+- Used the share-enabled preview URL through Vercel's protected-deployment fetch path.
+- Result: **HTTP 200 OK** and the response contained the actual PyLearn HTML page, including the PyLearn title, account sign-in form, navigation, lesson/dashboard sections, Python playground, and footer.
+- This confirms the temporary access link gets past the Vercel SSO interstitial and reaches the preview app's HTML. It does **not** yet prove interactive JavaScript, Supabase authentication, OAuth/email callbacks, reward verification, or Android layout work correctly.
+- The earlier unauthenticated browser test against the same preview alias failed by redirecting to Vercel login/SSO; this was an access-protection failure, not a PyLearn application error. The temporary share link resolved that access barrier.
+- The older generated preview URL also remained SSO-protected. No custom domain was configured.
+
+### What changed / what did not
+- Changed: a shareable access link was reused for the preview alias.
+- Not changed: Vercel project SSO settings, deployment protection policy, Git branch mapping, Supabase Auth Redirect URLs, Supabase Edge Function CORS, any Supabase database schema/data, user accounts, or Production.
+- The alias remains mapped to branch `feat/server-authoritative-rewards-20261107`.
+- The share URL is temporary access only; it is not a permanent public preview hostname.
+
+### Next work
+1. Use the temporary share URL for preview access while it remains valid; keep it private.
+2. Before authentication testing, separately confirm/add the exact preview origin to the **Dev Supabase Auth Redirect URLs** and ensure the verifier Edge Function CORS allows that origin. These are separate controls and were not changed as part of creating this link.
+3. Continue authenticated synthetic-user preview tests and Android Chrome/Samsung Internet regression only after the redirect/CORS checks are complete.
+4. If the link expires before testing is finished, create/reuse a fresh share link only when the user asks to continue access.
