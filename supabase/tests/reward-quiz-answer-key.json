@@ -1,0 +1,147 @@
+{
+  "version": 1,
+  "source": "script.js lessons[].quiz question and option order",
+  "review_note": "This is a reviewed synchronization baseline. When question wording or option order changes, review the correct answer independently, then update this manifest and the server index together.",
+  "entries": [
+    {
+      "lesson_id": "0",
+      "question": "Which line correctly creates a variable called age?",
+      "options": [
+        "age == 15",
+        "age = 15",
+        "15 = age"
+      ],
+      "answer_index": 1
+    },
+    {
+      "lesson_id": "1",
+      "question": "What type is 3.14?",
+      "options": [
+        "str",
+        "int",
+        "float"
+      ],
+      "answer_index": 2
+    },
+    {
+      "lesson_id": "2",
+      "question": "What does int(input()) usually do?",
+      "options": [
+        "Turns user input into an integer",
+        "Prints an integer automatically",
+        "Creates a list"
+      ],
+      "answer_index": 0
+    },
+    {
+      "lesson_id": "3",
+      "question": "Which operator checks whether two values are equal?",
+      "options": [
+        "=",
+        "==",
+        "!="
+      ],
+      "answer_index": 1
+    },
+    {
+      "lesson_id": "4",
+      "question": "How many values does range(1, 5) produce?",
+      "options": [
+        "4",
+        "5",
+        "6"
+      ],
+      "answer_index": 0
+    },
+    {
+      "lesson_id": "5",
+      "question": "Which keyword sends a result back from a function?",
+      "options": [
+        "send",
+        "return",
+        "give"
+      ],
+      "answer_index": 1
+    },
+    {
+      "lesson_id": "6",
+      "question": "How do you access the first item of a list called items?",
+      "options": [
+        "items[1]",
+        "items[0]",
+        "items.first"
+      ],
+      "answer_index": 1
+    },
+    {
+      "lesson_id": "7",
+      "question": "Which keyword imports a module?",
+      "options": [
+        "include",
+        "import",
+        "module"
+      ],
+      "answer_index": 1
+    },
+    {
+      "lesson_id": "8",
+      "question": "What does text[0:3] return for text = \"Python\"?",
+      "options": [
+        "Pyt",
+        "Pyth",
+        "yth"
+      ],
+      "answer_index": 0
+    },
+    {
+      "lesson_id": "9",
+      "question": "Which collection automatically keeps only unique values?",
+      "options": [
+        "list",
+        "set",
+        "tuple"
+      ],
+      "answer_index": 1
+    },
+    {
+      "lesson_id": "10",
+      "question": "What does [x * 2 for x in range(3)] produce?",
+      "options": [
+        "[0, 2, 4]",
+        "[2, 4, 6]",
+        "[0, 1, 2]"
+      ],
+      "answer_index": 0
+    },
+    {
+      "lesson_id": "11",
+      "question": "Which mode opens a file for writing and replaces its old contents?",
+      "options": [
+        "r",
+        "w",
+        "a"
+      ],
+      "answer_index": 1
+    },
+    {
+      "lesson_id": "12",
+      "question": "What is an object created from a class?",
+      "options": [
+        "An instance",
+        "A module",
+        "A loop"
+      ],
+      "answer_index": 0
+    },
+    {
+      "lesson_id": "13",
+      "question": "Which Python module can parse JSON text?",
+      "options": [
+        "json",
+        "api",
+        "http"
+      ],
+      "answer_index": 0
+    }
+  ]
+}
