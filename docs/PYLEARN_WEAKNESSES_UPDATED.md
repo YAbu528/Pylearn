@@ -2929,3 +2929,11 @@ All three files were independently fetched from feature branch `feat/server-auth
 - User should open the temporary share link provided in the conversation and inspect the new **Continue with GitLab** button in the account card.
 - Then test the button with their GitLab account. Confirm successful return to PyLearn and signed-in account state before approving merge.
 - If the button is visually correct but OAuth fails, collect the exact displayed error and investigate provider ID / redirect allowlist settings. Never request the Client Secret in chat.
+
+
+### GitLab logo sizing correction (2026-11-17)
+- User inspected the preview and reported the GitLab mark appeared severely squeezed / too small in width.
+- Root cause found in source: a later high-specificity rule forcibly capped every provider SVG at exactly 20×20 px, overriding the earlier `.gitlab-logo` sizing rule. The logo was therefore unable to use a larger footprint.
+- Corrected only the GitLab mark sizing: 28×28 px with a 28 px flex basis, while leaving Google, Microsoft, and GitHub icon dimensions unchanged. Added a targeted high-specificity override after the shared provider-logo rule so the GitLab logo is not capped back to 20 px.
+- Kept the existing button dimensions, text, provider order, and OAuth event wiring unchanged. This is a sizing adjustment, not an OAuth behavior change.
+- Browser/device visual verification is still pending; user should inspect the updated Vercel Preview on their Galaxy A15. Do not merge until they approve.
