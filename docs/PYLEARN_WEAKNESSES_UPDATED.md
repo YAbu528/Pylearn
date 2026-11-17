@@ -2653,3 +2653,51 @@ All three files were independently fetched from feature branch `feat/server-auth
 - Vercel deployment metadata tied the preview to commit `d3aa86cb371673682663fb2f985d1c8a3aefa5ea`; the source `script.js` blob is `43a2f00237972dbf449fc1787eab965b88978684`.
 - CI for the same commit passed in GitHub Actions run 11: https://github.com/YAbu528/Pylearn/actions/runs/44105177401
 - Next: user adds the Dev Auth Redirect URL above; then run the authenticated browser flow and continue the reward-integrity tests.
+
+
+## Preview authentication test checkpoint — Supabase redirect was added, but Vercel SSO blocks the preview (2026-11-17)
+
+### User action acknowledged
+- The user confirmed that the previously supplied preview wildcard redirect URL was added in Pylearn-Dev → Authentication → URL Configuration.
+- This confirms the user completed the requested dashboard action. The setting itself is not exposed through the available read-only Supabase project metadata, so I have not claimed an independent dashboard read-back.
+
+### Browser test result
+- Started an unauthenticated browser inspection of `https://pylearn-n55fu3hot-yabu528s-projects.vercel.app/`.
+- The browser did **not** reach PyLearn. It was redirected to Vercel's own login page at `vercel.com/login` before the app or Supabase Auth screen could load.
+- Vercel showed its own provider choices (Email, Google, GitHub, ChatGPT, SAML SSO, Passkey, and additional providers) and its own Sign Up links. These are Vercel deployment-access controls, not PyLearn sign-in controls.
+- The browser run completed without submitting credentials, creating an account, changing settings, or modifying data.
+- The same preview URL still returns HTTP 200 when fetched through the Vercel account-authorized fetch path. That proves the deployment responds, but it is not an ordinary unauthenticated browser test and does not bypass the protection for the user's Android browser.
+
+### Root cause confirmed in Vercel project settings
+- Vercel project: `pylearn`, project ID `prj_HlVIx5aWKT2wYNODSgkARMnP9v7p`, team ID `team_vd1mzBoMlw3OpYgGwua9UgW6`.
+- Project setting read-back: `ssoProtection.enabled = true`, `ssoProtection.deploymentType = all_except_custom_domains`.
+- Password protection is disabled. The current generated `pylearn-<deployment>-yabu528s-projects.vercel.app` preview hostname is not one of the project's custom domains, so it is caught by the enabled SSO protection.
+- This is separate from Supabase Auth's Redirect URLs allowlist and separate from the Edge Function CORS allowlist. Adding the Supabase redirect was necessary, but it cannot remove Vercel's outer access gate.
+
+### What was not changed
+- I did **not** disable Vercel SSO protection, change project domains, alter Supabase Auth settings, sign in with a personal account, or change any Production setting.
+- No database or user data was changed.
+
+### Decision needed before browser testing can continue
+- The preview needs an access path that ordinary browsers can open. Options to review are: (a) add a dedicated custom preview domain/branch alias that is excluded by the current `all_except_custom_domains` protection rule, if Vercel permits it for this project; or (b) change the project's Vercel SSO protection scope. Do not change either setting without the user's explicit approval.
+- After an approved access path is available, repeat the browser test and then test the real PyLearn sign-in, sign-up/confirmation and verified-learning requests. Until then, authenticated end-to-end testing remains blocked.
+
+## Python "First Code" achievement audit on the feature branch (2026-11-17)
+
+### What the feature branch currently does
+- In feature-branch `script.js`, the badge catalogue still defines `code` / "First Code" as earned when `state.runs >= 1` (line 329 at the inspected source revision).
+- A successful local Python Worker `run-result` increments `state.runs` and calls `save()` (line 1203). That counter is browser-local state; it is not a server-issued execution receipt.
+- More importantly, `renderBadges()` treats signed-in users differently from guests: for a signed-in user, earned badges come only from the server-loaded `cloudAchievements` list; guest badges are calculated from local state. The signed-in achievement list is read from `public.user_achievements`.
+- The feature-branch frontend no longer invokes `award-python-run`. It therefore no longer lets the browser ask the server to award the badge merely by sending an authenticated request. This removes the known insecure award path from the new frontend.
+- However, there is not yet a replacement server-verifiable Python execution receipt or event. As a result, a new signed-in learner cannot earn the First Code badge through the feature-branch flow at present. Existing achievement rows are not deleted and will continue to appear because they are already in the server achievement list.
+
+### Production endpoint status
+- Production `award-python-run` remains ACTIVE version 1 with `verify_jwt=true`.
+- Its deployed source authenticates the bearer token, then upserts `{ user_id, achievement_id: "code" }` into `user_achievements`. It does not receive or independently validate a Python program, execution result, or server-issued receipt.
+- Production deployed source SHA-256: `df1cc873e29eaff27453ac7b7e2c98904c04db8e2161398787eea6e025f383ff`.
+- The tracked feature-branch source file `supabase/functions/award-python-run/index.ts` remains present (blob `fb8d02d909669b2186c44b2933cfe7478afe4f13`), but the feature-branch `script.js` at blob `43a2f00237972dbf449fc1787eab965b88978684` contains no invocation of that endpoint.
+- This is an intentional security gap pending a design decision, not a completed badge implementation. Do not restore the old endpoint call as a shortcut and do not trust the client-side Worker result as server proof.
+
+### Safe next design decision
+- Decide whether "First Code" should remain a server-synced achievement and, if so, whether PyLearn should use a server-controlled execution environment/receipt or another independently verifiable mechanism. If a trustworthy receipt is not practical within the project's cost and hosting constraints, keep the badge unavailable to new signed-in users for now rather than silently reintroducing a forgeable award.
+- Any eventual change must preserve existing `user_achievements` rows and must be tested in Dev first. Production endpoint retirement still requires a reviewed rollout and explicit approval.
