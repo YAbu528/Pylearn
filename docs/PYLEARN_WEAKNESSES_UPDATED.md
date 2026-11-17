@@ -2396,3 +2396,42 @@ The checkpoint above was saved on branch `audit/reward-integrity-phase1-20261107
 
 
 Traceability follow-up verification: the preceding traceability addendum was committed as `eb06b01badb747d385c4d2343f8e028a661b7078`, producing blob `7ce318687fa327e4cfec13527493e8ebb33b8569`. A subsequent independent fetch returned blob `7ce318687fa327e4cfec13527493e8ebb33b8569` and confirmed the addendum text. The preceding checkpoint's commit/blob pair is `5bee98de0f38bfc6c16294a589938aa932d35d9a` / `9955cd7bf2b03e04ec92db4bab07f800eaab0d64`.
+
+
+## Read-only comparison — production and Pylearn-Dev reward boundary (2026-11-17)
+
+### Inspection scope
+- Re-fetched this canonical handover and both companion documents from GitHub before continuing.
+- Read-only Supabase inspection of production project `vzgbxoxscmlmacxciwze` and isolated Free development project `rhtfripfqwccbhcwgoxy`.
+- Retrieved deployed source for production `award-learning-reward` and `award-python-run`, plus Dev `verify-learning-activity`.
+- Retrieved PostgreSQL function definitions, security attributes, search_path settings, and EXECUTE grantees. No function was invoked and no database/source/configuration was changed.
+
+### Confirmed comparison
+
+1. **Production legacy reward RPC remains vulnerable to client-writable progress flags.**
+   - `public.award_learning_xp(uuid,text,text,text)` is `SECURITY DEFINER`, has an empty search_path, and explicitly checks for the service_role JWT. EXECUTE grantees observed: `postgres`, `service_role`.
+   - Despite those protections, its reward gate still reads `public.lesson_progress`: quiz accepts `quiz_best_score >= 100`, lesson accepts `completed = true`, and challenge accepts `challenge_completed = true`.
+   - Production `award-learning-reward` (ACTIVE v3, `verify_jwt=true`) validates the user's bearer token and derives the user ID from Auth, but accepts caller-supplied lesson/event values and invokes the service-role RPC. Therefore the authenticated client-to-function-to-RPC path still relies on client-writable flags as evidence. This is a source/configuration finding; no exploit request was sent.
+
+2. **Pylearn-Dev has the fail-closed legacy RPC and the separate evidence-based transaction.**
+   - Dev `public.award_learning_xp` (SECURITY DEFINER, empty search_path; EXECUTE observed only for `postgres` and `service_role`) now rejects the legacy path with `verified_activity_required`.
+   - Dev `private.record_verified_learning_event` is SECURITY DEFINER with empty search_path and explicit service_role JWT validation. It checks supported lesson/event scope, requires verified quiz evidence before lesson evidence, inserts unique private evidence, preserves historical XP event-key deduplication, updates stats once, and calculates new achievements from private evidence.
+   - Its public-schema `record_verified_learning_event` wrapper is SECURITY INVOKER and delegates to the private implementation. EXECUTE grantees observed for both functions: `postgres`, `service_role`.
+   - The Dev Edge Function `verify-learning-activity` is ACTIVE v1 with `verify_jwt=true`; its source validates request shape, authenticates via Auth `getUser`, derives the user ID from the verified account, applies rate limiting, validates server-held quiz/objective answers, and calls the atomic RPC.
+   - Dev's verified challenge scope remains lessons 2, 6 and 13 only. Unsupported challenge modes do not reach authoritative XP.
+
+3. **Separate remaining production issue: Python-run achievement.**
+   - Production `award-python-run` remains ACTIVE v1 with `verify_jwt=true`. Its source authenticates the user, then directly upserts achievement ID `code` without a server-verifiable execution receipt. It is not safe to treat authentication as proof that Python ran.
+   - Do not re-enable the frontend call or award this achievement until a trustworthy execution-evidence design exists.
+
+### Current conclusion and next gate
+- The Dev database/API boundary is materially safer than production's legacy reward path, but this does not establish end-to-end browser correctness.
+- Production remains unchanged and must not be described as fixed. Do not deploy Dev migrations/functions or modify production without separate review and explicit approval.
+- The next practical gate remains authenticated preview browser validation and Android Chrome/Samsung Internet regression, using an already-working provider and a synthetic/dev identity where possible. Before that, confirm the actual preview deployment and its Auth redirect configuration; do not restart signup-email/SMTP troubleshooting.
+- Continue preserving existing accounts, XP/event history, achievements, visible progress, notes, bookmarks, reviews and challenge history.
+
+### Exact read-only evidence
+- Production `award-learning-reward`: ACTIVE v3, `verify_jwt=true`; source hash `5263ad724f88f0a5e15fdf27667bacbee0695ff1ece34dad39bc2b76f0911864`.
+- Production `award-python-run`: ACTIVE v1, `verify_jwt=true`; source hash `df1cc873e29eaff27453ac7b7e2c98904c04db8e2161398787eea6e025f383ff`.
+- Dev `verify-learning-activity`: ACTIVE v1, `verify_jwt=true`; source hash `61cbba8a0a9eafd92453186d47137e4023b9652d5803153c1d52e86fa5c6935c`.
+- Production and Dev RPC definitions/grants were queried read-only on 2026-11-17. No SQL writes, function invocations, deployments, or production changes were performed.
