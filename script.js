@@ -994,6 +994,28 @@ function toast(message,type="info"){
   };
   showNext();
 }
+
+// A mailto link cannot report whether the visitor actually sent the message.
+// Offer a truthful reminder when the visitor returns from their email app.
+(function setupContactReturnFeedback(){
+  const contactLink=$("contactEmailLink");
+  if(!contactLink) return;
+  const pendingKey="pylearn_contact_email_pending";
+  contactLink.addEventListener("click",()=>{
+    try{sessionStorage.setItem(pendingKey,"1");}catch(_){}
+  });
+  document.addEventListener("visibilitychange",()=>{
+    if(document.visibilityState!=="visible") return;
+    let pending=false;
+    try{pending=sessionStorage.getItem(pendingKey)==="1";}catch(_){}
+    if(!pending) return;
+    try{sessionStorage.removeItem(pendingKey);}catch(_){}
+    window.setTimeout(()=>{
+      toast("Welcome back. PyLearn can't confirm whether your email was sent. Check your email app's Sent folder to verify.","info");
+    },350);
+  });
+})();
+
 function celebrate(title,message,xp=0,eyebrow="NICE WORK!"){
   const modal=$("celebrationModal"); if(!modal) {toast(title,"success");return;}
   $("celebrationEyebrow").textContent=eyebrow;
