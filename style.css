@@ -470,7 +470,7 @@ body.light .pylearn-footer{background:#eef0f5!important}
 .contact-form{display:grid;gap:14px}
 .contact-form-row{display:grid;gap:7px}
 .contact-form-row label{font-size:12px;font-weight:800;color:var(--text)}
-.contact-form-row input,.contact-form-row textarea{display:block;width:100%;box-sizing:border-box;padding:12px 13px;border:1px solid var(--line);border-radius:11px;background:var(--card);color:var(--text);font:500 14px/1.5 inherit;outline:0;transition:border-color .18s,box-shadow .18s}
+.contact-form-row input,.contact-form-row textarea{display:block;width:100%;box-sizing:border-box;padding:12px 13px;border:1px solid var(--line);border-radius:11px;background:var(--card);color:var(--text);font-family:inherit;font-size:14px;font-weight:500;line-height:1.5;outline:0;transition:border-color .18s,box-shadow .18s}
 .contact-form-row textarea{min-height:120px;resize:vertical}
 .contact-form-row input::placeholder,.contact-form-row textarea::placeholder{color:var(--muted);opacity:.8}
 .contact-form-row input:focus,.contact-form-row textarea:focus{border-color:var(--purple2);box-shadow:0 0 0 3px color-mix(in srgb,var(--purple2) 16%,transparent)}
