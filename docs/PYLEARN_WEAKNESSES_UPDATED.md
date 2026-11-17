@@ -2333,3 +2333,6 @@ The preceding technical-review record links the read-only Pylearn-Dev project-he
 - No source code, database, Edge Function, SMTP setting, email provider, Vercel setting, or production resource was changed during this priority reset.
 - No signup or email test was run. No paid service or resource was used.
 - Continue preview-first; test before claiming a fix; preserve accounts, XP, achievements, progress, notes, bookmarks, and cross-device sync; do not alter production without explicit approval.
+
+### Traceability — priority reset to weakness audit
+This entry records the user's explicit decision on 2026-11-17 to pause PyLearn email branding/SMTP work and resume the existing weakness audit. It identifies authenticated reward-integrity browser validation and Android regression as the next unfinished workstream, grounded in the freshly re-fetched canonical handover, design, contract, and audit-branch source. GitHub saved the record on branch audit/reward-integrity-phase1-20261107 as commit 3833e973afc6cc9e79b38d2ebad1d3f1531bedbb, producing blob 4cc8eb2e065b7a0a2d308e6411a5f00bd57fa097. An independent fetch of the same path and branch returned the exact same blob SHA and confirmed the section was present. This verifies documentation only; no code or runtime test was changed or performed in this checkpoint.
