@@ -2900,7 +2900,7 @@ All three files were independently fetched from feature branch `feat/server-auth
 - Initial HTML button + CSS cache-bust commit: `089732bf960d1a510a093691b8fdaec7dbf89b19`.
 - OAuth event wiring commit: `3781054a50cd95975c759e77123486f009b5e340`.
 - GitLab logo CSS commit: `77cff756aa7db1e021a72cda8fc9def4de64ff4e`.
-- Script cache-bust commit: recorded by the follow-up GitHub update after this section is prepared; see branch history for the resulting commit.
+- Script cache-bust commit: `7ad0dc0dc4213e80166f44648c173c9c7a78ef21`.
 
 ### Verification status and limitations
 - Source-level inspection confirmed the existing auth form contains Google, Microsoft, and GitHub controls and that the social-auth helper accepts a provider string and calls Supabase `signInWithOAuth`.
