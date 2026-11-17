@@ -7,6 +7,7 @@ function corsHeaders(req: Request): HeadersInit {
   const origin = req.headers.get("Origin") || "";
   const allowed = origin === "https://yabu528.github.io"
     || origin === "https://pylearn.vercel.app"
+    || origin === "https://pylearn-preview-eight-roan.vercel.app"
     || /^https:\/\/pylearn-[a-z0-9-]+-yabu528s-projects\.vercel\.app$/.test(origin);
 
   return {
@@ -92,6 +93,7 @@ Deno.serve(async (req: Request) => {
   const originAllowed = !origin
     || origin === "https://yabu528.github.io"
     || origin === "https://pylearn.vercel.app"
+    || origin === "https://pylearn-preview-eight-roan.vercel.app"
     || /^https:\/\/pylearn-[a-z0-9-]+-yabu528s-projects\.vercel\.app$/.test(origin);
 
   if (req.method === "OPTIONS") {
