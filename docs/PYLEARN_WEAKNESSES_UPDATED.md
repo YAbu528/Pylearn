@@ -2301,3 +2301,35 @@ This record corrects the assistant's repeated domain question by restoring the u
 
 ### Traceability — Gmail SMTP technical review
 The preceding technical-review record links the read-only Pylearn-Dev project-health check, screenshot-visible smtp.gmail.com:465 settings, user's sender/username alignment confirmation, official Google port and error-code guidance, and the primary-account-password/App-Password revocation rule to the next diagnostic question. GitHub saved this record on branch audit/reward-integrity-phase1-20261107 as commit d4339325535f67574c7a46215e29789aed9a0707, producing blob c1e31d6654825c2a7f51396604078e436946a2b7. An independent fetch of the same repository, branch and path returned the exact same blob SHA and confirmed the section was present. These identifiers verify the saved review; they do not mean SMTP has been repaired or tested again.
+
+## Priority reset — pause email/branding work and resume weakness audit (2026-11-17)
+
+### User decision
+- The user explicitly directed that work on PyLearn email branding and the unresolved Gmail SMTP issue be paused. Do not continue SMTP troubleshooting, create an email-branding feature, or introduce another provider/configuration change unless the user explicitly reopens that topic.
+- Resume the purpose of this document: identify, prioritize, and address existing PyLearn weaknesses. The user wants focused progress without unnecessary discussion or feature expansion.
+
+### Current highest-priority unfinished weakness
+- The server-authoritative reward-integrity implementation is present on the feature branch and integrated into the audit preview source, but authenticated browser end-to-end tests and Android regression are still pending. It must not be called fixed until these tests pass.
+- The reward-integrity handover states that production currently had client-writable progress flags trusted by legacy reward paths. Phase 2 was implemented only in isolated Pylearn-Dev and preview; production must remain untouched until explicit review and approval.
+- The next workstream is therefore **validate the existing reward-integrity fix in the audit preview**, not add features. Use the user's existing supported sign-in provider (Google, Microsoft or GitHub) rather than creating a new email/password account. Do not ask the user to perform another signup-email test.
+
+### Test sequence to resume
+1. Confirm the audit preview still points to Pylearn-Dev and the expected audit branch/deployment before any authenticated test.
+2. Test an existing authenticated account in the preview using an already-working OAuth provider. Confirm sign-in, user identity isolation, and dashboard loading.
+3. Test quiz validation and server-awarded XP for representative lessons, including a correct answer, incorrect answer, duplicate submission/retry, and lesson completion prerequisite. Verify the server result and Pylearn-Dev rows/logs; do not infer success from UI animation alone.
+4. Test supported objective challenge XP only for lessons 2, 6, and 13. Confirm unsupported code/debug/fill challenges do not award authoritative XP.
+5. Test forged client fields/legacy progress flags cannot mint XP, duplicate/concurrent submissions are idempotent, and rate limits behave as designed. Use only synthetic/dev test identities and safe test inputs.
+6. Run Android Chrome and Samsung Internet checks for sign-in, lesson/quiz/challenge flow, progress sync, reload, sign-out, account switching, and retry queue isolation. The user has Android-only test access.
+7. Record every actual result, including failures and browser/device context. Only after all required checks pass should the feature be considered ready for production review; no production rollout is authorized by this plan.
+
+### Current source evidence
+- Canonical handover at the start of this priority reset was blob `4904727f9ef22170f99b11dfb8a35494c10bd3d8` on `audit/reward-integrity-phase1-20261107`.
+- The server-authoritative design document was re-fetched from `feat/server-authoritative-rewards-20261107` at blob `6b6e31e18ea25a8e8ab644083d3a7d4607c782fe`.
+- The detailed reward contract was re-fetched from the same feature branch at blob `c2af4f92fff34c2a09a23f9592c44df2dd9e153e`.
+- The audit-branch `script.js` was re-fetched at blob `6f5ba7dabdf679e98ff96d0af74b05be52ff24fb`; source inspection shows the existing preview environment selection and current lesson frontend. This is source inspection, not a runtime browser test.
+- Earlier documented Dev SQL, Edge Function, source-check and Vercel preview tests remain historical evidence; they do not substitute for the still-pending authenticated browser and Android tests.
+
+### Scope and guardrails
+- No source code, database, Edge Function, SMTP setting, email provider, Vercel setting, or production resource was changed during this priority reset.
+- No signup or email test was run. No paid service or resource was used.
+- Continue preview-first; test before claiming a fix; preserve accounts, XP, achievements, progress, notes, bookmarks, and cross-device sync; do not alter production without explicit approval.
