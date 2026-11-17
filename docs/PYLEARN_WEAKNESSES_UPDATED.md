@@ -2915,3 +2915,17 @@ All three files were independently fetched from feature branch `feat/server-auth
 3. Click it and complete GitLab authorization. Confirm the browser returns to PyLearn and the signed-in account state appears.
 4. If the OAuth redirect fails, record the exact user-visible error and inspect Supabase redirect allowlist/provider configuration without exposing any client secret.
 5. Keep Production untouched until the user approves the preview.
+
+
+### Preview deployment and pull request checkpoint (2026-11-17)
+- Opened PR #42: https://github.com/YAbu528/Pylearn/pull/42 (base `main`, head `feature/gitlab-sign-in-20261117`). PR remains open and unmerged; GitHub later reported `mergeable: true`.
+- Latest Vercel preview deployment: `dpl_8LxgPQ6jieyzoVAtUYM3tard86AM`, status **READY**, branch `feature/gitlab-sign-in-20261117`, commit `b3b56b106d378721dc5eafee7c8d892eddd07474`.
+- Deployment hostname: `pylearn-e3yafmdfy-yabu528s-projects.vercel.app`.
+- A temporary Vercel share link was created for the user. It expires **November 18, 2026 at 5:40:18 PM** (Vercel-reported time). The bearer URL is intentionally not recorded in this public document; share it only with the user in the conversation.
+- Deployment READY confirms the Vercel build completed, but does not confirm the visual layout or GitLab OAuth round-trip. User device inspection remains pending.
+- Production branch and Production deployment were not changed. PR was not merged.
+
+### Current handoff
+- User should open the temporary share link provided in the conversation and inspect the new **Continue with GitLab** button in the account card.
+- Then test the button with their GitLab account. Confirm successful return to PyLearn and signed-in account state before approving merge.
+- If the button is visually correct but OAuth fails, collect the exact displayed error and investigate provider ID / redirect allowlist settings. Never request the Client Secret in chat.
