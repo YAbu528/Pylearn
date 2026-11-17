@@ -2956,3 +2956,11 @@ All three files were independently fetched from feature branch `feat/server-auth
 - Log caveat: the Auth log's Referer was `https://yabu528.github.io/Pylearn/`, not the Vercel preview hostname. Need confirm whether the user tapped GitLab from the production GitHub Pages site or from the latest Vercel preview; do not assume which environment was tested.
 - No OAuth secrets were read or changed. No production code was changed. PR #42 remains open and unmerged.
 - Next action: have the user inspect the GitLab OAuth application's saved Redirect URI and compare it character-for-character with the Supabase GitLab Callback URL shown in Authentication > Sign In / Providers > GitLab. The exact value should be `https://vzgbxoxscmlmacxciwze.supabase.co/auth/v1/callback`. Do not ask the user to share the client secret. Then retry from the Vercel preview and inspect fresh Auth logs for a successful callback and final redirect.
+
+
+### Correction: GitLab Redirect URI was already correct (2026-11-17)
+- User checked the existing GitLab OAuth application and confirmed its Redirect URI already exactly matches `https://vzgbxoxscmlmacxciwze.supabase.co/auth/v1/callback`.
+- Therefore, the earlier hypothesis that the GitLab application's Redirect URI was missing/incorrect is withdrawn. Do not ask the user to change this URI; it is already correct according to their direct inspection.
+- Existing Auth logs show the provider hand-off was initiated successfully (302 from `/authorize`, provider `gitlab`) and then a 404 for `GET /callback/oauth/authorize`, with the production GitHub Pages site as the referrer. This logged path does not match the expected Supabase callback path `/auth/v1/callback`; the cause remains unresolved and cannot be attributed to the GitLab Redirect URI based on current evidence.
+- Next diagnostic: obtain the exact hostname and path shown in the browser address bar on the 404 page (do not request or share any query string, OAuth code, state, or tokens), and correlate a fresh reproduction with Supabase Auth logs. Confirm whether the failing 404 is served by GitLab or Supabase and whether the user tested production GitHub Pages or the Vercel preview.
+- No OAuth settings or secrets were changed. PR #42 remains open and unmerged; production remains unchanged.
