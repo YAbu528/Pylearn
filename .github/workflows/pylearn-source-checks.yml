@@ -25,6 +25,8 @@ jobs:
         run: |
           node --check script.js
           node --check python-worker.js
+      - name: Check quiz answer-key synchronization
+        run: node scripts/check-reward-quiz-answer-key.mjs
       - name: Guard reward validation boundary
         shell: bash
         run: |
