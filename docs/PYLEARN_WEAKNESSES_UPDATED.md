@@ -2435,3 +2435,88 @@ Traceability follow-up verification: the preceding traceability addendum was com
 - Production `award-python-run`: ACTIVE v1, `verify_jwt=true`; source hash `df1cc873e29eaff27453ac7b7e2c98904c04db8e2161398787eea6e025f383ff`.
 - Dev `verify-learning-activity`: ACTIVE v1, `verify_jwt=true`; source hash `61cbba8a0a9eafd92453186d47137e4023b9652d5803153c1d52e86fa5c6935c`.
 - Production and Dev RPC definitions/grants were queried read-only on 2026-11-17. No SQL writes, function invocations, deployments, or production changes were performed.
+
+
+## Detailed RPC comparison — Dev verified reward transaction vs Production legacy RPC (2026-11-17)
+
+### Scope and source versions
+- Compared live Production project `vzgbxoxscmlmacxciwze` against isolated Free Pylearn-Dev project `rhtfripfqwccbhcwgoxy`.
+- Read-only inspection covered both live PostgreSQL function definitions and ACLs, reward-related table columns/constraints/indexes/RLS/policies, Dev private-schema grants, deployed Edge Function source, and the feature-branch migration/contract/frontend source.
+- Feature branch inspected: `feat/server-authoritative-rewards-20261107`.
+- Relevant tracked source blobs:
+  - `supabase/functions/verify-learning-activity/index.ts`: `746bff46a452107012e94eaa3a0e6f465beddf78`.
+  - `supabase/migrations/20261107194500_server_authoritative_learning_rewards.sql`: `0e2325f227709a769b6aef5991f9c7d6eb60fb1b`.
+  - `supabase/migrations/20261107200500_private_reward_tables_deny_policies.sql`: `44f18ec27017a16c880c197019612b0935c4eefa`.
+  - `docs/SERVER_AUTHORITATIVE_REWARDS_CONTRACT.md`: `c2af4f92fff34c2a09a23f9592c44df2dd9e153e`.
+  - `docs/SERVER_AUTHORITATIVE_REWARDS_DESIGN.md`: `6b6e31e18ea25a8e8ab644083d3a7d4607c782fe`.
+
+### Exact behavior difference
+
+| Concern | Production `public.award_learning_xp` | Pylearn-Dev |
+|---|---|---|
+| Trust source | Reads user-editable `public.lesson_progress` flags | Reads server-owned `private.learning_reward_evidence` |
+| Quiz gate | `quiz_best_score >= 100` | Server Edge Function checks the submitted choice against server-held answer indexes |
+| Lesson gate | `completed = true` | Requires previously recorded verified quiz evidence for the same user/lesson |
+| Challenge gate | `challenge_completed = true` | Only objective challenges for lesson IDs 2, 6, 13; answer checked by Edge Function |
+| Lesson ID scope | Numeric string pattern, no current 0–13 upper bound | Explicit 0–13 range |
+| XP values | Quiz 15, lesson 20, challenge 30 | Same 15/20/30 values |
+| Deduplication | Unique `xp_events(user_id,event_key)`, key `lesson_id:event_type` | Unique evidence key plus same historical XP event key |
+| Stats/streak | Updated only when new XP event inserted | Same; one transaction with evidence, XP event, stats and achievements |
+| Achievements | Derived from mutable progress flags | New qualification derived from private evidence and server-maintained stats |
+| Legacy RPC | Continues to award from progress flags | Explicitly rejects with `verified_activity_required` |
+
+### Dev controls that passed read-only inspection
+- `private.record_verified_learning_event` is SECURITY DEFINER, has an empty search_path, and explicitly requires a service_role JWT. Its execute ACL lists only `postgres` and `service_role`.
+- Public `record_verified_learning_event` and `reserve_learning_attempt` wrappers are SECURITY INVOKER and their observed execute ACLs list only `postgres` and `service_role`.
+- The Dev legacy `public.award_learning_xp` is SECURITY DEFINER but now fails closed after the service-role check. Its observed execute ACL also excludes `anon` and `authenticated`.
+- Dev private schema ACL grants USAGE to service_role; no USAGE grant was observed for anon/authenticated. Both private reward tables have RLS enabled, explicit deny policies for anon/authenticated, and table grants only to postgres in the inspected role-table grants.
+- Evidence uniqueness is `(user_id,lesson_id,event_type)`; XP history uniqueness remains `(user_id,event_key)`; achievement uniqueness remains `(user_id,achievement_id)`.
+- Existing public reward-table RLS policies remain user-scoped SELECT-only for stats, XP events and achievements. Client-owned lesson_progress remains writable for display/sync, but the Dev reward RPC no longer trusts it.
+- Dev `verify-learning-activity` is ACTIVE v1 with `verify_jwt=true`. It validates the session with Auth `getUser`, derives user_id from that verified user, validates strict request shapes, applies the rate limit, checks server-held answers, then calls the RPC.
+- Dev legacy RPC and verified RPC execute permissions were checked directly in PostgreSQL. No user data or reward data was changed.
+
+### Remaining gaps and rollout blockers
+
+1. **Production still needs the Dev trust-boundary replacement. BLOCKER.**
+   - Production's active `award-learning-reward` Edge Function (v3) authenticates the user but accepts caller-provided lesson/event values and calls the legacy service-role RPC.
+   - The Production RPC then accepts mutable progress flags as proof. Authenticated user identity alone does not prove the learning event.
+   - Before enabling the new frontend in Production, apply a reviewed additive schema/RPC migration that creates the private evidence/attempt tables and service-role-only functions, then replace Production `public.award_learning_xp` with the tested fail-closed behavior. Do not leave the old RPC awarding from progress flags.
+
+2. **Retire or neutralize the old Production Edge Function. BLOCKER for clean cutover.**
+   - After the RPC is fail-closed, the old `award-learning-reward` endpoint should no longer be an alternate reward path. It can be temporarily left only if its call demonstrably fails closed; the cleaner cutover is to disable/remove it after the new verifier is deployed and frontend routing is switched.
+   - Verify no deployed frontend bundle or queued legacy request still invokes it.
+
+3. **Python-run achievement endpoint is a separate integrity issue. BLOCKER for badge integrity, not XP transaction.**
+   - Production `award-python-run` remains ACTIVE v1 and directly upserts achievement `code` after authentication, without proof of a completed Python execution.
+   - Feature-branch frontend removed the old call, but the Production endpoint remains deployed. Retire it or replace it only after a trustworthy execution-receipt design exists. Do not treat a client-side Worker result as proof.
+
+4. **Lesson completion is intentionally a limited claim, not proof of reading.**
+   - Dev's lesson event requires verified quiz evidence, but the lesson event itself is a client request and does not prove the learner read every section. The design explicitly treats proving reading/understanding as a non-goal. Keep that limitation clear in product wording; do not claim stronger verification than the server actually performs.
+
+5. **Challenge prerequisite is a product-policy decision that must be settled before rollout.**
+   - The Dev RPC validates challenge eligibility by supported lesson ID and relies on the Edge Function's correct-answer validation, but it does not require prior quiz or lesson evidence for that lesson before awarding challenge XP.
+   - If challenge XP is intended to require lesson/quiz completion first, add that prerequisite inside the atomic RPC (not only in the UI) and test it. If correct objective answers alone are sufficient, document that as intentional behavior.
+
+6. **Keep answer keys synchronized with curriculum.**
+   - The Dev verifier holds 14 quiz answer indexes and objective challenge answers server-side. The contract says these indexes match the current `script.js` option order, but this relationship must be tested on every curriculum/option-order change. Add an automated source/contract check or versioned question identifiers before production. A stale answer key could reject correct answers or validate a different option after content changes.
+   - The current fixed achievement threshold of 14 matches the present 14-lesson curriculum. If the lesson count changes, update and test achievement thresholds deliberately; do not silently assume it is dynamic.
+
+7. **Authenticated browser test is still a release gate.**
+   - The feature branch contract records SQL transaction assertions for legacy-RPC rejection, forged progress flags, prerequisites, rate limits, XP values, duplicate idempotency, achievements, unsupported challenges and historical XP-key deduplication; it also records a passed Supabase security advisor and passed GitHub source checks.
+   - It explicitly records that authenticated browser invocation and full Android Chrome/Samsung Internet regression have not yet been completed. The feature-preview Auth redirect allowlist also still needs its actual preview origin before the sign-in flow can be tested.
+   - Therefore Dev's database/API design is promising and has meaningful transaction-level tests, but it is not yet end-to-end release-verified.
+
+### Recommended production rollout order — not authorized or performed
+1. Finish review of challenge prerequisite policy and automated answer-key synchronization.
+2. Confirm the feature-preview origin and Auth redirect allowlist; run authenticated preview tests with a synthetic Dev user.
+3. Test successful and incorrect quiz answers, lesson-before-quiz rejection, supported/unsupported challenges, duplicate/concurrent requests, rate limiting, retry after network loss, sign-out/account switching, and server/client XP reconciliation.
+4. Complete Android Chrome and Samsung Internet regression, including progress, notes, bookmarks, reviews, challenge history, existing XP and achievements.
+5. Prepare a reviewed additive Production migration from the current live schema (do not replay the incomplete historical migration set). Back up/record current counts and definitions first.
+6. Deploy the private evidence tables/RPC and verifier to Production; fail-close the legacy RPC; then switch the Production frontend to the verified endpoint.
+7. Retire the old reward and Python-run endpoints after confirming no active client uses them. Verify real Production behavior only after explicit approval.
+8. Preserve all existing accounts, XP totals/events, achievement rows and visible progress. Never backfill trusted evidence from old mutable progress flags; existing XP event keys must prevent duplicate awards.
+
+### What was and was not done in this checkpoint
+- Completed: read-only SQL catalog inspection, RPC/function definition and ACL comparison, private schema/table RLS/grant inspection, deployed Edge Function source review, feature-branch migration/contract/frontend review.
+- Not done: no RPC invocation, no exploit attempt, no SQL write, no migration application, no Edge Function deployment/invocation, no Vercel setting change, no browser sign-in, no production data change, and no source-code modification on the feature branch.
+- Production remains unchanged and still has the audited legacy trust-boundary weakness. Dev remains the only environment with the new verified reward transaction.
