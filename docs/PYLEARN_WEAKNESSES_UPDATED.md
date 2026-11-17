@@ -2618,3 +2618,38 @@ All three files were independently fetched from feature branch `feat/server-auth
 2. Run authenticated preview tests through the real `verify-learning-activity` Edge Function, including challenge-before-quiz rejection and quiz-then-challenge XP exactly once.
 3. Complete Android Chrome and Samsung Internet regression while checking that existing accounts, XP, achievements, progress, notes, bookmarks, reviews, and challenge history remain intact.
 4. Only after the above release gates, prepare the separate Production migration and rollout review. Production remains unchanged and must not be deployed without explicit approval.
+
+
+## Latest Dev preview deployment inspected — Auth redirect allowlist is the remaining gate (2026-11-17)
+
+### Preview deployment
+- Vercel created a READY preview deployment for feature branch `feat/server-authoritative-rewards-20261107`, commit `d3aa86cb371673682663fb2f985d1c8a3aefa5ea`.
+- Deployment ID: `dpl_CcTUt8PnmjDVKNifbR3Lf9CUzns3`.
+- Preview URL: https://pylearn-n55fu3hot-yabu528s-projects.vercel.app/
+- The deployed page returned HTTP 200 when fetched.
+- Independently fetched the deployed `script.js` and confirmed:
+  - It calls `verify-learning-activity`.
+  - It does not call the legacy `award-learning-reward` or `award-python-run` endpoints.
+  - It does not expose `QUIZ_ANSWER_INDEX` or the objective challenge answer strings.
+  - Its hostname-based routing selects the Dev Supabase URL for this preview host. It also contains the Production URL for stable/production hosts by design; this does not mean this preview uses Production.
+- Relevant source file on the feature branch: `script.js`, blob `43a2f00237972dbf449fc1787eab965b88978684`. The preview deployment's Git commit is the same `d3aa86cb371673682663fb2f985d1c8a3aefa5ea`.
+
+### Auth redirect allowlist status
+- The Edge Function CORS origin pattern accepts generated preview hostnames of the form `pylearn-<deployment>-yabu528s-projects.vercel.app`; the current preview hostname matches that pattern.
+- This does **not** automatically add the hostname to Supabase Auth's separate Redirect URLs allowlist.
+- The Supabase management tools available in this workflow expose project metadata but not Auth URL-configuration settings. I did not guess at or change the allowlist.
+- Before browser authentication testing, add this exact redirect URL in Pylearn-Dev → Authentication → URL Configuration → Redirect URLs:
+  `https://pylearn-n55fu3hot-yabu528s-projects.vercel.app/**`
+- Dashboard shortcut: https://supabase.com/dashboard/project/rhtfripfqwccbhcwgoxy/auth/url-configuration
+- Because each new Vercel preview deployment can receive a new generated hostname, the wildcard form above is intended to cover this project's generated preview deployments. Keep the stable production URL separately configured; do not replace or remove it.
+
+### Not yet done
+- No authenticated sign-in, sign-up confirmation, OAuth callback, or reward Edge Function browser test has been run against this preview.
+- No Auth redirect allowlist setting was changed.
+- No Production project setting, database, deployment, or user data was changed.
+- The preview was fetched programmatically only; visual/mobile behavior still needs the user's Android Chrome and Samsung Internet testing after Auth is configured.
+
+### Evidence and next checkpoint
+- Vercel deployment metadata tied the preview to commit `d3aa86cb371673682663fb2f985d1c8a3aefa5ea`; the source `script.js` blob is `43a2f00237972dbf449fc1787eab965b88978684`.
+- CI for the same commit passed in GitHub Actions run 11: https://github.com/YAbu528/Pylearn/actions/runs/44105177401
+- Next: user adds the Dev Auth Redirect URL above; then run the authenticated browser flow and continue the reward-integrity tests.
