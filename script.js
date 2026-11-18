@@ -1194,6 +1194,9 @@ function renderLessons(){
   const pct=Math.round(state.done.length/lessons.length*100);
   $("bar").style.width=pct+"%"; $("percent").textContent=pct+"%"; $("pathPct").textContent=pct+"%";
   $("done").textContent=`${state.done.length}/${lessons.length}`; $("xp").textContent=state.xp;
+  $("heroProgressBar").style.width=pct+"%"; $("heroProgressText").textContent=pct+"%";
+  $("heroProgressTrack").setAttribute("aria-valuenow",String(pct));
+  $("progressEncouragement").textContent=pct===0?"Your first lesson is waiting. Start learning and watch your progress grow.":pct===100?"You've completed the beginner path. Your next chapter starts with a project.":`You're building momentum. ${lessons.length-state.done.length} lessons left in this path.`;
   $("streak").textContent=state.streak; $("streakText").textContent=state.streak?`${state.streak} day${state.streak===1?"":"s"} in a row`:"Start learning today";
   $("levelText").textContent=levelName();
   $("goalText").textContent=nextIndex===-1?"Path complete — start a project!":`Finish lesson ${nextIndex+1}: ${lessons[nextIndex].title.split(":")[0]}`;

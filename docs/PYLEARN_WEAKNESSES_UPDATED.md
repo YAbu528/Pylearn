@@ -497,8 +497,7 @@ The user confirmed that the recipient domain in the failed signup attempt was in
 ### Mailjet sender feasibility research completed
 
 Current official Mailjet documentation and Gmail sender guidance were reviewed:
-- Mailjet free plan limits: https://documentation.mailjet.com/hc/en-us/articles/19154256993051-Understanding-Mailjet-Free-Plan-Limits
-- Mailjet sender address validation: https://documentation.mailjet.com/hc/en-us/articles/360042759253-How-to-add-a-sender-address
+- Mailjet free plan limits: https://documentation.mailjet.com/hc/en-us/articles/19154256993051-Understanding-Mailjet-Free-Plan-Limits- Mailjet sender address validation: https://documentation.mailjet.com/hc/en-us/articles/360042759253-How-to-add-a-sender-address
 - Mailjet warning about free webmail sender addresses: https://documentation.mailjet.com/hc/en-us/articles/19308800104091-Why-you-should-avoid-free-webmail-as-a-sender-address
 - Mailjet SPF/DKIM and domain authentication: https://www.mailjet.com/email-playbook/deliverability/domain-authentication/
 - Mailjet quick start (updated 2026-11-03): https://documentation.mailjet.com/hc/en-us/articles/37251169295003--Quick-Start-with-Mailjet
@@ -997,8 +996,7 @@ For **Pylearn-Dev only** (project ref `rhtfripfqwccbhcwgoxy`; do not select prod
 ### Exact next actions
 1. User enters Sender name `PyLearn`, Host `smtp.gmail.com`, keeps port `465` with SSL/implicit TLS, enters the full dedicated Gmail address as SMTP username, and enters the App Password privately in the password field. Sender email remains the same dedicated Gmail address already entered.
 2. User confirms that the selected project is Pylearn-Dev (`rhtfripfqwccbhcwgoxy`), then saves the custom SMTP settings.
-3. After saving, report the non-secret status/error only; do not share credentials. If the dashboard reports an error, inspect it before making speculative changes.
-4. Run a controlled verification email test to an inbox the user controls. Inspect Supabase Auth logs and the actual received email. Verify delivery, visible From name/address, subject/body, verification action/link destination, and inbox/spam placement. A successful API response alone is not proof of delivery.
+3. After saving, report the non-secret status/error only; do not share credentials. If the dashboard reports an error, inspect it before making speculative changes.4. Run a controlled verification email test to an inbox the user controls. Inspect Supabase Auth logs and the actual received email. Verify delivery, visible From name/address, subject/body, verification action/link destination, and inbox/spam placement. A successful API response alone is not proof of delivery.
 5. Only after successful real delivery, proceed to email template/verification UX work on a feature branch and preview. Android Chrome and Samsung Internet regression remains required.
 6. Production changes remain separately gated by explicit approval.
 
@@ -1498,7 +1496,6 @@ This was a read-only inspection. No Supabase Auth setting, SMTP credential, data
 | SMTP-ACCESS-CHECK-20261111 | Inspect available Supabase actions, project metadata and latest Auth logs | Pylearn-Dev `rhtfripfqwccbhcwgoxy` | Read-only | Project remains ACTIVE_HEALTHY; Auth logs still show Gmail 535; no SMTP settings read/write action is exposed |
 | DOC-SMTP-ACCESS-LIMIT-20261111 | Record user request, connector limitation and safe next step | `audit/reward-integrity-phase1-20261107` | Commit/blob IDs recorded after successful write and re-fetch | Starting blob `a7ac9b062265c0c0c6f34040910b7cb0fb8ca252` |
 
-
 ## Session record — SMTP encryption mode clarification (2026-11-11)
 
 ### User update
@@ -1997,8 +1994,7 @@ Wait for the user to confirm that the newly generated Google App Password has be
 | HANDOVER-READ-20261111-NEWCHAT | Fetch and read the complete canonical handover | `audit/reward-integrity-phase1-20261107` | Read-only before this checkpoint | No source commit | Starting blob `4df1f962f895c4b2f8bef10cdd00dccb2a8d5d00`; complete lines 1–1934 read |
 | REWARD-DOCS-READ-20261111 | Read companion design and contract in full | `feat/server-authoritative-rewards-20261107` | Read-only | No source commit | Design blob `6b6e31e18ea25a8e8ab644083d3a7d4607c782fe`; contract blob `c2af4f92fff34c2a09a23f9592c44df2dd9e153e` |
 | SMTP-NEW-APP-PASSWORD-20261111 | Continue Dev SMTP verification using the replacement App Password | Pylearn-Dev only | No code commit planned | PENDING — awaiting user's confirmation that the new password was privately saved | No signup/test performed in this conversation |
-| REWARD-E2E-19 | Authenticated reward end-to-end tests | Feature preview + Pylearn-Dev | `test(rewards): verify authenticated learning reward flow` | PENDING | Not run |
-| MOBILE-REGRESSION-20 | Android Chrome and Samsung Internet regression | Preview only | `test(mobile): verify preview auth and learning sync` | PENDING | Not run |
+| REWARD-E2E-19 | Authenticated reward end-to-end tests | Feature preview + Pylearn-Dev | `test(rewards): verify authenticated learning reward flow` | PENDING | Not run || MOBILE-REGRESSION-20 | Android Chrome and Samsung Internet regression | Preview only | `test(mobile): verify preview auth and learning sync` | PENDING | Not run |
 | PROD-REVIEW-21 | Separate production rollout review | Production | No production change planned | PENDING — explicit approval required | Not authorized |
 
 
@@ -2497,8 +2493,7 @@ Traceability follow-up verification: the preceding traceability addendum was com
    - The Dev RPC validates challenge eligibility by supported lesson ID and relies on the Edge Function's correct-answer validation, but it does not require prior quiz or lesson evidence for that lesson before awarding challenge XP.
    - If challenge XP is intended to require lesson/quiz completion first, add that prerequisite inside the atomic RPC (not only in the UI) and test it. If correct objective answers alone are sufficient, document that as intentional behavior.
 
-6. **Keep answer keys synchronized with curriculum.**
-   - The Dev verifier holds 14 quiz answer indexes and objective challenge answers server-side. The contract says these indexes match the current `script.js` option order, but this relationship must be tested on every curriculum/option-order change. Add an automated source/contract check or versioned question identifiers before production. A stale answer key could reject correct answers or validate a different option after content changes.
+6. **Keep answer keys synchronized with curriculum.**   - The Dev verifier holds 14 quiz answer indexes and objective challenge answers server-side. The contract says these indexes match the current `script.js` option order, but this relationship must be tested on every curriculum/option-order change. Add an automated source/contract check or versioned question identifiers before production. A stale answer key could reject correct answers or validate a different option after content changes.
    - The current fixed achievement threshold of 14 matches the present 14-lesson curriculum. If the lesson count changes, update and test achievement thresholds deliberately; do not silently assume it is dynamic.
 
 7. **Authenticated browser test is still a release gate.**
@@ -2984,3 +2979,24 @@ All three files were independently fetched from feature branch `feat/server-auth
 - Added a subtle neutral surface response for icon controls and prevented hover-only styling from sticking on touch devices. Existing button colors, labels, dimensions, click handlers, menu behavior, and feature logic were not intentionally changed.
 - Updated the stylesheet cache-busting version in root `index.html` so browsers request the new CSS.
 - Work is isolated on `fix/button-tap-feedback-20261118`. Production `main` has not been changed. Device verification is pending; inspect the Vercel preview on the user's Galaxy A15 before merging.
+
+### Landing-page progress statistics UX polish (2026-11-18)
+- User reviewed the mobile landing-page screenshot and correctly identified that the four raw progress values (XP, lessons, day streak, badges) looked visually scattered and did not read as a cohesive progress component.
+- Source inspection found the root cause in the landing-page .stats CSS: it used a plain flex row with a 30px gap, while each value/label pair had no shared card surface, icon, consistent width, or visual grouping. The numbers therefore floated independently and the spacing varied with each label's intrinsic width.
+- Updated root index.html on feature branch fix/hero-stats-20261118: retained the existing live DOM IDs (xp, done, streak, badgeCount) so the current progress-rendering JavaScript continues to update the same values; added small decorative icons, clearer labels, and an accessible label for the group.
+- Updated root style.css: replaced the loose row with consistent stat tiles; desktop uses four equal columns, while mobile uses a balanced two-column/two-row grid. Each tile has a restrained panel surface, subtle border, rounded corners, aligned icon, consistent value typography, and readable secondary label. The layout remains responsive and does not change XP, lesson, streak, badge calculations, persistence, or gamification logic.
+- Updated the stylesheet cache-busting query in root index.html to hero-stats-20261118-1.
+- Exact commits: HTML e24f2344e078c621072e21cd3e878c305d93172d; CSS 2c042cfd75264dad87b0073bf3174b7ba5c5bd21.
+- Status: source changes committed to the isolated feature branch. No browser/device visual test has yet been performed; the next required step is a Vercel Preview deployment and user inspection on the Samsung Galaxy A15. Do not claim the visual issue is fixed until that test is reported successful. Production main remains unchanged.
+- Design rationale: the mobile 2×2 layout makes each metric independently scannable, gives all four values equal visual weight, and uses icons only as quick visual cues rather than relying on color or irregular spacing.
+
+
+### Landing-page learning journey redesign (2026-11-18)
+- User rejected the first statistics-card iteration after testing the preview; feedback was that merely putting four metrics into separate cards did not deliver the stronger UX expected for a primary landing-page feature.
+- Reframed the component as one unified "Your learning journey" progress panel rather than four equal metric cards.
+- Main hierarchy: prominent XP total; beginner learning-path completion count and percentage with a live progress bar; two supporting achievements (day streak and badges) in a compact footer separated by a divider. The design uses the existing PyLearn dark palette, restrained blue accent, consistent typography, and a single shared surface.
+- Added a welcoming zero-progress message and dynamic progress copy for in-progress and completed states. Progress bar exposes an accessible progressbar role and aria-valuenow.
+- Preserved existing IDs and calculations for xp, done, streak, and badgeCount. Added heroProgressBar, heroProgressText, heroProgressTrack, and progressEncouragement updates inside the existing render path, driven by the same computed completion percentage. No XP, lesson, streak, badge, auth, or persistence logic changed.
+- Responsive behavior: compact two-column XP/progress arrangement on wider screens; intentional vertical stacking of XP then path progress on mobile; streak and badge achievements remain in one tidy supporting row.
+- Updated root index.html, style.css, and script.js on feature branch fix/hero-stats-20261118. Stylesheet cache version is learning-journey-20261118-2.
+- This supersedes the rejected four-card treatment. It is not merged to production. Next: inspect the updated Vercel Preview on Android and iterate based on the user's screenshot/feedback. Do not describe it as accepted or complete until the user verifies it.

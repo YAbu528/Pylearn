@@ -42,7 +42,7 @@
 <!-- Preload both theme logos so switching themes does not wait for an image download. -->
 <link rel="preload" as="image" href="assets/pylearn-logo-dark.png">
 <link rel="preload" as="image" href="assets/pylearn-logo-light.png">
-<link rel="stylesheet" href="style.css?v=button-tap-feedback-20261118-1">
+<link rel="stylesheet" href="style.css?v=learning-journey-20261118-2">
 </head>
 <body>
 <header class="topbar">
@@ -167,12 +167,46 @@
       <button class="primary big" onclick="go('learn')">Continue learning →</button>
       <button class="ghost big" onclick="go('playground')">Open playground</button>
     </div>
-    <div class="stats">
-      <b><strong id="xp">0</strong><small>XP</small></b>
-      <b><strong id="done">0/14</strong><small>lessons</small></b>
-      <b><strong id="streak">0</strong><small>day streak</small></b>
-      <b><strong id="badgeCount">0</strong><small>badges</small></b>
-    </div>
+    <section class="learning-overview" aria-label="Your learning progress">
+      <div class="overview-topline">
+        <span class="overview-kicker">YOUR LEARNING JOURNEY</span>
+        <span class="overview-live"><i aria-hidden="true"></i> YOUR PROGRESS</span>
+      </div>
+      <div class="overview-main">
+        <div class="overview-xp">
+          <span class="overview-xp-icon" aria-hidden="true">⚡</span>
+          <div class="overview-xp-copy">
+            <strong id="xp">0</strong>
+            <span>experience points</span>
+          </div>
+        </div>
+        <div class="overview-lessons">
+          <div class="overview-progress-heading">
+            <div>
+              <strong>Beginner learning path</strong>
+              <span id="done">0/14</span><small> lessons completed</small>
+            </div>
+            <strong class="overview-percent" id="heroProgressText">0%</strong>
+          </div>
+          <div class="overview-track" role="progressbar" aria-label="Beginner learning path completion" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="heroProgressTrack">
+            <span id="heroProgressBar"></span>
+          </div>
+          <p id="progressEncouragement">Your first lesson is waiting. Start learning and watch your progress grow.</p>
+        </div>
+      </div>
+      <div class="overview-divider"></div>
+      <div class="overview-achievements">
+        <div class="overview-achievement">
+          <span class="overview-achievement-icon streak-icon" aria-hidden="true">🔥</span>
+          <div><strong id="streak">0</strong><span>day streak</span></div>
+        </div>
+        <div class="overview-achievement">
+          <span class="overview-achievement-icon badge-icon" aria-hidden="true">🏅</span>
+          <div><strong id="badgeCount">0</strong><span>badges earned</span></div>
+        </div>
+        <span class="overview-footnote">Small steps. Real progress.</span>
+      </div>
+    </section>
   </div>
   <div class="code-card">
     <div class="bar">lesson_01.py <span>● ● ●</span></div>
