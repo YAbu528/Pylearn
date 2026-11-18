@@ -2989,3 +2989,14 @@ All three files were independently fetched from feature branch `feat/server-auth
 - Exact commits: HTML e24f2344e078c621072e21cd3e878c305d93172d; CSS 2c042cfd75264dad87b0073bf3174b7ba5c5bd21.
 - Status: source changes committed to the isolated feature branch. No browser/device visual test has yet been performed; the next required step is a Vercel Preview deployment and user inspection on the Samsung Galaxy A15. Do not claim the visual issue is fixed until that test is reported successful. Production main remains unchanged.
 - Design rationale: the mobile 2×2 layout makes each metric independently scannable, gives all four values equal visual weight, and uses icons only as quick visual cues rather than relying on color or irregular spacing.
+
+
+### Landing-page learning journey redesign (2026-11-18)
+- User rejected the first statistics-card iteration after testing the preview; feedback was that merely putting four metrics into separate cards did not deliver the stronger UX expected for a primary landing-page feature.
+- Reframed the component as one unified "Your learning journey" progress panel rather than four equal metric cards.
+- Main hierarchy: prominent XP total; beginner learning-path completion count and percentage with a live progress bar; two supporting achievements (day streak and badges) in a compact footer separated by a divider. The design uses the existing PyLearn dark palette, restrained blue accent, consistent typography, and a single shared surface.
+- Added a welcoming zero-progress message and dynamic progress copy for in-progress and completed states. Progress bar exposes an accessible progressbar role and aria-valuenow.
+- Preserved existing IDs and calculations for xp, done, streak, and badgeCount. Added heroProgressBar, heroProgressText, heroProgressTrack, and progressEncouragement updates inside the existing render path, driven by the same computed completion percentage. No XP, lesson, streak, badge, auth, or persistence logic changed.
+- Responsive behavior: compact two-column XP/progress arrangement on wider screens; intentional vertical stacking of XP then path progress on mobile; streak and badge achievements remain in one tidy supporting row.
+- Updated root index.html, style.css, and script.js on feature branch fix/hero-stats-20261118. Stylesheet cache version is learning-journey-20261118-2.
+- This supersedes the rejected four-card treatment. It is not merged to production. Next: inspect the updated Vercel Preview on Android and iterate based on the user's screenshot/feedback. Do not describe it as accepted or complete until the user verifies it.
