@@ -2975,3 +2975,12 @@ All three files were independently fetched from feature branch `feat/server-auth
 - Frontend code uses the normal Supabase JS call `signInWithOAuth({ provider: "gitlab", options: { redirectTo: window.location.origin + window.location.pathname } })`; provider ID is correct. The shared handler is used by other social providers.
 - Next: inspect the Supabase project's GitLab provider configuration and any provider URL/override setting (without exposing or changing secrets), plus Auth URL/site URL configuration. Do not change the GitLab Redirect URI or production code until the malformed path is explained. Re-test on preview after the root cause is identified.
 - PR #42 remains open and unmerged; production frontend unchanged.
+
+
+### Button and touch-feedback polish (2026-11-18)
+- User reported that tapping the three-dot menu on the mobile site produced a bright blue rectangular highlight that looked like a hyperlink selection rather than a deliberate button interaction. They confirmed the same visual behavior affected buttons throughout PyLearn.
+- Screenshot review showed the highlight on the top-right menu control on the user's Android phone. The issue is consistent with the browser's native WebKit tap-highlight overlay, which had not been explicitly styled.
+- Added a shared interaction layer in root `style.css` to disable the native tap-highlight overlay on buttons, links, and button-like controls; standardize native button appearance and touch handling; provide a restrained one-pixel press response; and keep a clear keyboard-only focus-visible outline for accessibility.
+- Added a subtle neutral surface response for icon controls and prevented hover-only styling from sticking on touch devices. Existing button colors, labels, dimensions, click handlers, menu behavior, and feature logic were not intentionally changed.
+- Updated the stylesheet cache-busting version in root `index.html` so browsers request the new CSS.
+- Work is isolated on `fix/button-tap-feedback-20261118`. Production `main` has not been changed. Device verification is pending; inspect the Vercel preview on the user's Galaxy A15 before merging.
