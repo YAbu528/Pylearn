@@ -460,3 +460,69 @@ body.light .curriculum-card{background:linear-gradient(155deg,#fff,var(--card))}
 body.light .pylearn-footer{background:#eef0f5!important}
 @media(max-width:900px){.pylearn-footer .footer-main{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:28px}.pylearn-footer .footer-brand{grid-column:1/-1}}
 @media(max-width:600px){.pylearn-footer{padding:32px 5% 18px!important}.pylearn-footer .footer-main{grid-template-columns:1fr 1fr;gap:25px 18px}.pylearn-footer .footer-brand{grid-column:1/-1}.pylearn-footer .footer-brand .logo img{width:100px;height:70px}.pylearn-footer .footer-bottom{align-items:flex-start;flex-direction:column;gap:13px}.pylearn-footer .footer-bottom nav{gap:12px 18px}}
+
+/* Consistent, polished feedback for touch and pointer interactions */
+button,
+a,
+[role="button],
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  -webkit-appearance: none;
+  appearance: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:not(:disabled) {
+  transition:
+    background-color .16s ease,
+    border-color .16s ease,
+    color .16s ease,
+    box-shadow .16s ease,
+    filter .16s ease,
+    transform .16s ease;
+}
+
+button:not(:disabled):active {
+  transform: translateY(1px);
+  filter: brightness(.96);
+}
+
+button:focus {
+  outline: none;
+}
+
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--purple2);
+  outline-offset: 3px;
+}
+
+/* Icon controls use a restrained surface response rather than a bright tap flash. */
+.icon-btn:hover {
+  border-color: rgba(96,165,250,.38);
+  background: rgba(148,163,184,.07);
+}
+
+.icon-btn:active {
+  background: rgba(148,163,184,.12);
+  box-shadow: none;
+}
+
+@media (hover: none) {
+  .primary:hover {
+    filter: none;
+  }
+
+  .ghost:hover,
+  .icon-btn:hover {
+    background: transparent;
+    border-color: var(--line);
+  }
+}
