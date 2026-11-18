@@ -42,7 +42,7 @@
 <!-- Preload both theme logos so switching themes does not wait for an image download. -->
 <link rel="preload" as="image" href="assets/pylearn-logo-dark.png">
 <link rel="preload" as="image" href="assets/pylearn-logo-light.png">
-<link rel="stylesheet" href="style.css?v=button-tap-feedback-20261118-1">
+<link rel="stylesheet" href="style.css?v=hero-stats-20261118-1">
 </head>
 <body>
 <header class="topbar">
@@ -167,11 +167,11 @@
       <button class="primary big" onclick="go('learn')">Continue learning →</button>
       <button class="ghost big" onclick="go('playground')">Open playground</button>
     </div>
-    <div class="stats">
-      <b><strong id="xp">0</strong><small>XP</small></b>
-      <b><strong id="done">0/14</strong><small>lessons</small></b>
-      <b><strong id="streak">0</strong><small>day streak</small></b>
-      <b><strong id="badgeCount">0</strong><small>badges</small></b>
+    <div class="stats" aria-label="Your learning progress">
+      <b><span class="stat-icon" aria-hidden="true">⚡</span><strong id="xp">0</strong><small>XP earned</small></b>
+      <b><span class="stat-icon" aria-hidden="true">📚</span><strong id="done">0/14</strong><small>Lessons</small></b>
+      <b><span class="stat-icon" aria-hidden="true">🔥</span><strong id="streak">0</strong><small>Day streak</small></b>
+      <b><span class="stat-icon" aria-hidden="true">🏅</span><strong id="badgeCount">0</strong><small>Badges</small></b>
     </div>
   </div>
   <div class="code-card">
