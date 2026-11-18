@@ -464,7 +464,7 @@ body.light .pylearn-footer{background:#eef0f5!important}
 /* Consistent, polished feedback for touch and pointer interactions */
 button,
 a,
-[role="button],
+[role="button"],
 input[type="button"],
 input[type="submit"],
 input[type="reset"] {
