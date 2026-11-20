@@ -1674,13 +1674,23 @@ function updateLogoTheme() {
   });
 }
 
+function updateThemeToggle() {
+  const button = $("theme");
+  if (!button) return;
+  const isLight = document.body.classList.contains("light");
+  const sunIcon = button.querySelector(".theme-icon-sun");
+  const moonIcon = button.querySelector(".theme-icon-moon");
+  button.classList.toggle("is-light", isLight);
+  const actionLabel = isLight ? "Switch to dark theme" : "Switch to light theme";
+  button.setAttribute("aria-label", actionLabel);
+  button.setAttribute("title", actionLabel);
+}
+
 $("theme").onclick = () => {
   document.body.classList.toggle("light");
-
   const isLight = document.body.classList.contains("light");
-  $("theme").textContent = isLight ? "🌙" : "☀️";
-
   uiStorage.setItem("pylearn_theme", isLight ? "light" : "dark");
+  updateThemeToggle();
   updateLogoTheme();
 };
 
@@ -1718,11 +1728,12 @@ $("editor").addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key==="E
 
 if (uiStorage.getItem("pylearn_theme") === "light") {
   document.body.classList.add("light");
-  $("theme").textContent = "🌙";
 }
 
+updateThemeToggle();
 updateLogoTheme();
 loadCosmeticPreference(null);
+updateThemeToggle();
 
 initializeAuth();
 
