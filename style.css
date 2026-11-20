@@ -47,7 +47,10 @@ button,a,textarea{font:inherit}button{cursor:pointer}a{color:inherit;text-decora
   stroke-linejoin:round;
   transition:transform .2s ease;
 }
-.theme-toggle[hidden],.theme-toggle svg[hidden]{display:none}
+.theme-toggle .theme-icon-sun{display:block}
+.theme-toggle .theme-icon-moon{display:none}
+.theme-toggle.is-light .theme-icon-sun{display:none}
+.theme-toggle.is-light .theme-icon-moon{display:block}
 .icon-btn.theme-toggle:hover{
   color:var(--text);
   border-color:rgba(96,165,250,.42);
