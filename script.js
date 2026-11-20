@@ -1680,8 +1680,7 @@ function updateThemeToggle() {
   const isLight = document.body.classList.contains("light");
   const sunIcon = button.querySelector(".theme-icon-sun");
   const moonIcon = button.querySelector(".theme-icon-moon");
-  if (sunIcon) sunIcon.hidden = isLight;
-  if (moonIcon) moonIcon.hidden = !isLight;
+  button.classList.toggle("is-light", isLight);
   const actionLabel = isLight ? "Switch to dark theme" : "Switch to light theme";
   button.setAttribute("aria-label", actionLabel);
   button.setAttribute("title", actionLabel);
@@ -1734,6 +1733,7 @@ if (uiStorage.getItem("pylearn_theme") === "light") {
 updateThemeToggle();
 updateLogoTheme();
 loadCosmeticPreference(null);
+updateThemeToggle();
 
 initializeAuth();
 
