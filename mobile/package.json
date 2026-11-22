@@ -12,6 +12,7 @@
   "dependencies": {
     "expo": "~57.0.33",
     "expo-constants": "~57.0.24",
+    "@expo/metro-runtime": "~57.0.18",
     "expo-linking": "~57.0.14",
     "expo-router": "~57.0.31",
     "expo-status-bar": "~57.0.1",
