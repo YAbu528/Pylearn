@@ -1,0 +1,50 @@
+name: PyLearn mobile validation
+
+on:
+  push:
+    branches:
+      - mobile/expo-foundation
+    paths:
+      - "mobile/**"
+      - ".github/workflows/mobile-validation.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "mobile/**"
+      - ".github/workflows/mobile-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pylearn-mobile-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Install and validate Expo project
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package.json
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Check Expo configuration and dependencies
+        run: npx --yes expo-doctor
+
+      - name: Type-check TypeScript
+        run: npx tsc --noEmit
