@@ -2,12 +2,15 @@
 
 Native Android-first PyLearn application built with Expo, React Native, TypeScript, and Expo Router.
 
-## Current foundation
+## Current implementation
 
-- Isolated under `/mobile`; the existing root website is untouched.
-- Expo SDK 57 dependency line, selected for compatibility with the current Expo Go transition documented by Expo.
-- TypeScript strict mode and Expo Router file-based navigation.
-- No backend credentials or production configuration are included.
+- Isolated under `/mobile`; the existing root website remains untouched.
+- Expo SDK 57 dependency line and TypeScript strict mode.
+- Five working Expo Router tabs: Home, Learn, Practice, Projects, and Profile.
+- Shared screen shell and visual tokens for consistent mobile layouts.
+- Home navigation cards link to the corresponding app areas.
+- Screens explicitly identify curriculum, Python runtime, projects, account, and progress integrations that are not connected yet.
+- No Supabase credentials, production configuration, or user data are included.
 
 ## Local development
 
@@ -18,8 +21,18 @@ npm install
 npx expo start
 ```
 
-Open the project with an Expo Go version compatible with SDK 57. For a custom development or release build, first confirm the available no-cost build options; do not assume a cloud build is free.
+Open the project with an Expo Go version compatible with SDK 57. For custom release builds, use the repository's public GitHub Actions validation workflow; do not assume paid cloud build services are free.
 
-## Verification status
+## Current verification boundary
 
-This is a source-only scaffold created through GitHub's repository API. Dependency installation, type-checking, Metro startup, Expo Go launch, and physical-device testing have not yet been run. Do not treat the foundation as runtime-verified until those checks pass.
+The first standalone Android foundation APK was built with a bundled JavaScript asset and was installed on a Samsung Galaxy A15 (Android 14 / One UI 6.1). The user confirmed that the initial screen rendered and that one full close/reopen cycle rendered again successfully.
+
+The five-tab implementation is now committed to `mobile/expo-foundation`. Its GitHub Actions validation/build run is pending at the latest recorded check. The new navigation and screens have not yet been confirmed on a device. Do not treat source commits or a queued workflow as proof of a successful build or device test.
+
+## Next implementation stages
+
+1. Verify this five-tab build in GitHub Actions and on the Galaxy A15.
+2. Inventory and connect the existing curriculum and lesson content.
+3. Implement real lesson reading, completion, and quizzes.
+4. Review mobile authentication and data contracts before any Supabase integration.
+5. Design the Python playground only after a safe, zero-cost execution approach is established.
