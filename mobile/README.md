@@ -12,6 +12,9 @@ Native Android-first PyLearn application built with Expo, React Native, TypeScri
 - The Learn area now contains a typed, offline curriculum module sourced from the existing website's `main/script.js` lesson model.
 - Fourteen source lessons are available with their original titles, explanations, analogies, code examples, objectives, and quiz questions.
 - Each lesson has a native detail route, readable code sample, objectives, an interactive multiple-choice knowledge check with feedback/retry, and a next-lesson link.
+- The first five foundation lessons also include source-preserved step-by-step explanations, common mistakes, quick recaps, and three optional ungraded practice tasks each, with starter code, hints, and revealable sample solutions.
+- Guided explanations and practice are currently available for Python Basics, Data Types, Operators & input(), Conditions, and Loops. The remaining nine lessons still use the core lesson format until their source guidance is ported.
+- Practice tasks are educational prompts only; no Python code execution, XP, lesson completion, or saved progress is connected yet.
 - Lesson content is bundled with the app; opening lessons does not require downloading a Python runtime.
 - Lesson completion, quiz scores, XP, account identity, and cloud progress are not saved or simulated yet.
 - Practice runtime, project catalog, authentication, and Supabase integration are not connected.
