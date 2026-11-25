@@ -1,5 +1,5 @@
 import { Link, useLocalSearchParams, type Href } from "expo-router";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { lessons } from "@/data/lessons";
 import { palette } from "@/components/screen-shell";
@@ -120,7 +120,7 @@ export default function LessonDetailScreen() {
   );
 }
 
-function LessonSection({ label, title, children }: { label: string; title: string; children: React.ReactNode }) {
+function LessonSection({ label, title, children }: { label: string; title: string; children: ReactNode }) {
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeading}>
