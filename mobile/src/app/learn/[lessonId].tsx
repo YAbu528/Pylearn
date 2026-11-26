@@ -83,6 +83,7 @@ export default function LessonDetailScreen() {
             <Text style={styles.recapLabel}>QUICK RECAP</Text>
             <Text style={styles.recapText}>{guided.recap}</Text>
           </View>
+          {guided.practice.length > 0 ? (
           <LessonSection label="OPTIONAL PRACTICE" title="Try it yourself">
             <Text style={styles.practiceIntro}>These extra tasks are ungraded. They do not award XP or change saved progress.</Text>
             {guided.practice.map((task, index) => {
@@ -112,6 +113,7 @@ export default function LessonDetailScreen() {
               );
             })}
           </LessonSection>
+          ) : null}
         </>
       ) : null}
 
