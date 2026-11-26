@@ -126,5 +126,342 @@ export const guidedLessons: Record<string, GuidedLesson> = {
       { title: "Add numbers with a loop", prompt: "Use a loop to calculate the total of the numbers from 1 through 5, then print the total.", starter: "total = 0\n# Add your loop below\nprint(total)", solution: "total = 0\nfor number in range(1, 6):\n    total += number\nprint(total)", hint: "Start total at 0 and add each number inside the loop." },
       { title: "Repeat until finished", prompt: "Use a while loop to print 3, 2, 1, then print Go!", starter: "count = 3\n", solution: "count = 3\nwhile count > 0:\n    print(count)\n    count -= 1\nprint(\"Go!\")", hint: "Decrease count by 1 each time so the condition eventually becomes false." }
     ]
+  },
+  "lists-dictionaries": {
+    steps: [
+          {
+                "number": "1",
+                "title": "Create a list",
+                "explanation": "Use square brackets and separate items with commas."
+          },
+          {
+                "number": "2",
+                "title": "Use an index",
+                "explanation": "Python starts list indexes at 0, so the first item is items[0]."
+          },
+          {
+                "number": "3",
+                "title": "Create a dictionary",
+                "explanation": "Use key:value pairs inside curly braces."
+          },
+          {
+                "number": "4",
+                "title": "Read and process data",
+                "explanation": "Use keys for dictionaries and indexes or loops for lists."
+          }
+    ],
+    mistakes: [
+          {
+                "title": "Using index 1 for the first list item",
+                "explanation": "Python uses zero-based indexing."
+          },
+          {
+                "title": "Using a list index on a dictionary",
+                "explanation": "Dictionaries are normally accessed by their keys."
+          },
+          {
+                "title": "Mixing up [] and {}",
+                "explanation": "Lists use []; dictionaries use {}."
+          }
+    ],
+    recap: "Lists store ordered items, while dictionaries store key-value pairs.",
+    practice: []
+  },
+  "errors-modules": {
+    steps: [
+          {
+                "number": "1",
+                "title": "Read the error",
+                "explanation": "The exception type and message often tell you what went wrong."
+          },
+          {
+                "number": "2",
+                "title": "Import a module",
+                "explanation": "Use import followed by the module name, such as import math."
+          },
+          {
+                "number": "3",
+                "title": "Call module functionality",
+                "explanation": "Access functions with the module name, such as math.sqrt(49)."
+          },
+          {
+                "number": "4",
+                "title": "Handle expected problems",
+                "explanation": "try/except can keep a known error from stopping the whole program."
+          }
+    ],
+    mistakes: [
+          {
+                "title": "Ignoring the traceback",
+                "explanation": "Read the last part of the error message for useful clues."
+          },
+          {
+                "title": "Forgetting to import a module",
+                "explanation": "Python needs import math before using math.sqrt()."
+          },
+          {
+                "title": "Catching the wrong exception",
+                "explanation": "Handle the specific error your code can reasonably produce."
+          }
+    ],
+    recap: "Errors provide clues, modules add reusable functionality, and try/except handles expected exceptions.",
+    practice: []
+  },
+  "string-skills": {
+    steps: [
+          {
+                "number": "1",
+                "title": "Treat text as a sequence",
+                "explanation": "Strings contain characters that you can index and slice."
+          },
+          {
+                "number": "2",
+                "title": "Use string methods",
+                "explanation": "Methods such as upper(), lower(), and strip() transform or inspect text."
+          },
+          {
+                "number": "3",
+                "title": "Build readable messages",
+                "explanation": "f-strings let you insert values directly into text."
+          },
+          {
+                "number": "4",
+                "title": "Practice slicing",
+                "explanation": "A slice starts at one index and stops before the end index."
+          }
+    ],
+    mistakes: [
+          {
+                "title": "Forgetting zero-based indexing",
+                "explanation": "The first character is at index 0."
+          },
+          {
+                "title": "Expecting the end index to be included",
+                "explanation": "text[0:3] stops before index 3."
+          },
+          {
+                "title": "Mixing quotes and f-string syntax",
+                "explanation": "An f-string needs an f before the opening quote."
+          }
+    ],
+    recap: "Strings are sequences of text, and Python provides powerful tools for indexing, slicing, formatting, and transforming them.",
+    practice: []
+  },
+  "tuples-sets": {
+    steps: [
+          {
+                "number": "1",
+                "title": "Create a tuple",
+                "explanation": "Use parentheses and commas for ordered fixed data."
+          },
+          {
+                "number": "2",
+                "title": "Read tuple items",
+                "explanation": "Use indexes just like with lists."
+          },
+          {
+                "number": "3",
+                "title": "Create a set",
+                "explanation": "Use curly braces when you need unique values."
+          },
+          {
+                "number": "4",
+                "title": "Choose the right collection",
+                "explanation": "Use tuples for fixed ordered data and sets for uniqueness."
+          }
+    ],
+    mistakes: [
+          {
+                "title": "Trying to change a tuple",
+                "explanation": "Tuples are immutable."
+          },
+          {
+                "title": "Expecting set order",
+                "explanation": "Sets are not used for reliable positional order."
+          },
+          {
+                "title": "Using an empty set with {}",
+                "explanation": "{} creates an empty dictionary; use set() for an empty set."
+          }
+    ],
+    recap: "Tuples keep ordered immutable data, while sets keep unique values.",
+    practice: []
+  },
+  "comprehensions": {
+    steps: [
+          {
+                "number": "1",
+                "title": "Choose the source",
+                "explanation": "Start with an iterable such as range(1, 6)."
+          },
+          {
+                "number": "2",
+                "title": "Write the expression",
+                "explanation": "Decide what each item should become."
+          },
+          {
+                "number": "3",
+                "title": "Add the loop",
+                "explanation": "Use for to produce one result per source item."
+          },
+          {
+                "number": "4",
+                "title": "Add a condition if needed",
+                "explanation": "An if at the end can filter the items."
+          }
+    ],
+    mistakes: [
+          {
+                "title": "Reading the order incorrectly",
+                "explanation": "The expression comes before the for part."
+          },
+          {
+                "title": "Forgetting brackets",
+                "explanation": "A list comprehension uses square brackets."
+          },
+          {
+                "title": "Making it too complicated",
+                "explanation": "Use a normal loop when a comprehension becomes hard to read."
+          }
+    ],
+    recap: "List comprehensions create lists compactly by combining an expression, a loop, and optionally a condition.",
+    practice: []
+  },
+  "file-handling": {
+    steps: [
+          {
+                "number": "1",
+                "title": "Open the file",
+                "explanation": "Use with open(filename, mode) as file."
+          },
+          {
+                "number": "2",
+                "title": "Choose a mode",
+                "explanation": "r reads, w writes, and a appends."
+          },
+          {
+                "number": "3",
+                "title": "Read or write",
+                "explanation": "Use read(), write(), or other file methods."
+          },
+          {
+                "number": "4",
+                "title": "Let with close it",
+                "explanation": "The with block handles closing the file for you."
+          }
+    ],
+    mistakes: [
+          {
+                "title": "Using the wrong mode",
+                "explanation": "w replaces old contents; a adds to the end."
+          },
+          {
+                "title": "Forgetting the with block indentation",
+                "explanation": "File operations belong inside the block."
+          },
+          {
+                "title": "Using an unavailable file path",
+                "explanation": "Make sure the file location is correct."
+          }
+    ],
+    recap: "with open() makes file access safer and clearer by handling the file lifecycle automatically.",
+    practice: []
+  },
+  "object-oriented-python": {
+    steps: [
+          {
+                "number": "1",
+                "title": "Define a class",
+                "explanation": "Use class followed by the class name and a colon."
+          },
+          {
+                "number": "2",
+                "title": "Initialize objects",
+                "explanation": "__init__ runs when a new object is created."
+          },
+          {
+                "number": "3",
+                "title": "Store instance data",
+                "explanation": "Use self.name or similar attributes."
+          },
+          {
+                "number": "4",
+                "title": "Add methods",
+                "explanation": "Methods describe behavior that objects can perform."
+          }
+    ],
+    mistakes: [
+          {
+                "title": "Forgetting self",
+                "explanation": "Instance methods need self as their first parameter."
+          },
+          {
+                "title": "Confusing class and object",
+                "explanation": "The class is the blueprint; the object is an instance."
+          },
+          {
+                "title": "Calling a method without an object",
+                "explanation": "Usually call object.method() so self is supplied automatically."
+          }
+    ],
+    recap: "Classes define blueprints for objects, which combine data and behavior in reusable structures.",
+    practice: []
+  },
+  "apis-json": {
+    steps: [
+          {
+                "number": "1",
+                "title": "Understand the request",
+                "explanation": "An API exposes data or actions that another program can use."
+          },
+          {
+                "number": "2",
+                "title": "Recognize JSON",
+                "explanation": "JSON commonly represents objects as key-value pairs and arrays as lists."
+          },
+          {
+                "number": "3",
+                "title": "Parse JSON",
+                "explanation": "json.loads() turns JSON text into Python data."
+          },
+          {
+                "number": "4",
+                "title": "Use the data",
+                "explanation": "Access dictionary keys and list items just like normal Python values."
+          }
+    ],
+    mistakes: [
+          {
+                "title": "Confusing JSON with a Python dictionary",
+                "explanation": "JSON is text until you parse it."
+          },
+          {
+                "title": "Forgetting to import json",
+                "explanation": "Use import json before json.loads()."
+          },
+          {
+                "title": "Using the wrong key",
+                "explanation": "The key must match the JSON data exactly."
+          }
+    ],
+    recap: "APIs let programs communicate, and JSON is a common format for structured data exchanged between them.",
+    practice: []
+  },
+  "functions": {
+    steps: [
+      { number: "1", title: "Define the function", explanation: "Use def followed by a function name, parentheses, and a colon. The indented lines below the header form the function body." },
+      { number: "2", title: "Receive input through a parameter", explanation: "In def greet(name):, name is a parameter. When greet(\"Python\") is called, the argument \"Python\" is assigned to name for that call." },
+      { number: "3", title: "Return a result", explanation: "return sends a value back to the code that called the function. It also ends that function call." },
+      { number: "4", title: "Call the function", explanation: "Writing greet(\"Python\") runs the function body. You can store its returned value, as in message = greet(\"Python\")." },
+      { number: "5", title: "Use the returned value", explanation: "After the call, message contains the returned greeting. print(message) displays it." }
+    ],
+    mistakes: [
+      { title: "Defining a function but never calling it", explanation: "The def statement creates the function. Its body runs only when you call it by writing its name with parentheses." },
+      { title: "Forgetting the colon or indentation", explanation: "A function header ends with a colon, and its body must be indented underneath it." },
+      { title: "Confusing print() with return", explanation: "print() displays something. return sends a value back so the calling code can store or use it." },
+      { title: "Passing the wrong number of arguments", explanation: "A call must provide the required arguments for the function's parameters, unless defaults or flexible arguments are defined." }
+    ],
+    recap: "A function is a reusable block defined with def. Parameters receive inputs, arguments are supplied when calling it, and return sends a result back to the caller.",
+    practice: []
   }
 };
