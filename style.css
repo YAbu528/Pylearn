@@ -783,3 +783,125 @@ button:disabled {
 @media(prefers-reduced-motion:reduce){
   .overview-track span{transition:none}
 }
+
+
+/* Lesson notebook UX refresh */
+.notes-card{display:flex;flex-direction:column;gap:12px}
+.notes-card-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.notes-card-heading h3{margin:5px 0 0}
+.note-status{display:inline-flex;align-items:center;max-width:58%;padding:6px 9px;border:1px solid var(--line);border-radius:999px;background:var(--card);font-size:10px;line-height:1.35;font-weight:800;text-align:right;color:var(--muted)}
+.note-status[data-state="synced"]{color:var(--green);border-color:rgba(34,197,94,.28);background:rgba(34,197,94,.07)}
+.note-status[data-state="saving"],.note-status[data-state="pending"]{color:var(--purple2);border-color:rgba(96,165,250,.3)}
+.note-status[data-state="offline"],.note-status[data-state="error"]{color:var(--red);border-color:rgba(239,68,68,.28)}
+.note-status[data-state="signed-out"]{color:var(--muted)}
+.notes-help{margin:0}
+.notes-library{padding:12px;border:1px solid var(--line);border-radius:13px;background:var(--card2)}
+.notes-library-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
+.notes-library-head b{font-size:12px}
+.notes-library-head span{font-size:10px;color:var(--muted);font-weight:800}
+#noteLibrarySearch{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);font:inherit;font-size:12px;outline:0}
+#noteLibrarySearch:focus{border-color:var(--purple2);box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.saved-notes-list{display:grid;gap:7px;max-height:245px;overflow:auto;margin-top:9px}
+.saved-note-item{display:grid;gap:4px;width:100%;min-width:0;padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);text-align:left;cursor:pointer}
+.saved-note-item:hover{border-color:var(--purple2);background:var(--card2)}
+.saved-note-title{font-size:11px;font-weight:850}
+.saved-note-preview{overflow:hidden;color:var(--muted);font-size:10px;line-height:1.45;text-overflow:ellipsis;white-space:nowrap}
+.notes-editor-label{margin-top:2px;color:var(--muted);font-size:10px;font-weight:900;letter-spacing:.09em}
+.notes-card textarea{min-height:220px;resize:vertical;line-height:1.65}
+.notes-card textarea:disabled{opacity:.65;cursor:not-allowed}
+.note-editor-meta{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:10px}
+.notes-actions{margin-top:0}
+@media(max-width:650px){
+ .notes-card{padding:15px}
+ .notes-card-heading{flex-direction:column;align-items:flex-start}
+ .note-status{max-width:100%;text-align:left}
+ .notes-card textarea{min-height:180px;font-size:14px}
+ .notes-actions{display:grid;grid-template-columns:1fr 1fr}
+ .notes-actions button{width:100%;min-width:0;padding-inline:8px}
+ .note-editor-meta{font-size:9px}
+}
+
+/* Compact notebook controls and an in-page clear confirmation that works in mobile browsers. */
+.notes-library{padding:0;overflow:hidden}
+.notes-library>summary{list-style:none;cursor:pointer;padding:12px 13px;margin:0}
+.notes-library>summary::-webkit-details-marker{display:none}
+.notes-library>summary:after{content:"＋";color:var(--muted);font-size:14px}
+.notes-library[open]>summary:after{content:"−"}
+.notes-library-content{padding:0 12px 12px}
+.notes-library-head{margin:0}
+.note-format-toolbar{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.note-format-toolbar button{min-width:34px;min-height:33px;padding:6px 9px;border:1px solid var(--line);border-radius:8px;background:var(--card2);color:var(--text);font-size:11px;font-weight:800}
+.note-format-toolbar button:hover{border-color:var(--purple2);background:var(--panel)}
+.notes-card textarea{min-height:190px}
+.note-confirm-backdrop[hidden]{display:none!important}
+.note-confirm-backdrop{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:20px;background:rgba(0,0,0,.62);backdrop-filter:blur(4px)}
+.note-confirm-dialog{width:min(100%,390px);padding:22px;border:1px solid var(--line);border-radius:18px;background:var(--panel);box-shadow:0 24px 80px rgba(0,0,0,.4)}
+.note-confirm-dialog h3{margin:8px 0;font-size:19px}
+.note-confirm-dialog p{margin:0;color:var(--muted);font-size:13px;line-height:1.65}
+.note-confirm-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px}
+.note-confirm-actions button{min-height:40px;padding:9px 13px}
+.note-confirm-actions .danger{border:1px solid rgba(239,68,68,.35);border-radius:10px;background:#b91c1c;color:#fff;font-weight:850}
+@media(max-width:650px){.note-format-toolbar{gap:5px}.note-format-toolbar button{min-height:36px;padding:7px 9px}.note-confirm-dialog{padding:19px}}
+
+/* Focused, compact notebook toolbar */
+.note-editor-topline{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:18px 0 9px}
+.notes-editor-label{font-size:11px;font-weight:900;letter-spacing:.09em;color:var(--muted)}
+.note-editor-tip{font-size:10px;color:var(--muted);text-align:right}
+.note-toolbar-shell{position:relative;padding:9px 10px;border:1px solid var(--line);border-radius:12px 12px 0 0;background:var(--card2)}
+.note-toolbar-main{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.note-tool-group{display:flex;align-items:center;gap:4px}
+.note-toolbar-divider{width:1px;height:25px;background:var(--line);margin:0 2px}
+.note-tool-button{min-height:36px;padding:7px 10px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--text);font-size:12px;font-weight:750;cursor:pointer}
+.note-tool-button:hover,.note-tool-button:focus-visible,.note-tool-button[aria-expanded=true]{border-color:var(--line);background:var(--panel);outline:none}
+.note-tool-button.icon-only{min-width:35px;padding:6px 9px;border-color:var(--line);background:var(--card)}
+.note-tool-button.menu-trigger{display:flex;align-items:center;gap:10px;border-color:var(--line);background:var(--card)}
+.note-tool-button.menu-trigger span{color:var(--muted);font-size:10px}
+.note-menu-wrap{position:relative}
+.note-custom-menu[hidden]{display:none!important}
+.note-custom-menu{position:absolute;top:calc(100% + 7px);left:0;z-index:50;display:grid;gap:3px;min-width:190px;max-height:min(65vh,420px);overflow:auto;padding:7px;border:1px solid var(--line);border-radius:12px;background:var(--panel);box-shadow:0 16px 45px rgba(0,0,0,.38)}
+.note-custom-menu>button{display:flex;align-items:center;justify-content:flex-start;gap:9px;width:100%;min-height:36px;padding:8px 10px;border:0;border-radius:7px;background:transparent;color:var(--text);font-size:12px;text-align:left;cursor:pointer}
+.note-custom-menu>button:hover,.note-custom-menu>button:focus-visible{background:var(--card2);outline:none}
+.note-menu-wide{width:260px}
+.note-menu-caption{padding:7px 8px 4px;color:var(--muted);font-size:9px;font-weight:900;letter-spacing:.1em}
+.note-menu-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.note-menu-grid button{min-height:34px;padding:5px;border:1px solid var(--line);border-radius:7px;background:var(--card);color:var(--text);font-size:10px}
+.note-color-palette{display:flex;gap:8px;padding:5px 8px 8px}
+.note-color-palette button{width:24px;height:24px;border:2px solid rgba(255,255,255,.3);border-radius:50%;background:var(--swatch);cursor:pointer}
+.note-color-palette button:focus-visible{outline:2px solid var(--purple2);outline-offset:2px}
+.note-menu-clear{margin-top:5px;border-top:1px solid var(--line)!important;border-radius:0!important;color:var(--muted)!important}
+.note-toolbar-hint{margin-top:7px;color:var(--muted);font-size:10px}
+.note-table-menu-wrap{position:absolute;left:50%;top:0}
+.note-table-menu-wrap .note-custom-menu{left:0}
+.note-rich-editor{width:100%;box-sizing:border-box;min-height:280px;max-height:65vh;overflow:auto;resize:vertical;padding:17px;border:1px solid var(--line);border-top:0;border-radius:0 0 12px 12px;background:var(--card);color:var(--text);font-family:inherit;font-size:14px;line-height:1.7;outline:0;overflow-wrap:anywhere}
+.note-rich-editor:focus{border-color:var(--purple2);box-shadow:0 0 0 2px color-mix(in srgb,var(--purple2) 15%,transparent)}
+.note-rich-editor:empty:before{content:attr(data-placeholder);color:var(--muted);pointer-events:none}
+.note-rich-editor h2,.note-rich-editor h3,.note-rich-editor h4{margin:14px 0 7px;line-height:1.3}
+.note-rich-editor p{margin:0 0 9px}
+.note-rich-editor ul,.note-rich-editor ol{padding-left:25px;margin:8px 0}
+.note-rich-editor blockquote{margin:12px 0;padding:9px 13px;border-left:3px solid var(--purple2);background:var(--card2);color:var(--muted)}
+.note-rich-editor pre{padding:12px;border:1px solid var(--line);border-radius:9px;background:var(--card2);white-space:pre-wrap}
+.note-rich-editor code{padding:2px 5px;border-radius:5px;background:var(--card2);font-family:monospace}
+.note-rich-editor table{width:100%;border-collapse:collapse;margin:12px 0}
+.note-rich-editor th,.note-rich-editor td{min-width:60px;padding:8px;border:1px solid var(--line);text-align:left}
+.note-rich-editor th{background:var(--card2)}
+.note-rich-editor input[type=checkbox]{width:16px;height:16px;vertical-align:middle;accent-color:var(--purple2)}
+.note-rich-editor a{color:var(--purple2);text-decoration:underline}
+.note-rich-editor hr{border:0;border-top:1px solid var(--line);margin:16px 0}
+.note-rich-editor[contenteditable=false]{opacity:.68;cursor:not-allowed}
+.note-link-dialog{display:grid;gap:8px}
+.note-link-dialog label{margin-top:5px;color:var(--muted);font-size:11px;font-weight:800}
+.note-link-dialog input{width:100%;min-height:42px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--text);font:inherit}
+.note-link-dialog input:focus{outline:2px solid var(--purple2);border-color:transparent}
+@media(max-width:650px){
+ .note-editor-topline{align-items:flex-start;flex-direction:column;gap:4px}
+ .note-editor-tip{text-align:left}
+ .note-toolbar-shell{padding:8px}
+ .note-toolbar-main{gap:4px}
+ .note-toolbar-divider{height:21px}
+ .note-tool-button{min-height:39px;padding:7px 9px}
+ .note-custom-menu{position:fixed;top:auto;left:12px;right:12px;bottom:16px;width:auto;max-width:none;max-height:55vh;min-width:0;border-radius:14px;box-shadow:0 16px 60px rgba(0,0,0,.55)}
+ .note-menu-wide{width:auto}
+ .note-table-menu-wrap{position:static}
+ .note-rich-editor{min-height:260px;max-height:60vh;padding:13px;font-size:14px}
+ .note-link-dialog{width:min(100%,390px)}
+}

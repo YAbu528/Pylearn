@@ -571,6 +571,9 @@ let cloudSyncRunning = false;
 let cloudSyncQueued = false;
 let cloudSyncTimer = null;
 let cloudRetryAttempt = 0;
+let noteSaveTimer = null;
+let noteSaveLessonId = null;
+let noteSaveState = "idle";
 const NOTE_META_KEY = "pylearn_note_sync_meta";
 const BOOKMARK_DELETIONS_KEY = "pylearn_bookmark_deletions";
 const CLOUD_USER_KEY = "pylearn_cloud_user_id";
@@ -656,16 +659,38 @@ function activateCloudUser(user) {
 }
 function queueCloudSync() {
   if (!currentCloudUser || !supabaseClient) return;
+  if (!navigator.onLine) {
+    if (noteSaveState === "pending" || noteSaveState === "saving") {
+      noteSaveState = "offline";
+      updateNoteStatus();
+    }
+    return;
+  }
   clearTimeout(cloudSyncTimer);
-  cloudSyncTimer = setTimeout(() => syncLearningData(), 250);
+  cloudSyncTimer = setTimeout(() => syncLearningData(), 350);
 }
 window.addEventListener("online", () => {
-  if (currentCloudUser) syncLearningData();
+  if (currentCloudUser) {
+    if (noteSaveState === "offline") noteSaveState = "saving";
+    updateNoteStatus();
+    syncLearningData();
+  }
+});
+window.addEventListener("pagehide", () => {
+  if (noteSaveTimer) {
+    clearTimeout(noteSaveTimer);
+    noteSaveTimer = null;
+    saveNotes();
+  }
 });
 async function syncLearningData() {
   if (!currentCloudUser || !supabaseClient) return;
   if (cloudSyncRunning) { cloudSyncQueued = true; return; }
   cloudSyncRunning = true;
+  if (noteSaveState === "pending" || noteSaveState === "offline" || noteSaveState === "error") {
+    noteSaveState = "saving";
+    updateNoteStatus();
+  }
   const userId = currentCloudUser.id;
   const hadAuthoritativeXp = xpInitializedUserId === userId;
   const xpBeforeSync = Number(state.xp || 0);
@@ -892,12 +917,15 @@ async function syncLearningData() {
     appStorage.setItem("pylearn_bookmarks", JSON.stringify(bookmarks));
     renderLesson(); renderLessons(); renderStudyTools(); renderLessonReview();
     cloudRetryAttempt = 0;
+    if (noteSaveState === "saving") noteSaveState = "synced";
     setAuthMessage("Your progress, notes, bookmarks, and study history are synced.", "success");
-    const noteStatus=$("noteStatus");
-    if(noteStatus) noteStatus.textContent=notes[String(current)]?"Saved to your account":"No note yet";
+    updateNoteStatus();
+    renderStudyTools();
   } catch (error) {
     console.error("PyLearn cloud sync failed:", error);
-    setAuthMessage("Cloud save failed: " + (error.message || "Please check your connection.") + " Your unsent changes are only in this open page. Keep it open while PyLearn retries.", "error");
+    if (noteSaveState === "saving") noteSaveState = navigator.onLine ? "error" : "offline";
+    updateNoteStatus();
+    setAuthMessage("Cloud save failed: " + (error.message || "Please check your connection.") + " Your notes remain saved on this device and PyLearn will retry when possible.", "error");
     if (navigator.onLine && cloudRetryAttempt < 5) {
       const delay = Math.min(30000, 2000 * (2 ** cloudRetryAttempt));
       cloudRetryAttempt += 1;
@@ -935,19 +963,244 @@ function renderLessonBookmark(){
   b.textContent=saved?"★ Bookmarked":"☆ Bookmark lesson";
   b.classList.toggle("saved",saved);
 }
+function updateNoteStatus(){
+  const status=$("noteStatus"), hint=$("noteSyncHint");
+  if(!status) return;
+  const hasNote=!!(notes[String(current)]||"").trim();
+  const labels={
+    idle:hasNote?(currentCloudUser?"Saved to your account":"Sign in to sync notes"):"No note yet",
+    pending:"Saved locally · waiting to sync",
+    saving:"Syncing to your account…",
+    synced:hasNote?"All changes synced":(readMap(NOTE_META_KEY)[String(current)]?.deleted?"Note deletion synced":"No note yet"),
+    offline:"Saved on this device · offline",
+    error:"Sync failed · will retry"
+  };
+  status.textContent=!currentCloudUser?"Sign in to sync notes":(labels[noteSaveState]||labels.idle);
+  status.dataset.state=currentCloudUser?noteSaveState:"signed-out";
+  if(hint) hint.textContent=noteSaveState==="offline"?"Your changes are safe on this device until you're online.":noteSaveState==="error"?"Your changes remain on this device. PyLearn will retry syncing.":"Notes are saved automatically to your PyLearn account.";
+}
+function noteEditorText(box){
+  return String(box?.innerText||box?.textContent||"").replace(/\u00a0/g," ").trim();
+}
+function sanitizeNoteHTML(value){
+  const raw=String(value||"");
+  if(!raw.trim()) return "";
+  if(!/<\/?(p|br|strong|b|em|i|u|s|strike|ul|ol|li|h[1-6]|blockquote|pre|code|a|hr|table|thead|tbody|tr|td|th|input|span|font|div)\b/i.test(raw)){
+    const escaped=raw.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    return "<p>"+escaped.replace(/\r?\n/g,"<br>")+"</p>";
+  }
+  const parsed=new DOMParser().parseFromString("<body>"+raw+"</body>","text/html");
+  const allowed=new Set(["P","DIV","BR","STRONG","B","EM","I","U","S","STRIKE","UL","OL","LI","H1","H2","H3","H4","H5","H6","BLOCKQUOTE","PRE","CODE","A","HR","TABLE","THEAD","TBODY","TR","TD","TH","INPUT","SPAN","FONT"]);
+  const clean=node=>{
+    [...node.childNodes].forEach(child=>{
+      if(child.nodeType!==1) return;
+      if(!allowed.has(child.tagName)){
+        child.replaceWith(...child.childNodes);
+        return;
+      }
+      [...child.attributes].forEach(attr=>{
+        const name=attr.name.toLowerCase(), value=attr.value;
+        if(child.tagName==="SPAN"&&name==="style"){
+          const safe=value.split(";").map(part=>part.trim()).filter(part=>/^(color|background-color):\s*(#[0-9a-f]{3,8}|[a-z]{3,20}|rgba?\([\d\s.,%]+\))$/i.test(part)).join(";");
+          if(safe) child.setAttribute("style",safe); else child.removeAttribute(attr.name);
+          return;
+        }
+        const keep=(child.tagName==="A"&&name==="href"&&/^(https?:|mailto:)/i.test(value))
+          ||(["TD","TH"].includes(child.tagName)&&["colspan","rowspan"].includes(name)&&/^\d{1,2}$/.test(value))
+          ||(child.tagName==="INPUT"&&name==="type"&&value==="checkbox")
+          ||(child.tagName==="INPUT"&&name==="checked")
+          ||(child.tagName==="FONT"&&name==="color"&&/^(#[0-9a-f]{3,8}|[a-z]{3,20})$/i.test(value));
+        if(!keep) child.removeAttribute(attr.name);
+      });
+      if(child.tagName==="INPUT"&&child.getAttribute("type")!=="checkbox") child.remove();
+      else clean(child);
+    });
+  };
+  clean(parsed.body);
+  return parsed.body.innerHTML;
+}
+function notePlainText(value){
+  const temp=document.createElement("div");
+  temp.innerHTML=sanitizeNoteHTML(value);
+  return String(temp.innerText||temp.textContent||"").replace(/\s+/g," ").trim();
+}
+function updateNoteCharacterCount(){
+  const box=$("lessonNotes"), count=$("noteCharCount");
+  if(!box||!count) return;
+  const n=noteEditorText(box).length;
+  count.textContent=n.toLocaleString()+" character"+(n===1?"":"s");
+}
+function handleNoteInput(){
+  if(!currentCloudUser) return;
+  const box=$("lessonNotes");
+  if(!box) return;
+  const lessonId=String(current), value=sanitizeNoteHTML(box.innerHTML), hasText=!!notePlainText(value);
+  const meta=readMap(NOTE_META_KEY), updatedAt=Date.now();
+  if(hasText) notes[lessonId]=value;
+  else delete notes[lessonId];
+  meta[lessonId]={updatedAt,deleted:!hasText};
+  appStorage.setItem("pylearn_notes",JSON.stringify(notes));
+  appStorage.setItem(NOTE_META_KEY,JSON.stringify(meta));
+  noteSaveState=navigator.onLine?"pending":"offline";
+  updateNoteStatus();
+  updateNoteCharacterCount();
+  clearTimeout(noteSaveTimer);
+  noteSaveLessonId=lessonId;
+  noteSaveTimer=setTimeout(()=>{
+    noteSaveTimer=null;
+    noteSaveLessonId=null;
+    saveNotes();
+    if(currentCloudUser && navigator.onLine) {
+      noteSaveState="saving";
+      updateNoteStatus();
+    }
+  },700);
+  renderSavedNotesList();
+}
 function saveCurrentNote(show=true){
   if(!currentCloudUser){toast("Sign in to save lesson notes.");return}
   const box=$("lessonNotes"); if(!box) return;
-  const value=box.value.trim();
-  const meta=readMap(NOTE_META_KEY);
-  if(value) notes[String(current)]=value; else delete notes[String(current)];
-  meta[String(current)]={updatedAt:Date.now(),deleted:!value};
+  clearTimeout(noteSaveTimer);
+  noteSaveTimer=null;
+  noteSaveLessonId=null;
+  const value=sanitizeNoteHTML(box.innerHTML), hasText=!!notePlainText(value), lessonId=String(current), meta=readMap(NOTE_META_KEY);
+  if(hasText) notes[lessonId]=value; else delete notes[lessonId];
+  meta[lessonId]={updatedAt:Date.now(),deleted:!hasText};
   appStorage.setItem(NOTE_META_KEY,JSON.stringify(meta));
-  saveNotes();
-  if(show){$("noteStatus").textContent=value?"Saving to your account…":"Saving note change…"; toast(value?"📝 Saving note…":"Saving note change…");}
-  renderStudyTools();
+  appStorage.setItem("pylearn_notes",JSON.stringify(notes));
+  noteSaveState=navigator.onLine?"saving":"offline";
+  updateNoteStatus();
+  updateNoteCharacterCount();
+  renderSavedNotesList();
+  queueCloudSync();
+  if(show) toast("Note saved. Syncing to your account.","success");
 }
-function clearCurrentNote(){if(!currentCloudUser){toast("Sign in to manage saved notes.");return} const box=$("lessonNotes"); if(box){box.value="";} delete notes[String(current)]; const meta=readMap(NOTE_META_KEY); meta[String(current)]={updatedAt:Date.now(),deleted:true}; appStorage.setItem(NOTE_META_KEY,JSON.stringify(meta)); saveNotes(); $("noteStatus").textContent="No note yet"; renderStudyTools(); toast("Note cleared","success");}
+function clearCurrentNote(){
+  if(!currentCloudUser){toast("Sign in to manage saved notes.");return}
+  const dialog=$("noteClearDialog");
+  if(!dialog){toast("The confirmation window is unavailable. Your note was not cleared.","error");return}
+  dialog.hidden=false;
+  $("noteClearTitle").textContent="Clear this lesson note?";
+  $("noteClearMessage").textContent="This removes the note for "+(lessons[current]?.short||"this lesson")+" from your notebook and syncs the change to your account.";
+  $("noteClearDialog").querySelector("button.ghost")?.focus();
+}
+function closeNoteClearConfirm(){
+  const dialog=$("noteClearDialog");
+  if(dialog) dialog.hidden=true;
+}
+function confirmClearCurrentNote(){
+  if(!currentCloudUser){closeNoteClearConfirm();toast("Sign in to manage saved notes.");return}
+  closeNoteClearConfirm();
+  clearTimeout(noteSaveTimer);
+  noteSaveTimer=null;
+  noteSaveLessonId=null;
+  const box=$("lessonNotes");
+  if(box) box.innerHTML="";
+  delete notes[String(current)];
+  const meta=readMap(NOTE_META_KEY);
+  meta[String(current)]={updatedAt:Date.now(),deleted:true};
+  appStorage.setItem(NOTE_META_KEY,JSON.stringify(meta));
+  appStorage.setItem("pylearn_notes",JSON.stringify(notes));
+  noteSaveState=navigator.onLine?"saving":"offline";
+  updateNoteStatus();
+  updateNoteCharacterCount();
+  renderSavedNotesList();
+  queueCloudSync();
+  toast("Note cleared. Syncing the change.","success");
+}
+function closeNoteMenus(){
+  document.querySelectorAll(".note-custom-menu").forEach(menu=>menu.hidden=true);
+  document.querySelectorAll(".menu-trigger[aria-controls]").forEach(button=>button.setAttribute("aria-expanded","false"));
+}
+function toggleNoteMenu(name){
+  const menu=$("noteMenu"+name.charAt(0).toUpperCase()+name.slice(1));if(!menu)return;
+  const wasOpen=!menu.hidden;closeNoteMenus();
+  if(!wasOpen){menu.hidden=false;document.querySelector('[aria-controls="'+menu.id+'"]')?.setAttribute("aria-expanded","true")}
+}
+function openNoteLinkDialog(){
+  closeNoteMenus();
+  const box=$("lessonNotes"),dialog=$("noteLinkDialog");if(!box||!dialog)return;
+  const sel=window.getSelection();if(sel?.rangeCount&&box.contains(sel.anchorNode))window.__pylearnNoteRange=sel.getRangeAt(0).cloneRange();
+  $("noteLinkText").value=sel?.toString()||"";$("noteLinkUrl").value="";dialog.hidden=false;$("noteLinkUrl").focus();
+}
+function closeNoteLinkDialog(){const d=$("noteLinkDialog");if(d)d.hidden=true;$("lessonNotes")?.focus()}
+function confirmNoteLink(){
+  const box=$("lessonNotes"),text=$("noteLinkText").value.trim(),url=$("noteLinkUrl").value.trim();if(!box)return;
+  if(!(url.startsWith("https://")||url.startsWith("http://")||url.startsWith("mailto:"))){toast("Enter a valid web or email address.","warning");$("noteLinkUrl").focus();return}
+  box.focus();const range=window.__pylearnNoteRange;
+  if(range&&box.contains(range.commonAncestorContainer)){const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range)}
+  const sel=window.getSelection();
+  if(sel?.toString())document.execCommand("createLink",false,url);
+  else{const safeText=(text||url).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"),safeUrl=url.replace(/&/g,"&amp;").replace(/"/g,"&quot;");document.execCommand("insertHTML",false,'<a href="'+safeUrl+'">'+safeText+'</a>')}
+  closeNoteLinkDialog();handleNoteInput();
+}
+function insertNoteTable(rows,cols){
+  const box=$("lessonNotes");if(!box||box.getAttribute("contenteditable")!=="true")return;box.focus();
+  const range=window.__pylearnNoteRange;if(range&&box.contains(range.commonAncestorContainer)){const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range)}
+  let table="<table><tbody>";
+  for(let r=0;r<rows;r++){table+="<tr>";for(let c=0;c<cols;c++)table+=r===0?"<th>Heading</th>":"<td>Write here</td>";table+="</tr>"}
+  table+="</tbody></table><p><br></p>";document.execCommand("insertHTML",false,table);handleNoteInput();
+}
+function formatLessonNote(kind,value){
+  const box=$("lessonNotes");if(!box||box.getAttribute("contenteditable")!=="true")return;box.focus();
+  const range=window.__pylearnNoteRange;if(range&&box.contains(range.commonAncestorContainer)){const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range)}
+  const sel=window.getSelection();
+  if(kind==="block"){if(value)document.execCommand("formatBlock",false,value)}
+  else if(kind==="bullet")document.execCommand("insertUnorderedList",false,null);
+  else if(kind==="number")document.execCommand("insertOrderedList",false,null);
+  else if(kind==="check")document.execCommand("insertHTML",false,'<ul><li><input type="checkbox"> Task</li></ul><p><br></p>');
+  else if(kind==="code"){const selected=sel?.toString()||"code",safe=selected.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");document.execCommand("insertHTML",false,"<code>"+safe+"</code>")}
+  else if(kind==="rule")document.execCommand("insertHorizontalRule",false,null);
+  else if(kind==="color")document.execCommand("foreColor",false,value);
+  else if(kind==="highlight"){const applied=document.execCommand("hiliteColor",false,value);if(!applied)document.execCommand("backColor",false,value)}
+  else{const commands={bold:"bold",italic:"italic",underline:"underline",strike:"strikeThrough",superscript:"superscript",subscript:"subscript",indent:"indent",outdent:"outdent",alignLeft:"justifyLeft",alignCenter:"justifyCenter",alignRight:"justifyRight",undo:"undo",redo:"redo",clearFormat:"removeFormat"};if(commands[kind])document.execCommand(commands[kind],false,null)}
+  updateNoteCharacterCount();handleNoteInput();
+}
+function renderSavedNotesList(){
+  const list=$("savedNotesList"), count=$("savedNoteCount"), search=($("noteLibrarySearch")?.value||"").trim().toLowerCase();
+  if(!list) return;
+  const localNotes=readLocalJSON("pylearn_notes",{});
+  notes={...(notes||{}),...localNotes};
+  const entries=Object.entries(notes).filter(([id,value])=>String(value||"").trim() && lessons[Number(id)])
+    .map(([id,value])=>({id:Number(id),value:String(value),updatedAt:Number(readMap(NOTE_META_KEY)[id]?.updatedAt||0)}))
+    .sort((a,b)=>b.updatedAt-a.updatedAt);
+  if(count) count.textContent=entries.length+" note"+(entries.length===1?"":"s");
+  const filtered=entries.filter(entry=>{
+    const lesson=lessons[entry.id];
+    return !search || (lesson.title+" "+lesson.short+" "+notePlainText(entry.value)).toLowerCase().includes(search);
+  });
+  list.replaceChildren();
+  if(!filtered.length){
+    const empty=document.createElement("div");
+    empty.className="study-empty";
+    empty.textContent=entries.length?"No notes match that search.":"No notes yet. Write your first lesson note below.";
+    list.appendChild(empty);
+    return;
+  }
+  filtered.forEach(entry=>{
+    const lesson=lessons[entry.id], button=document.createElement("button");
+    button.type="button";
+    button.className="saved-note-item";
+    button.addEventListener("click",()=>openSavedNote(entry.id));
+    const heading=document.createElement("span");
+    heading.className="saved-note-title";
+    heading.textContent=String(entry.id+1).padStart(2,"0")+" · "+lesson.title;
+    const preview=document.createElement("span");
+    preview.className="saved-note-preview";
+    preview.textContent=notePlainText(entry.value);
+    button.append(heading,preview);
+    list.appendChild(button);
+  });
+}
+function openSavedNote(index){
+  if(!lessons[index]) return;
+  selectLesson(index);
+  renderStudyTools();
+  const section=$("studyTools");
+  if(section) section.scrollIntoView({behavior:"smooth",block:"start"});
+  const box=$("lessonNotes");
+  if(box) setTimeout(()=>box.focus({preventScroll:true}),350);
+}
 function openStudyLesson(i){selectLesson(i); setTimeout(()=>go("learn"),120)}
 function openInsightLesson(i,tag){selectLesson(i);setTimeout(()=>{go("learn");if(tag==="PRACTISE"||tag==="REVISIT")go("challenge");},120)}
 function searchLessons(){
@@ -959,18 +1212,21 @@ function searchLessons(){
   results.innerHTML=matches.length?matches.map(({x,i})=>`<button class="search-result ${isUnlocked(i)?"":"locked-result"}" ${isUnlocked(i)?`onclick="openStudyLesson(${i})"`:"disabled"}><span>${x.level}</span><b>${String(i+1).padStart(2,"0")} · ${x.title}</b><small>${isUnlocked(i)?"Open lesson →":"🔒 Complete previous lessons to open"}</small></button>`).join(""):'<div class="search-empty">No lessons matched that search. Try another Python concept.</div>';
 }
 function renderStudyTools(){
-  const list=$("bookmarkList"), count=$("bookmarkCount"), note=$("lessonNotes"), status=$("noteStatus");
+  const list=$("bookmarkList"), count=$("bookmarkCount"), note=$("lessonNotes");
   if(count) count.textContent=bookmarks.length;
   if(note){
-    note.disabled=!currentCloudUser;
-    note.placeholder=currentCloudUser?"Write a note for this lesson…":"Sign in to save lesson notes.";
+    note.setAttribute("contenteditable",currentCloudUser?"true":"false");
+    note.setAttribute("aria-disabled",String(!currentCloudUser));
+    if(document.activeElement!==note) note.innerHTML=sanitizeNoteHTML(notes[String(current)]||"");
   }
+  const title=$("noteLessonTitle");
+  if(title) title.textContent=lessons[current]?"Notes for "+lessons[current].title:"Your lesson notes";
+  const help=$("notesHelp");
+  if(help) help.textContent=currentCloudUser?"Notes save automatically and sync across your signed-in devices.":"Sign in to create and sync your lesson notebook.";
   if(list) list.innerHTML=bookmarks.length?bookmarks.map(i=>{const x=lessons[i]; return `<div class="bookmark-item"><button onclick="openStudyLesson(${i})"><span>🔖</span><div><b>${String(i+1).padStart(2,"0")} · ${x.title}</b><small>${x.short}</small></div></button><button class="remove-bookmark" onclick="removeBookmark(${i})" aria-label="Remove bookmark">×</button></div>`}).join(""):'<div class="study-empty">No bookmarks yet. Bookmark a lesson when you want to review it later.</div>';
-  // A cloud sync can re-render study tools while the user is typing.
-  // Never replace the active textarea value: doing so moves the cursor and
-  // can erase text that has not reached the local save debounce yet.
-  if(note && document.activeElement !== note){note.value=notes[String(current)]||"";}
-  if(status) status.textContent=notes[String(current)]?(currentCloudUser?"Saved to your account":"Sign in to save this note"):"No note yet";
+  updateNoteCharacterCount();
+  updateNoteStatus();
+  renderSavedNotesList();
 }
 function removeBookmark(i){bookmarks=bookmarks.filter(x=>x!==i);const deletions=readMap(BOOKMARK_DELETIONS_KEY);deletions[String(i)]=Date.now();appStorage.setItem(BOOKMARK_DELETIONS_KEY,JSON.stringify(deletions));saveBookmarks();renderStudyTools();renderLessonBookmark();toast("Bookmark removed");}
 function toast(message,type="info"){
@@ -1420,7 +1676,7 @@ function renderBadges(){
 
 function selectLesson(i){
   if(!isUnlocked(i)){toast("Complete the previous lesson to unlock this one.");return}
-  current=i; save(); renderLesson(); renderLessons(); renderLessonReview();
+  current=i; save(); renderLesson(); renderLessons(); renderLessonReview(); renderStudyTools();
   document.querySelector(".lesson-panel")?.scrollIntoView({behavior:"smooth",block:"start"});
 }
 
@@ -1718,10 +1974,18 @@ document.addEventListener("keydown",event=>{
 });
 
 $("lessonSearch")?.addEventListener("input",searchLessons);
-$("lessonNotes")?.addEventListener("input",()=>{
-  clearTimeout(window.__noteTimer);
-  $("noteStatus").textContent="Saving…";
-  window.__noteTimer=setTimeout(()=>saveCurrentNote(false),500);
+$("lessonNotes")?.addEventListener("input",handleNoteInput);
+$("lessonNotes")?.addEventListener("change",event=>{if(event.target.matches("input[type=checkbox]")){if(event.target.checked)event.target.setAttribute("checked","");else event.target.removeAttribute("checked");handleNoteInput()}});
+document.addEventListener("selectionchange",()=>{const box=$("lessonNotes"),sel=window.getSelection();if(box&&sel?.rangeCount&&sel.anchorNode&&box.contains(sel.anchorNode))window.__pylearnNoteRange=sel.getRangeAt(0).cloneRange()});
+document.addEventListener("mousedown",event=>{if(event.target.closest(".note-toolbar-shell button"))event.preventDefault()});
+document.addEventListener("click",event=>{if(!event.target.closest(".note-toolbar-shell"))closeNoteMenus()});
+document.addEventListener("keydown",event=>{
+  if(event.key==="Escape"){closeNoteMenus();if(!$("noteLinkDialog")?.hidden)closeNoteLinkDialog()}
+  const box=$("lessonNotes");
+  if(box&&document.activeElement===box&&(event.ctrlKey||event.metaKey)){
+    const key=event.key.toLowerCase(),commands={b:"bold",i:"italic",u:"underline",z:event.shiftKey?"redo":"undo",y:"redo"};
+    if(commands[key]){event.preventDefault();formatLessonNote(commands[key])}
+  }
 });
 $("editor").addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){e.preventDefault();runPython()}});
 
