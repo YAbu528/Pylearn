@@ -1151,7 +1151,8 @@ function formatLessonNote(kind,value){
   else if(kind==="check")document.execCommand("insertHTML",false,'<ul><li><input type="checkbox"> Task</li></ul><p><br></p>');
   else if(kind==="code"){const selected=sel?.toString()||"code",safe=selected.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");document.execCommand("insertHTML",false,"<code>"+safe+"</code>")}
   else if(kind==="rule")document.execCommand("insertHorizontalRule",false,null);
-  else if(kind==="color"||kind==="highlight")document.execCommand(kind==="color"?"foreColor":"hiliteColor",false,value);
+  else if(kind==="color")document.execCommand("foreColor",false,value);
+  else if(kind==="highlight"){const applied=document.execCommand("hiliteColor",false,value);if(!applied)document.execCommand("backColor",false,value)}
   else{const commands={bold:"bold",italic:"italic",underline:"underline",strike:"strikeThrough",superscript:"superscript",subscript:"subscript",indent:"indent",outdent:"outdent",alignLeft:"justifyLeft",alignCenter:"justifyCenter",alignRight:"justifyRight",undo:"undo",redo:"redo",clearFormat:"removeFormat"};if(commands[kind])document.execCommand(commands[kind],false,null)}
   updateNoteCharacterCount();handleNoteInput();
 }
