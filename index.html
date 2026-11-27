@@ -445,10 +445,20 @@ print("2 + 3 =", 2 + 3)</textarea>
       <div id="bookmarkList" class="bookmark-list"></div>
     </article>
     <article class="notes-card card">
-      <div class="study-head"><div><span class="eyebrow">MY NOTES</span><h3>Notes for this lesson</h3></div><span id="noteStatus">No note yet</span></div>
-      <p class="notes-help">Your notes are saved on this device.</p>
-      <textarea id="lessonNotes" placeholder="Write something you want to remember…"></textarea>
-      <div class="notes-actions"><button class="ghost" onclick="clearCurrentNote()">Clear</button><button class="primary" onclick="saveCurrentNote()">Save note</button></div>
+      <div class="notes-card-heading">
+        <div><span class="eyebrow">MY NOTEBOOK</span><h3 id="noteLessonTitle">Notes for this lesson</h3></div>
+        <span id="noteStatus" class="note-status" data-state="idle" role="status" aria-live="polite">No note yet</span>
+      </div>
+      <p class="notes-help" id="notesHelp">Your notes save automatically and sync to your account.</p>
+      <div class="notes-library">
+        <div class="notes-library-head"><b>All lesson notes</b><span id="savedNoteCount">0 notes</span></div>
+        <input id="noteLibrarySearch" type="search" placeholder="Find a note by lesson…" aria-label="Search saved notes" oninput="renderSavedNotesList()">
+        <div id="savedNotesList" class="saved-notes-list"><div class="study-empty">Your saved lesson notes will appear here.</div></div>
+      </div>
+      <label class="notes-editor-label" for="lessonNotes">CURRENT LESSON NOTE</label>
+      <textarea id="lessonNotes" placeholder="Write something you want to remember…" oninput="handleNoteInput()" aria-describedby="noteEditorMeta"></textarea>
+      <div class="note-editor-meta" id="noteEditorMeta"><span id="noteCharCount">0 characters</span><span id="noteSyncHint">Changes save automatically</span></div>
+      <div class="notes-actions"><button class="ghost" onclick="clearCurrentNote()">Clear note</button><button class="primary" onclick="saveCurrentNote()">Save now</button></div>
     </article>
   </div>
 </section>
