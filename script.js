@@ -979,21 +979,60 @@ function updateNoteStatus(){
   status.dataset.state=currentCloudUser?noteSaveState:"signed-out";
   if(hint) hint.textContent=noteSaveState==="offline"?"Your changes are safe on this device until you're online.":noteSaveState==="error"?"Your changes remain on this device. PyLearn will retry syncing.":"Notes are saved automatically to your PyLearn account.";
 }
+function noteEditorText(box){
+  return String(box?.innerText||box?.textContent||"").replace(/\\u00a0/g," ").trim();
+}
+function sanitizeNoteHTML(value){
+  const raw=String(value||"");
+  if(!raw.trim()) return "";
+  if(!/<\\/?(p|br|strong|b|em|i|u|s|strike|ul|ol|li|h[1-6]|blockquote|pre|code|a|hr|table|thead|tbody|tr|td|th|input)\\b/i.test(raw)){
+    const escaped=raw.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    return "<p>"+escaped.replace(/\\r?\\n/g,"<br>")+"</p>";
+  }
+  const parsed=new DOMParser().parseFromString("<body>"+raw+"</body>","text/html");
+  const allowed=new Set(["P","BR","STRONG","B","EM","I","U","S","STRIKE","UL","OL","LI","H1","H2","H3","H4","H5","H6","BLOCKQUOTE","PRE","CODE","A","HR","TABLE","THEAD","TBODY","TR","TD","TH","INPUT"]);
+  const clean=node=>{
+    [...node.childNodes].forEach(child=>{
+      if(child.nodeType!==1) return;
+      if(!allowed.has(child.tagName)){
+        child.replaceWith(...child.childNodes);
+        return;
+      }
+      [...child.attributes].forEach(attr=>{
+        const name=attr.name.toLowerCase(), value=attr.value;
+        const keep=(child.tagName==="A"&&name==="href"&&/^(https?:|mailto:)/i.test(value))
+          ||(["TD","TH"].includes(child.tagName)&&["colspan","rowspan"].includes(name)&&/^\\d{1,2}$/.test(value))
+          ||(child.tagName==="INPUT"&&name==="type"&&value==="checkbox")
+          ||(child.tagName==="INPUT"&&name==="checked");
+        if(!keep) child.removeAttribute(attr.name);
+      });
+      if(child.tagName==="INPUT"&&child.getAttribute("type")!=="checkbox") child.remove();
+      else clean(child);
+    });
+  };
+  clean(parsed.body);
+  return parsed.body.innerHTML;
+}
+function notePlainText(value){
+  const temp=document.createElement("div");
+  temp.innerHTML=sanitizeNoteHTML(value);
+  return String(temp.innerText||temp.textContent||"").replace(/\\s+/g," ").trim();
+}
 function updateNoteCharacterCount(){
   const box=$("lessonNotes"), count=$("noteCharCount");
   if(!box||!count) return;
-  const n=box.value.length;
+  const n=noteEditorText(box).length;
   count.textContent=n.toLocaleString()+" character"+(n===1?"":"s");
 }
 function handleNoteInput(){
   if(!currentCloudUser) return;
   const box=$("lessonNotes");
   if(!box) return;
-  const lessonId=String(current), value=box.value;
+  const lessonId=String(current), value=sanitizeNoteHTML(box.innerHTML), hasText=!!notePlainText(value);
   const meta=readMap(NOTE_META_KEY), updatedAt=Date.now();
-  if(value.trim()) notes[lessonId]=value;
+  if(hasText) notes[lessonId]=value;
   else delete notes[lessonId];
-  meta[lessonId]={updatedAt,deleted:!value.trim()};
+  meta[lessonId]={updatedAt,deleted:!hasText};
   appStorage.setItem("pylearn_notes",JSON.stringify(notes));
   appStorage.setItem(NOTE_META_KEY,JSON.stringify(meta));
   noteSaveState=navigator.onLine?"pending":"offline";
@@ -1018,9 +1057,9 @@ function saveCurrentNote(show=true){
   clearTimeout(noteSaveTimer);
   noteSaveTimer=null;
   noteSaveLessonId=null;
-  const value=box.value, lessonId=String(current), meta=readMap(NOTE_META_KEY);
-  if(value.trim()) notes[lessonId]=value; else delete notes[lessonId];
-  meta[lessonId]={updatedAt:Date.now(),deleted:!value.trim()};
+  const value=sanitizeNoteHTML(box.innerHTML), hasText=!!notePlainText(value), lessonId=String(current), meta=readMap(NOTE_META_KEY);
+  if(hasText) notes[lessonId]=value; else delete notes[lessonId];
+  meta[lessonId]={updatedAt:Date.now(),deleted:!hasText};
   appStorage.setItem(NOTE_META_KEY,JSON.stringify(meta));
   appStorage.setItem("pylearn_notes",JSON.stringify(notes));
   noteSaveState=navigator.onLine?"saving":"offline";
@@ -1050,7 +1089,7 @@ function confirmClearCurrentNote(){
   noteSaveTimer=null;
   noteSaveLessonId=null;
   const box=$("lessonNotes");
-  if(box) box.value="";
+  if(box) box.innerHTML="";
   delete notes[String(current)];
   const meta=readMap(NOTE_META_KEY);
   meta[String(current)]={updatedAt:Date.now(),deleted:true};
@@ -1063,28 +1102,40 @@ function confirmClearCurrentNote(){
   queueCloudSync();
   toast("Note cleared. Syncing the change.","success");
 }
-function formatLessonNote(kind){
+function formatLessonNote(kind,value){
   const box=$("lessonNotes");
-  if(!box||box.disabled) return;
-  const start=box.selectionStart,end=box.selectionEnd;
-  const selected=box.value.slice(start,end);
-  let before="",after="",replacement=selected;
-  if(kind==="bold"){before="**";after="**"}
-  else if(kind==="italic"){before="_";after="_"}
-  else if(kind==="code"){before=String.fromCharCode(96);after=String.fromCharCode(96)}
-  else if(["heading","bullet","number","check"].includes(kind)){
-    const prefixes={heading:"## ",bullet:"- ",number:"1. ",check:"- [ ] "};
-    const prefix=prefixes[kind];
-    if(start===end) box.setRangeText(prefix,start,end,"end");
-    else box.setRangeText(selected.split("\n").map(line=>prefix+line).join("\n"),start,end,"select");
-    box.focus();
-    box.dispatchEvent(new Event("input",{bubbles:true}));
-    return;
-  }
-  box.setRangeText(before+replacement+after,start,end,"select");
-  if(start===end) box.setSelectionRange(start+before.length,start+before.length);
+  if(!box||box.getAttribute("contenteditable")!=="true") return;
   box.focus();
-  box.dispatchEvent(new Event("input",{bubbles:true}));
+  const selection=window.getSelection();
+  if(kind==="block"){
+    if(value) document.execCommand("formatBlock",false,value);
+  }else if(kind==="bullet") document.execCommand("insertUnorderedList",false,null);
+  else if(kind==="number") document.execCommand("insertOrderedList",false,null);
+  else if(kind==="check"){
+    document.execCommand("insertHTML",false,'<ul><li><input type="checkbox"> Task</li></ul><p><br></p>');
+  }else if(kind==="code"){
+    const selected=selection?.toString()||"code";
+    const safe=selected.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    document.execCommand("insertHTML",false,"<code>"+safe+"</code>");
+  }else if(kind==="link"){
+    const url=prompt("Enter a web address (https://…) or email link:");
+    if(url&&/^(https?:\\/\\/|mailto:)/i.test(url.trim())) document.execCommand("createLink",false,url.trim());
+    else if(url) toast("Please use a valid https:// or mailto: link.","warning");
+  }else if(kind==="table"){
+    const rows=Math.max(1,Math.min(8,Number(prompt("How many rows? (1–8)","3"))||3));
+    const cols=Math.max(1,Math.min(8,Number(prompt("How many columns? (1–8)","3"))||3));
+    let table='<table><tbody>';
+    for(let r=0;r<rows;r++){table+="<tr>";for(let c=0;c<cols;c++)table+=r===0?"<th>Heading</th>":"<td>Write here</td>";table+="</tr>"}
+    table+="</tbody></table><p><br></p>";
+    document.execCommand("insertHTML",false,table);
+  }else if(kind==="rule") document.execCommand("insertHorizontalRule",false,null);
+  else if(kind==="color"||kind==="highlight") document.execCommand(kind==="color"?"foreColor":"hiliteColor",false,value);
+  else {
+    const commands={bold:"bold",italic:"italic",underline:"underline",strike:"strikeThrough",superscript:"superscript",subscript:"subscript",indent:"indent",outdent:"outdent",alignLeft:"justifyLeft",alignCenter:"justifyCenter",alignRight:"justifyRight",undo:"undo",redo:"redo",clearFormat:"removeFormat"};
+    if(commands[kind]) document.execCommand(commands[kind],false,null);
+  }
+  updateNoteCharacterCount();
+  handleNoteInput();
 }
 function renderSavedNotesList(){
   const list=$("savedNotesList"), count=$("savedNoteCount"), search=($("noteLibrarySearch")?.value||"").trim().toLowerCase();
