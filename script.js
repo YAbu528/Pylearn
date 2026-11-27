@@ -571,6 +571,9 @@ let cloudSyncRunning = false;
 let cloudSyncQueued = false;
 let cloudSyncTimer = null;
 let cloudRetryAttempt = 0;
+let noteSaveTimer = null;
+let noteSaveLessonId = null;
+let noteSaveState = "idle";
 const NOTE_META_KEY = "pylearn_note_sync_meta";
 const BOOKMARK_DELETIONS_KEY = "pylearn_bookmark_deletions";
 const CLOUD_USER_KEY = "pylearn_cloud_user_id";
@@ -656,16 +659,38 @@ function activateCloudUser(user) {
 }
 function queueCloudSync() {
   if (!currentCloudUser || !supabaseClient) return;
+  if (!navigator.onLine) {
+    if (noteSaveState === "pending" || noteSaveState === "saving") {
+      noteSaveState = "offline";
+      updateNoteStatus();
+    }
+    return;
+  }
   clearTimeout(cloudSyncTimer);
-  cloudSyncTimer = setTimeout(() => syncLearningData(), 250);
+  cloudSyncTimer = setTimeout(() => syncLearningData(), 350);
 }
 window.addEventListener("online", () => {
-  if (currentCloudUser) syncLearningData();
+  if (currentCloudUser) {
+    if (noteSaveState === "offline") noteSaveState = "saving";
+    updateNoteStatus();
+    syncLearningData();
+  }
+});
+window.addEventListener("pagehide", () => {
+  if (noteSaveTimer) {
+    clearTimeout(noteSaveTimer);
+    noteSaveTimer = null;
+    saveNotes();
+  }
 });
 async function syncLearningData() {
   if (!currentCloudUser || !supabaseClient) return;
   if (cloudSyncRunning) { cloudSyncQueued = true; return; }
   cloudSyncRunning = true;
+  if (noteSaveState === "pending" || noteSaveState === "offline") {
+    noteSaveState = "saving";
+    updateNoteStatus();
+  }
   const userId = currentCloudUser.id;
   const hadAuthoritativeXp = xpInitializedUserId === userId;
   const xpBeforeSync = Number(state.xp || 0);
@@ -892,12 +917,15 @@ async function syncLearningData() {
     appStorage.setItem("pylearn_bookmarks", JSON.stringify(bookmarks));
     renderLesson(); renderLessons(); renderStudyTools(); renderLessonReview();
     cloudRetryAttempt = 0;
+    if (noteSaveState === "saving") noteSaveState = "synced";
     setAuthMessage("Your progress, notes, bookmarks, and study history are synced.", "success");
-    const noteStatus=$("noteStatus");
-    if(noteStatus) noteStatus.textContent=notes[String(current)]?"Saved to your account":"No note yet";
+    updateNoteStatus();
+    renderStudyTools();
   } catch (error) {
     console.error("PyLearn cloud sync failed:", error);
-    setAuthMessage("Cloud save failed: " + (error.message || "Please check your connection.") + " Your unsent changes are only in this open page. Keep it open while PyLearn retries.", "error");
+    if (noteSaveState === "saving") noteSaveState = navigator.onLine ? "error" : "offline";
+    updateNoteStatus();
+    setAuthMessage("Cloud save failed: " + (error.message || "Please check your connection.") + " Your notes remain saved on this device and PyLearn will retry when possible.", "error");
     if (navigator.onLine && cloudRetryAttempt < 5) {
       const delay = Math.min(30000, 2000 * (2 ** cloudRetryAttempt));
       cloudRetryAttempt += 1;
@@ -935,19 +963,136 @@ function renderLessonBookmark(){
   b.textContent=saved?"★ Bookmarked":"☆ Bookmark lesson";
   b.classList.toggle("saved",saved);
 }
+function updateNoteStatus(){
+  const status=$("noteStatus"), hint=$("noteSyncHint");
+  if(!status) return;
+  const hasNote=!!(notes[String(current)]||"").trim();
+  const labels={
+    idle:hasNote?(currentCloudUser?"Saved on this device":"Sign in to sync notes"):"No note yet",
+    pending:"Saved locally · waiting to sync",
+    saving:"Syncing to your account…",
+    synced:hasNote?"All changes synced":"Note deletion synced",
+    offline:"Saved on this device · offline",
+    error:"Sync failed · will retry"
+  };
+  status.textContent=!currentCloudUser?"Sign in to sync notes":(labels[noteSaveState]||labels.idle);
+  status.dataset.state=currentCloudUser?noteSaveState:"signed-out";
+  if(hint) hint.textContent=noteSaveState==="offline"?"Your changes are safe on this device until you're online.":noteSaveState==="error"?"Your changes remain on this device. PyLearn will retry syncing.":"Notes are saved automatically to your PyLearn account.";
+}
+function updateNoteCharacterCount(){
+  const box=$("lessonNotes"), count=$("noteCharCount");
+  if(!box||!count) return;
+  const n=box.value.length;
+  count.textContent=n.toLocaleString()+" character"+(n===1?"":"s");
+}
+function handleNoteInput(){
+  if(!currentCloudUser) return;
+  const box=$("lessonNotes");
+  if(!box) return;
+  const lessonId=String(current), value=box.value;
+  const meta=readMap(NOTE_META_KEY), updatedAt=Date.now();
+  if(value.trim()) notes[lessonId]=value;
+  else delete notes[lessonId];
+  meta[lessonId]={updatedAt,deleted:!value.trim()};
+  appStorage.setItem("pylearn_notes",JSON.stringify(notes));
+  appStorage.setItem(NOTE_META_KEY,JSON.stringify(meta));
+  noteSaveState=navigator.onLine?"pending":"offline";
+  updateNoteStatus();
+  updateNoteCharacterCount();
+  clearTimeout(noteSaveTimer);
+  noteSaveLessonId=lessonId;
+  noteSaveTimer=setTimeout(()=>{
+    noteSaveTimer=null;
+    noteSaveLessonId=null;
+    saveNotes();
+    if(currentCloudUser && navigator.onLine) {
+      noteSaveState="saving";
+      updateNoteStatus();
+    }
+  },700);
+  renderSavedNotesList();
+}
 function saveCurrentNote(show=true){
   if(!currentCloudUser){toast("Sign in to save lesson notes.");return}
   const box=$("lessonNotes"); if(!box) return;
-  const value=box.value.trim();
-  const meta=readMap(NOTE_META_KEY);
-  if(value) notes[String(current)]=value; else delete notes[String(current)];
-  meta[String(current)]={updatedAt:Date.now(),deleted:!value};
+  clearTimeout(noteSaveTimer);
+  noteSaveTimer=null;
+  noteSaveLessonId=null;
+  const value=box.value, lessonId=String(current), meta=readMap(NOTE_META_KEY);
+  if(value.trim()) notes[lessonId]=value; else delete notes[lessonId];
+  meta[lessonId]={updatedAt:Date.now(),deleted:!value.trim()};
   appStorage.setItem(NOTE_META_KEY,JSON.stringify(meta));
-  saveNotes();
-  if(show){$("noteStatus").textContent=value?"Saving to your account…":"Saving note change…"; toast(value?"📝 Saving note…":"Saving note change…");}
-  renderStudyTools();
+  appStorage.setItem("pylearn_notes",JSON.stringify(notes));
+  noteSaveState=navigator.onLine?"saving":"offline";
+  updateNoteStatus();
+  updateNoteCharacterCount();
+  renderSavedNotesList();
+  queueCloudSync();
+  if(show) toast("Note saved. Syncing to your account.","success");
 }
-function clearCurrentNote(){if(!currentCloudUser){toast("Sign in to manage saved notes.");return} const box=$("lessonNotes"); if(box){box.value="";} delete notes[String(current)]; const meta=readMap(NOTE_META_KEY); meta[String(current)]={updatedAt:Date.now(),deleted:true}; appStorage.setItem(NOTE_META_KEY,JSON.stringify(meta)); saveNotes(); $("noteStatus").textContent="No note yet"; renderStudyTools(); toast("Note cleared","success");}
+function clearCurrentNote(){
+  if(!currentCloudUser){toast("Sign in to manage saved notes.");return}
+  if(!window.confirm("Clear the note for this lesson? This change will sync to your account.")) return;
+  clearTimeout(noteSaveTimer);
+  noteSaveTimer=null;
+  noteSaveLessonId=null;
+  const box=$("lessonNotes");
+  if(box) box.value="";
+  delete notes[String(current)];
+  const meta=readMap(NOTE_META_KEY);
+  meta[String(current)]={updatedAt:Date.now(),deleted:true};
+  appStorage.setItem(NOTE_META_KEY,JSON.stringify(meta));
+  appStorage.setItem("pylearn_notes",JSON.stringify(notes));
+  noteSaveState=navigator.onLine?"saving":"offline";
+  updateNoteStatus();
+  updateNoteCharacterCount();
+  renderSavedNotesList();
+  queueCloudSync();
+  toast("Note cleared. Syncing the change.","success");
+}
+function renderSavedNotesList(){
+  const list=$("savedNotesList"), count=$("savedNoteCount"), search=($("noteLibrarySearch")?.value||"").trim().toLowerCase();
+  if(!list) return;
+  const entries=Object.entries(notes||{}).filter(([id,value])=>String(value||"").trim() && lessons[Number(id)])
+    .map(([id,value])=>({id:Number(id),value:String(value),updatedAt:Number(readMap(NOTE_META_KEY)[id]?.updatedAt||0)}))
+    .sort((a,b)=>b.updatedAt-a.updatedAt);
+  if(count) count.textContent=entries.length+" note"+(entries.length===1?"":"s");
+  const filtered=entries.filter(entry=>{
+    const lesson=lessons[entry.id];
+    return !search || (lesson.title+" "+lesson.short+" "+entry.value).toLowerCase().includes(search);
+  });
+  list.replaceChildren();
+  if(!filtered.length){
+    const empty=document.createElement("div");
+    empty.className="study-empty";
+    empty.textContent=entries.length?"No notes match that search.":"No notes yet. Write your first lesson note below.";
+    list.appendChild(empty);
+    return;
+  }
+  filtered.forEach(entry=>{
+    const lesson=lessons[entry.id], button=document.createElement("button");
+    button.type="button";
+    button.className="saved-note-item";
+    button.addEventListener("click",()=>openSavedNote(entry.id));
+    const heading=document.createElement("span");
+    heading.className="saved-note-title";
+    heading.textContent=String(entry.id+1).padStart(2,"0")+" · "+lesson.title;
+    const preview=document.createElement("span");
+    preview.className="saved-note-preview";
+    preview.textContent=entry.value.replace(/\s+/g," ").trim();
+    button.append(heading,preview);
+    list.appendChild(button);
+  });
+}
+function openSavedNote(index){
+  if(!lessons[index]) return;
+  selectLesson(index);
+  renderStudyTools();
+  const section=$("studyTools");
+  if(section) section.scrollIntoView({behavior:"smooth",block:"start"});
+  const box=$("lessonNotes");
+  if(box) setTimeout(()=>box.focus({preventScroll:true}),350);
+}
 function openStudyLesson(i){selectLesson(i); setTimeout(()=>go("learn"),120)}
 function openInsightLesson(i,tag){selectLesson(i);setTimeout(()=>{go("learn");if(tag==="PRACTISE"||tag==="REVISIT")go("challenge");},120)}
 function searchLessons(){
@@ -959,18 +1104,21 @@ function searchLessons(){
   results.innerHTML=matches.length?matches.map(({x,i})=>`<button class="search-result ${isUnlocked(i)?"":"locked-result"}" ${isUnlocked(i)?`onclick="openStudyLesson(${i})"`:"disabled"}><span>${x.level}</span><b>${String(i+1).padStart(2,"0")} · ${x.title}</b><small>${isUnlocked(i)?"Open lesson →":"🔒 Complete previous lessons to open"}</small></button>`).join(""):'<div class="search-empty">No lessons matched that search. Try another Python concept.</div>';
 }
 function renderStudyTools(){
-  const list=$("bookmarkList"), count=$("bookmarkCount"), note=$("lessonNotes"), status=$("noteStatus");
+  const list=$("bookmarkList"), count=$("bookmarkCount"), note=$("lessonNotes");
   if(count) count.textContent=bookmarks.length;
   if(note){
     note.disabled=!currentCloudUser;
-    note.placeholder=currentCloudUser?"Write a note for this lesson…":"Sign in to save lesson notes.";
+    note.placeholder=currentCloudUser?"Write a note for this lesson…":"Sign in to sync your lesson notes.";
+    if(document.activeElement!==note) note.value=notes[String(current)]||"";
   }
+  const title=$("noteLessonTitle");
+  if(title) title.textContent=lessons[current]?"Notes for "+lessons[current].title:"Your lesson notes";
+  const help=$("notesHelp");
+  if(help) help.textContent=currentCloudUser?"Notes save automatically and sync across your signed-in devices.":"Sign in to create and sync your lesson notebook.";
   if(list) list.innerHTML=bookmarks.length?bookmarks.map(i=>{const x=lessons[i]; return `<div class="bookmark-item"><button onclick="openStudyLesson(${i})"><span>🔖</span><div><b>${String(i+1).padStart(2,"0")} · ${x.title}</b><small>${x.short}</small></div></button><button class="remove-bookmark" onclick="removeBookmark(${i})" aria-label="Remove bookmark">×</button></div>`}).join(""):'<div class="study-empty">No bookmarks yet. Bookmark a lesson when you want to review it later.</div>';
-  // A cloud sync can re-render study tools while the user is typing.
-  // Never replace the active textarea value: doing so moves the cursor and
-  // can erase text that has not reached the local save debounce yet.
-  if(note && document.activeElement !== note){note.value=notes[String(current)]||"";}
-  if(status) status.textContent=notes[String(current)]?(currentCloudUser?"Saved to your account":"Sign in to save this note"):"No note yet";
+  updateNoteCharacterCount();
+  updateNoteStatus();
+  renderSavedNotesList();
 }
 function removeBookmark(i){bookmarks=bookmarks.filter(x=>x!==i);const deletions=readMap(BOOKMARK_DELETIONS_KEY);deletions[String(i)]=Date.now();appStorage.setItem(BOOKMARK_DELETIONS_KEY,JSON.stringify(deletions));saveBookmarks();renderStudyTools();renderLessonBookmark();toast("Bookmark removed");}
 function toast(message,type="info"){
