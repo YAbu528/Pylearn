@@ -990,7 +990,7 @@ function sanitizeNoteHTML(value){
     return "<p>"+escaped.replace(/\r?\n/g,"<br>")+"</p>";
   }
   const parsed=new DOMParser().parseFromString("<body>"+raw+"</body>","text/html");
-  const allowed=new Set(["P","BR","STRONG","B","EM","I","U","S","STRIKE","UL","OL","LI","H1","H2","H3","H4","H5","H6","BLOCKQUOTE","PRE","CODE","A","HR","TABLE","THEAD","TBODY","TR","TD","TH","INPUT"]);
+  const allowed=new Set(["P","BR","STRONG","B","EM","I","U","S","STRIKE","UL","OL","LI","H1","H2","H3","H4","H5","H6","BLOCKQUOTE","PRE","CODE","A","HR","TABLE","THEAD","TBODY","TR","TD","TH","INPUT","SPAN","FONT"]);
   const clean=node=>{
     [...node.childNodes].forEach(child=>{
       if(child.nodeType!==1) return;
@@ -1000,10 +1000,16 @@ function sanitizeNoteHTML(value){
       }
       [...child.attributes].forEach(attr=>{
         const name=attr.name.toLowerCase(), value=attr.value;
+        if(child.tagName==="SPAN"&&name==="style"){
+          const safe=value.split(";").map(part=>part.trim()).filter(part=>/^(color|background-color):\s*(#[0-9a-f]{3,8}|[a-z]{3,20}|rgba?\([\d\s.,%]+\))$/i.test(part)).join(";");
+          if(safe) child.setAttribute("style",safe); else child.removeAttribute(attr.name);
+          return;
+        }
         const keep=(child.tagName==="A"&&name==="href"&&/^(https?:|mailto:)/i.test(value))
           ||(["TD","TH"].includes(child.tagName)&&["colspan","rowspan"].includes(name)&&/^\d{1,2}$/.test(value))
           ||(child.tagName==="INPUT"&&name==="type"&&value==="checkbox")
-          ||(child.tagName==="INPUT"&&name==="checked");
+          ||(child.tagName==="INPUT"&&name==="checked")
+          ||(child.tagName==="FONT"&&name==="color"&&/^(#[0-9a-f]{3,8}|[a-z]{3,20})$/i.test(value));
         if(!keep) child.removeAttribute(attr.name);
       });
       if(child.tagName==="INPUT"&&child.getAttribute("type")!=="checkbox") child.remove();
