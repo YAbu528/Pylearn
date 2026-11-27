@@ -687,7 +687,7 @@ async function syncLearningData() {
   if (!currentCloudUser || !supabaseClient) return;
   if (cloudSyncRunning) { cloudSyncQueued = true; return; }
   cloudSyncRunning = true;
-  if (noteSaveState === "pending" || noteSaveState === "offline") {
+  if (noteSaveState === "pending" || noteSaveState === "offline" || noteSaveState === "error") {
     noteSaveState = "saving";
     updateNoteStatus();
   }
@@ -968,10 +968,10 @@ function updateNoteStatus(){
   if(!status) return;
   const hasNote=!!(notes[String(current)]||"").trim();
   const labels={
-    idle:hasNote?(currentCloudUser?"Saved on this device":"Sign in to sync notes"):"No note yet",
+    idle:hasNote?(currentCloudUser?"Saved to your account":"Sign in to sync notes"):"No note yet",
     pending:"Saved locally · waiting to sync",
     saving:"Syncing to your account…",
-    synced:hasNote?"All changes synced":"Note deletion synced",
+    synced:hasNote?"All changes synced":(readMap(NOTE_META_KEY)[String(current)]?.deleted?"Note deletion synced":"No note yet"),
     offline:"Saved on this device · offline",
     error:"Sync failed · will retry"
   };
