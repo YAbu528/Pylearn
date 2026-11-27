@@ -985,12 +985,12 @@ function noteEditorText(box){
 function sanitizeNoteHTML(value){
   const raw=String(value||"");
   if(!raw.trim()) return "";
-  if(!/<\/?(p|br|strong|b|em|i|u|s|strike|ul|ol|li|h[1-6]|blockquote|pre|code|a|hr|table|thead|tbody|tr|td|th|input)\b/i.test(raw)){
+  if(!/<\/?(p|br|strong|b|em|i|u|s|strike|ul|ol|li|h[1-6]|blockquote|pre|code|a|hr|table|thead|tbody|tr|td|th|input|span|font|div)\b/i.test(raw)){
     const escaped=raw.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
     return "<p>"+escaped.replace(/\r?\n/g,"<br>")+"</p>";
   }
   const parsed=new DOMParser().parseFromString("<body>"+raw+"</body>","text/html");
-  const allowed=new Set(["P","BR","STRONG","B","EM","I","U","S","STRIKE","UL","OL","LI","H1","H2","H3","H4","H5","H6","BLOCKQUOTE","PRE","CODE","A","HR","TABLE","THEAD","TBODY","TR","TD","TH","INPUT","SPAN","FONT"]);
+  const allowed=new Set(["P","DIV","BR","STRONG","B","EM","I","U","S","STRIKE","UL","OL","LI","H1","H2","H3","H4","H5","H6","BLOCKQUOTE","PRE","CODE","A","HR","TABLE","THEAD","TBODY","TR","TD","TH","INPUT","SPAN","FONT"]);
   const clean=node=>{
     [...node.childNodes].forEach(child=>{
       if(child.nodeType!==1) return;
@@ -1962,7 +1962,7 @@ document.addEventListener("keydown",event=>{
 
 $("lessonSearch")?.addEventListener("input",searchLessons);
 $("lessonNotes")?.addEventListener("input",handleNoteInput);
-$("lessonNotes")?.addEventListener("change",event=>{if(event.target.matches("input[type=checkbox]")) handleNoteInput()});
+$("lessonNotes")?.addEventListener("change",event=>{if(event.target.matches("input[type=checkbox]")){if(event.target.checked)event.target.setAttribute("checked","");else event.target.removeAttribute("checked");handleNoteInput()}});
 document.addEventListener("selectionchange",()=>{const box=$("lessonNotes"),sel=window.getSelection();if(box&&sel?.rangeCount&&sel.anchorNode&&box.contains(sel.anchorNode))window.__pylearnNoteRange=sel.getRangeAt(0).cloneRange()});
 $("editor").addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){e.preventDefault();runPython()}});
 
