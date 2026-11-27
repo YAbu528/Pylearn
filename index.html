@@ -458,44 +458,97 @@ print("2 + 3 =", 2 + 3)</textarea>
         </div>
       </details>
       <div class="note-editor-topline">
-        <label class="notes-editor-label" for="lessonNotes">NOTE FOR THIS LESSON</label>
-        <span class="note-editor-tip">Select text to format · changes save automatically</span>
+        <label class="notes-editor-label" for="lessonNotes">YOUR LESSON NOTE</label>
+        <span class="note-editor-tip">Choose a tool only when you need it · auto-saves</span>
       </div>
-      <div class="note-toolbar-shell" aria-label="Rich text editing tools">
-        <div class="note-toolbar-row" role="toolbar" aria-label="Text styles">
-          <select aria-label="Paragraph style" title="Paragraph style" onchange="formatLessonNote('block',this.value);this.value=''">
-            <option value="">Text style</option><option value="h2">Heading 1</option><option value="h3">Heading 2</option><option value="h4">Heading 3</option><option value="p">Paragraph</option><option value="blockquote">Quote</option><option value="pre">Code block</option>
-          </select>
-          <button type="button" class="note-tool-button" onmousedown="event.preventDefault()" onclick="formatLessonNote('bold')" title="Bold (Ctrl+B)" aria-label="Bold"><b>B</b></button>
-          <button type="button" class="note-tool-button" onmousedown="event.preventDefault()" onclick="formatLessonNote('italic')" title="Italic (Ctrl+I)" aria-label="Italic"><i>I</i></button>
-          <button type="button" class="note-tool-button" onmousedown="event.preventDefault()" onclick="formatLessonNote('underline')" title="Underline (Ctrl+U)" aria-label="Underline"><u>U</u></button>
-          <button type="button" class="note-tool-button" onmousedown="event.preventDefault()" onclick="formatLessonNote('strike')" title="Strikethrough" aria-label="Strikethrough"><s>S</s></button>
-          <button type="button" class="note-tool-button" onmousedown="event.preventDefault()" onclick="formatLessonNote('superscript')" title="Superscript" aria-label="Superscript">x²</button>
-          <button type="button" class="note-tool-button" onmousedown="event.preventDefault()" onclick="formatLessonNote('subscript')" title="Subscript" aria-label="Subscript">x₂</button>
+      <div class="note-toolbar-shell" aria-label="Note editing toolbar">
+        <div class="note-toolbar-main">
+          <div class="note-tool-group">
+            <button type="button" class="note-tool-button icon-only" onclick="formatLessonNote('undo')" title="Undo" aria-label="Undo">↶</button>
+            <button type="button" class="note-tool-button icon-only" onclick="formatLessonNote('redo')" title="Redo" aria-label="Redo">↷</button>
+          </div>
+          <span class="note-toolbar-divider"></span>
+          <div class="note-menu-wrap">
+            <button type="button" class="note-tool-button menu-trigger" onclick="toggleNoteMenu('style')" aria-expanded="false" aria-controls="noteMenuStyle">Text style <span>▾</span></button>
+            <div class="note-custom-menu" id="noteMenuStyle" hidden>
+              <button type="button" onclick="formatLessonNote('block','p');closeNoteMenus()">Paragraph</button>
+              <button type="button" onclick="formatLessonNote('block','h2');closeNoteMenus()"><strong>Heading 1</strong></button>
+              <button type="button" onclick="formatLessonNote('block','h3');closeNoteMenus()"><strong>Heading 2</strong></button>
+              <button type="button" onclick="formatLessonNote('block','h4');closeNoteMenus()"><strong>Heading 3</strong></button>
+              <button type="button" onclick="formatLessonNote('block','blockquote');closeNoteMenus()">Quote</button>
+              <button type="button" onclick="formatLessonNote('block','pre');closeNoteMenus()">Code block</button>
+            </div>
+          </div>
+          <span class="note-toolbar-divider"></span>
+          <div class="note-tool-group">
+            <button type="button" class="note-tool-button icon-only" onclick="formatLessonNote('bold')" title="Bold" aria-label="Bold"><b>B</b></button>
+            <button type="button" class="note-tool-button icon-only" onclick="formatLessonNote('italic')" title="Italic" aria-label="Italic"><i>I</i></button>
+            <button type="button" class="note-tool-button icon-only" onclick="formatLessonNote('underline')" title="Underline" aria-label="Underline"><u>U</u></button>
+          </div>
+          <span class="note-toolbar-divider"></span>
+          <div class="note-menu-wrap">
+            <button type="button" class="note-tool-button menu-trigger" onclick="toggleNoteMenu('lists')" aria-expanded="false" aria-controls="noteMenuLists">Lists <span>▾</span></button>
+            <div class="note-custom-menu" id="noteMenuLists" hidden>
+              <button type="button" onclick="formatLessonNote('bullet');closeNoteMenus()">• Bulleted list</button>
+              <button type="button" onclick="formatLessonNote('number');closeNoteMenus()">1. Numbered list</button>
+              <button type="button" onclick="formatLessonNote('check');closeNoteMenus()">☑ Checklist</button>
+              <button type="button" onclick="formatLessonNote('indent');closeNoteMenus()">Indent</button>
+              <button type="button" onclick="formatLessonNote('outdent');closeNoteMenus()">Outdent</button>
+            </div>
+          </div>
+          <div class="note-menu-wrap">
+            <button type="button" class="note-tool-button menu-trigger" onclick="toggleNoteMenu('insert')" aria-expanded="false" aria-controls="noteMenuInsert">Insert <span>▾</span></button>
+            <div class="note-custom-menu" id="noteMenuInsert" hidden>
+              <button type="button" onclick="openNoteLinkDialog()">↗ Add link</button>
+              <button type="button" onclick="toggleNoteMenu('table')">▦ Insert table <span>›</span></button>
+              <button type="button" onclick="formatLessonNote('rule');closeNoteMenus()">― Divider</button>
+              <button type="button" onclick="formatLessonNote('code');closeNoteMenus()">&lt;/&gt; Inline code</button>
+            </div>
+          </div>
+          <div class="note-menu-wrap">
+            <button type="button" class="note-tool-button menu-trigger" onclick="toggleNoteMenu('more')" aria-expanded="false" aria-controls="noteMenuMore">More <span>▾</span></button>
+            <div class="note-custom-menu note-menu-wide" id="noteMenuMore" hidden>
+              <div class="note-menu-caption">MORE FORMATTING</div>
+              <div class="note-menu-grid">
+                <button type="button" onclick="formatLessonNote('strike');closeNoteMenus()"><s>S</s> Strike</button>
+                <button type="button" onclick="formatLessonNote('superscript');closeNoteMenus()">x² Super</button>
+                <button type="button" onclick="formatLessonNote('subscript');closeNoteMenus()">x₂ Sub</button>
+                <button type="button" onclick="formatLessonNote('alignLeft');closeNoteMenus()">Left</button>
+                <button type="button" onclick="formatLessonNote('alignCenter');closeNoteMenus()">Center</button>
+                <button type="button" onclick="formatLessonNote('alignRight');closeNoteMenus()">Right</button>
+              </div>
+              <div class="note-menu-caption">TEXT COLOR</div>
+              <div class="note-color-palette">
+                <button type="button" style="--swatch:#f4f5fb" onclick="formatLessonNote('color','#f4f5fb');closeNoteMenus()" aria-label="White"></button>
+                <button type="button" style="--swatch:#60a5fa" onclick="formatLessonNote('color','#60a5fa');closeNoteMenus()" aria-label="Blue"></button>
+                <button type="button" style="--swatch:#34d399" onclick="formatLessonNote('color','#34d399');closeNoteMenus()" aria-label="Green"></button>
+                <button type="button" style="--swatch:#fbbf24" onclick="formatLessonNote('color','#fbbf24');closeNoteMenus()" aria-label="Yellow"></button>
+                <button type="button" style="--swatch:#fb7185" onclick="formatLessonNote('color','#fb7185');closeNoteMenus()" aria-label="Pink"></button>
+                <button type="button" style="--swatch:#c084fc" onclick="formatLessonNote('color','#c084fc');closeNoteMenus()" aria-label="Purple"></button>
+              </div>
+              <div class="note-menu-caption">HIGHLIGHT</div>
+              <div class="note-color-palette">
+                <button type="button" style="--swatch:#fef08a" onclick="formatLessonNote('highlight','#fef08a');closeNoteMenus()" aria-label="Yellow highlight"></button>
+                <button type="button" style="--swatch:#bbf7d0" onclick="formatLessonNote('highlight','#bbf7d0');closeNoteMenus()" aria-label="Green highlight"></button>
+                <button type="button" style="--swatch:#bfdbfe" onclick="formatLessonNote('highlight','#bfdbfe');closeNoteMenus()" aria-label="Blue highlight"></button>
+                <button type="button" style="--swatch:#fbcfe8" onclick="formatLessonNote('highlight','#fbcfe8');closeNoteMenus()" aria-label="Pink highlight"></button>
+              </div>
+              <button type="button" class="note-menu-clear" onclick="formatLessonNote('clearFormat');closeNoteMenus()">Clear formatting</button>
+            </div>
+          </div>
         </div>
-        <div class="note-toolbar-row" role="toolbar" aria-label="Lists and layout">
-          <button type="button" class="note-tool-button" onmousedown="event.preventDefault()" onclick="formatLessonNote('bullet')" title="Bulleted list">☷ Bullets</button>
-          <button type="button" class="note-tool-button" onmousedown="event.preventDefault()" onclick="formatLessonNote('number')" title="Numbered list">1. Numbering</button>
-          <button type="button" class="note-tool-button" onmousedown="event.preventDefault()" onclick="formatLessonNote('check')" title="Insert checklist">☑ Checklist</button>
-          <button type="button" class="note-tool-button" onmousedown="event.preventDefault()" onclick="formatLessonNote('indent')" title="Increase indent">Indent →</button>
-          <button type="button" class="note-tool-button" onmousedown="event.preventDefault()" onclick="formatLessonNote('outdent')" title="Decrease indent">← Outdent</button>
-          <button type="button" class="note-tool-button" onmousedown="event.preventDefault()" onclick="formatLessonNote('alignLeft')" title="Align left">≡</button>
-          <button type="button" class="note-tool-button" onmousedown="event.preventDefault()" onclick="formatLessonNote('alignCenter')" title="Center">☰</button>
-          <button type="button" class="note-tool-button" onmousedown="event.preventDefault()" onclick="formatLessonNote('alignRight')" title="Align right">≡</button>
-        </div>
-        <div class="note-toolbar-row" role="toolbar" aria-label="Insert and color">
-          <button type="button" class="note-tool-button" onmousedown="event.preventDefault()" onclick="formatLessonNote('link')" title="Insert link">↗ Link</button>
-          <button type="button" class="note-tool-button" onmousedown="event.preventDefault()" onclick="formatLessonNote('table')" title="Insert table">▦ Table</button>
-          <button type="button" class="note-tool-button" onmousedown="event.preventDefault()" onclick="formatLessonNote('rule')" title="Horizontal divider">― Divider</button>
-          <button type="button" class="note-tool-button" onmousedown="event.preventDefault()" onclick="formatLessonNote('code')" title="Inline code">&lt;/&gt; Inline code</button>
-          <label class="note-color-tool" title="Text color">A <input type="color" aria-label="Text color" value="#8b5cf6" onchange="formatLessonNote('color',this.value)"></label>
-          <label class="note-color-tool" title="Highlight color">▰ <input type="color" aria-label="Highlight color" value="#fef08a" onchange="formatLessonNote('highlight',this.value)"></label>
-          <button type="button" class="note-tool-button" onmousedown="event.preventDefault()" onclick="formatLessonNote('undo')" title="Undo">↶</button>
-          <button type="button" class="note-tool-button" onmousedown="event.preventDefault()" onclick="formatLessonNote('redo')" title="Redo">↷</button>
-          <button type="button" class="note-tool-button" onmousedown="event.preventDefault()" onclick="formatLessonNote('clearFormat')" title="Clear formatting">Tx</button>
+        <div class="note-toolbar-hint">Tip: select text first, then choose a formatting tool.</div>
+        <div class="note-table-menu-wrap">
+          <div class="note-custom-menu" id="noteMenuTable" hidden>
+            <div class="note-menu-caption">CHOOSE TABLE SIZE</div>
+            <button type="button" onclick="insertNoteTable(2,2);closeNoteMenus()">2 × 2 table</button>
+            <button type="button" onclick="insertNoteTable(3,2);closeNoteMenus()">2 × 3 table</button>
+            <button type="button" onclick="insertNoteTable(3,3);closeNoteMenus()">3 × 3 table</button>
+            <button type="button" onclick="insertNoteTable(4,3);closeNoteMenus()">3 × 4 table</button>
+          </div>
         </div>
       </div>
-      <div id="lessonNotes" class="note-rich-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Lesson note editor" data-placeholder="Start writing your notes here… Add headings, lists, code snippets, links and tables." aria-describedby="noteEditorMeta"></div>
+      <div id="lessonNotes" class="note-rich-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Lesson note editor" data-placeholder="Start writing your lesson notes here…" aria-describedby="noteEditorMeta"></div>
       <div class="note-editor-meta" id="noteEditorMeta"><span id="noteCharCount">0 characters</span><span id="noteSyncHint">Changes save automatically</span></div>
       <div class="notes-actions"><button class="ghost" onclick="clearCurrentNote()">Clear note</button><button class="primary" onclick="saveCurrentNote()">Save now</button></div>
     </article>
@@ -509,6 +562,20 @@ print("2 + 3 =", 2 + 3)</textarea>
     <div class="note-confirm-actions">
       <button type="button" class="ghost" onclick="closeNoteClearConfirm()">Keep note</button>
       <button type="button" class="danger" onclick="confirmClearCurrentNote()">Clear note</button>
+    </div>
+  </section>
+</div>
+<div id="noteLinkDialog" class="note-confirm-backdrop" hidden>
+  <section class="note-confirm-dialog note-link-dialog" role="dialog" aria-modal="true" aria-labelledby="noteLinkTitle">
+    <span class="eyebrow">INSERT LINK</span>
+    <h3 id="noteLinkTitle">Add a link to your note</h3>
+    <label for="noteLinkText">Display text</label>
+    <input id="noteLinkText" type="text" placeholder="e.g. Python documentation">
+    <label for="noteLinkUrl">Web address</label>
+    <input id="noteLinkUrl" type="url" placeholder="https://example.com">
+    <div class="note-confirm-actions">
+      <button type="button" class="ghost" onclick="closeNoteLinkDialog()">Cancel</button>
+      <button type="button" class="primary" onclick="confirmNoteLink()">Insert link</button>
     </div>
   </section>
 </div>
