@@ -1108,40 +1108,52 @@ function confirmClearCurrentNote(){
   queueCloudSync();
   toast("Note cleared. Syncing the change.","success");
 }
+function closeNoteMenus(){
+  document.querySelectorAll(".note-custom-menu").forEach(menu=>menu.hidden=true);
+  document.querySelectorAll(".menu-trigger[aria-controls]").forEach(button=>button.setAttribute("aria-expanded","false"));
+}
+function toggleNoteMenu(name){
+  const menu=$("noteMenu"+name.charAt(0).toUpperCase()+name.slice(1));if(!menu)return;
+  const wasOpen=!menu.hidden;closeNoteMenus();
+  if(!wasOpen){menu.hidden=false;document.querySelector('[aria-controls="'+menu.id+'"]')?.setAttribute("aria-expanded","true")}
+}
+function openNoteLinkDialog(){
+  closeNoteMenus();
+  const box=$("lessonNotes"),dialog=$("noteLinkDialog");if(!box||!dialog)return;
+  const sel=window.getSelection();if(sel?.rangeCount&&box.contains(sel.anchorNode))window.__pylearnNoteRange=sel.getRangeAt(0).cloneRange();
+  $("noteLinkText").value=sel?.toString()||"";$("noteLinkUrl").value="";dialog.hidden=false;$("noteLinkUrl").focus();
+}
+function closeNoteLinkDialog(){const d=$("noteLinkDialog");if(d)d.hidden=true;$("lessonNotes")?.focus()}
+function confirmNoteLink(){
+  const box=$("lessonNotes"),text=$("noteLinkText").value.trim(),url=$("noteLinkUrl").value.trim();if(!box)return;
+  if(!(url.startsWith("https://")||url.startsWith("http://")||url.startsWith("mailto:"))){toast("Enter a valid web or email address.","warning");$("noteLinkUrl").focus();return}
+  box.focus();const range=window.__pylearnNoteRange;
+  if(range&&box.contains(range.commonAncestorContainer)){const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range)}
+  const sel=window.getSelection();
+  if(sel?.toString())document.execCommand("createLink",false,url);
+  else{const safeText=(text||url).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"),safeUrl=url.replace(/&/g,"&amp;").replace(/"/g,"&quot;");document.execCommand("insertHTML",false,'<a href="'+safeUrl+'">'+safeText+'</a>')}
+  closeNoteLinkDialog();handleNoteInput();
+}
+function insertNoteTable(rows,cols){
+  const box=$("lessonNotes");if(!box||box.getAttribute("contenteditable")!=="true")return;box.focus();
+  const range=window.__pylearnNoteRange;if(range&&box.contains(range.commonAncestorContainer)){const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range)}
+  let table="<table><tbody>";
+  for(let r=0;r<rows;r++){table+="<tr>";for(let c=0;c<cols;c++)table+=r===0?"<th>Heading</th>":"<td>Write here</td>";table+="</tr>"}
+  table+="</tbody></table><p><br></p>";document.execCommand("insertHTML",false,table);handleNoteInput();
+}
 function formatLessonNote(kind,value){
-  const box=$("lessonNotes");
-  if(!box||box.getAttribute("contenteditable")!=="true") return;
-  box.focus();
-  const selection=window.getSelection();
-  if(kind==="block"){
-    if(value) document.execCommand("formatBlock",false,value);
-  }else if(kind==="bullet") document.execCommand("insertUnorderedList",false,null);
-  else if(kind==="number") document.execCommand("insertOrderedList",false,null);
-  else if(kind==="check"){
-    document.execCommand("insertHTML",false,'<ul><li><input type="checkbox"> Task</li></ul><p><br></p>');
-  }else if(kind==="code"){
-    const selected=selection?.toString()||"code";
-    const safe=selected.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-    document.execCommand("insertHTML",false,"<code>"+safe+"</code>");
-  }else if(kind==="link"){
-    const url=prompt("Enter a web address (https://…) or email link:");
-    if(url&&/^(https?:\/\/|mailto:)/i.test(url.trim())) document.execCommand("createLink",false,url.trim());
-    else if(url) toast("Please use a valid https:// or mailto: link.","warning");
-  }else if(kind==="table"){
-    const rows=Math.max(1,Math.min(8,Number(prompt("How many rows? (1–8)","3"))||3));
-    const cols=Math.max(1,Math.min(8,Number(prompt("How many columns? (1–8)","3"))||3));
-    let table='<table><tbody>';
-    for(let r=0;r<rows;r++){table+="<tr>";for(let c=0;c<cols;c++)table+=r===0?"<th>Heading</th>":"<td>Write here</td>";table+="</tr>"}
-    table+="</tbody></table><p><br></p>";
-    document.execCommand("insertHTML",false,table);
-  }else if(kind==="rule") document.execCommand("insertHorizontalRule",false,null);
-  else if(kind==="color"||kind==="highlight") document.execCommand(kind==="color"?"foreColor":"hiliteColor",false,value);
-  else {
-    const commands={bold:"bold",italic:"italic",underline:"underline",strike:"strikeThrough",superscript:"superscript",subscript:"subscript",indent:"indent",outdent:"outdent",alignLeft:"justifyLeft",alignCenter:"justifyCenter",alignRight:"justifyRight",undo:"undo",redo:"redo",clearFormat:"removeFormat"};
-    if(commands[kind]) document.execCommand(commands[kind],false,null);
-  }
-  updateNoteCharacterCount();
-  handleNoteInput();
+  const box=$("lessonNotes");if(!box||box.getAttribute("contenteditable")!=="true")return;box.focus();
+  const range=window.__pylearnNoteRange;if(range&&box.contains(range.commonAncestorContainer)){const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range)}
+  const sel=window.getSelection();
+  if(kind==="block"){if(value)document.execCommand("formatBlock",false,value)}
+  else if(kind==="bullet")document.execCommand("insertUnorderedList",false,null);
+  else if(kind==="number")document.execCommand("insertOrderedList",false,null);
+  else if(kind==="check")document.execCommand("insertHTML",false,'<ul><li><input type="checkbox"> Task</li></ul><p><br></p>');
+  else if(kind==="code"){const selected=sel?.toString()||"code",safe=selected.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");document.execCommand("insertHTML",false,"<code>"+safe+"</code>")}
+  else if(kind==="rule")document.execCommand("insertHorizontalRule",false,null);
+  else if(kind==="color"||kind==="highlight")document.execCommand(kind==="color"?"foreColor":"hiliteColor",false,value);
+  else{const commands={bold:"bold",italic:"italic",underline:"underline",strike:"strikeThrough",superscript:"superscript",subscript:"subscript",indent:"indent",outdent:"outdent",alignLeft:"justifyLeft",alignCenter:"justifyCenter",alignRight:"justifyRight",undo:"undo",redo:"redo",clearFormat:"removeFormat"};if(commands[kind])document.execCommand(commands[kind],false,null)}
+  updateNoteCharacterCount();handleNoteInput();
 }
 function renderSavedNotesList(){
   const list=$("savedNotesList"), count=$("savedNoteCount"), search=($("noteLibrarySearch")?.value||"").trim().toLowerCase();
@@ -1964,6 +1976,16 @@ $("lessonSearch")?.addEventListener("input",searchLessons);
 $("lessonNotes")?.addEventListener("input",handleNoteInput);
 $("lessonNotes")?.addEventListener("change",event=>{if(event.target.matches("input[type=checkbox]")){if(event.target.checked)event.target.setAttribute("checked","");else event.target.removeAttribute("checked");handleNoteInput()}});
 document.addEventListener("selectionchange",()=>{const box=$("lessonNotes"),sel=window.getSelection();if(box&&sel?.rangeCount&&sel.anchorNode&&box.contains(sel.anchorNode))window.__pylearnNoteRange=sel.getRangeAt(0).cloneRange()});
+document.addEventListener("mousedown",event=>{if(event.target.closest(".note-toolbar-shell button"))event.preventDefault()});
+document.addEventListener("click",event=>{if(!event.target.closest(".note-toolbar-shell"))closeNoteMenus()});
+document.addEventListener("keydown",event=>{
+  if(event.key==="Escape"){closeNoteMenus();if(!$("noteLinkDialog")?.hidden)closeNoteLinkDialog()}
+  const box=$("lessonNotes");
+  if(box&&document.activeElement===box&&(event.ctrlKey||event.metaKey)){
+    const key=event.key.toLowerCase(),commands={b:"bold",i:"italic",u:"underline",z:event.shiftKey?"redo":"undo",y:"redo"};
+    if(commands[key]){event.preventDefault();formatLessonNote(commands[key])}
+  }
+});
 $("editor").addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){e.preventDefault();runPython()}});
 
 
