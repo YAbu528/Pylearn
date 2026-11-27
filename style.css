@@ -842,3 +842,41 @@ button:disabled {
 .note-confirm-actions button{min-height:40px;padding:9px 13px}
 .note-confirm-actions .danger{border:1px solid rgba(239,68,68,.35);border-radius:10px;background:#b91c1c;color:#fff;font-weight:850}
 @media(max-width:650px){.note-format-toolbar{gap:5px}.note-format-toolbar button{min-height:36px;padding:7px 9px}.note-confirm-dialog{padding:19px}}
+
+/* Rich lesson notebook editor */
+.note-editor-topline{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:18px 0 9px}
+.notes-editor-label{font-size:11px;font-weight:900;letter-spacing:.09em;color:var(--muted)}
+.note-editor-tip{font-size:10px;color:var(--muted);text-align:right}
+.note-toolbar-shell{display:grid;gap:7px;padding:10px;border:1px solid var(--line);border-radius:13px 13px 0 0;background:var(--card2)}
+.note-toolbar-row{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.note-toolbar-row+.note-toolbar-row{padding-top:7px;border-top:1px solid var(--line)}
+.note-toolbar-row select{min-height:34px;max-width:150px;padding:6px 9px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--text);font:600 11px inherit}
+.note-tool-button{min-width:34px;min-height:34px;padding:6px 9px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--text);font-size:11px;font-weight:750;cursor:pointer}
+.note-tool-button:hover,.note-tool-button:focus-visible{border-color:var(--purple2);background:var(--panel);outline:none}
+.note-color-tool{display:flex;align-items:center;gap:5px;min-height:32px;padding:3px 6px;border:1px solid var(--line);border-radius:8px;background:var(--card);font-size:11px;font-weight:800}
+.note-color-tool input{width:22px;height:22px;padding:0;border:0;background:transparent}
+.note-rich-editor{width:100%;box-sizing:border-box;min-height:300px;max-height:65vh;overflow:auto;resize:vertical;padding:17px;border:1px solid var(--line);border-top:0;border-radius:0 0 12px 12px;background:var(--card);color:var(--text);font:14px/1.7 inherit;outline:0;overflow-wrap:anywhere}
+.note-rich-editor:focus{border-color:var(--purple2);box-shadow:0 0 0 2px color-mix(in srgb,var(--purple2) 15%,transparent)}
+.note-rich-editor:empty:before{content:attr(data-placeholder);color:var(--muted);pointer-events:none}
+.note-rich-editor h2,.note-rich-editor h3,.note-rich-editor h4{margin:14px 0 7px;line-height:1.3}
+.note-rich-editor p{margin:0 0 9px}
+.note-rich-editor ul,.note-rich-editor ol{padding-left:25px;margin:8px 0}
+.note-rich-editor blockquote{margin:12px 0;padding:9px 13px;border-left:3px solid var(--purple2);background:var(--card2);color:var(--muted)}
+.note-rich-editor pre{padding:12px;border:1px solid var(--line);border-radius:9px;background:var(--card2);white-space:pre-wrap}
+.note-rich-editor code{padding:2px 5px;border-radius:5px;background:var(--card2);font-family:monospace}
+.note-rich-editor table{width:100%;border-collapse:collapse;margin:12px 0}
+.note-rich-editor th,.note-rich-editor td{min-width:60px;padding:8px;border:1px solid var(--line);text-align:left}
+.note-rich-editor th{background:var(--card2)}
+.note-rich-editor input[type=checkbox]{width:16px;height:16px;vertical-align:middle;accent-color:var(--purple2)}
+.note-rich-editor a{color:var(--purple2);text-decoration:underline}
+.note-rich-editor hr{border:0;border-top:1px solid var(--line);margin:16px 0}
+.note-rich-editor[contenteditable=false]{opacity:.68;cursor:not-allowed}
+@media(max-width:650px){
+  .note-editor-topline{align-items:flex-start;flex-direction:column;gap:4px}
+  .note-editor-tip{text-align:left}
+  .note-toolbar-shell{padding:8px;gap:6px}
+  .note-toolbar-row{gap:5px}
+  .note-tool-button{min-height:38px;padding:7px 8px}
+  .note-toolbar-row select{max-width:100%;min-height:38px}
+  .note-rich-editor{min-height:260px;max-height:60vh;padding:13px;font-size:14px}
+}
