@@ -820,3 +820,25 @@ button:disabled {
  .notes-actions button{width:100%;min-width:0;padding-inline:8px}
  .note-editor-meta{font-size:9px}
 }
+
+/* Compact notebook controls and an in-page clear confirmation that works in mobile browsers. */
+.notes-library{padding:0;overflow:hidden}
+.notes-library>summary{list-style:none;cursor:pointer;padding:12px 13px;margin:0}
+.notes-library>summary::-webkit-details-marker{display:none}
+.notes-library>summary:after{content:"＋";color:var(--muted);font-size:14px}
+.notes-library[open]>summary:after{content:"−"}
+.notes-library-content{padding:0 12px 12px}
+.notes-library-head{margin:0}
+.note-format-toolbar{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.note-format-toolbar button{min-width:34px;min-height:33px;padding:6px 9px;border:1px solid var(--line);border-radius:8px;background:var(--card2);color:var(--text);font-size:11px;font-weight:800}
+.note-format-toolbar button:hover{border-color:var(--purple2);background:var(--panel)}
+.notes-card textarea{min-height:190px}
+.note-confirm-backdrop[hidden]{display:none!important}
+.note-confirm-backdrop{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:20px;background:rgba(0,0,0,.62);backdrop-filter:blur(4px)}
+.note-confirm-dialog{width:min(100%,390px);padding:22px;border:1px solid var(--line);border-radius:18px;background:var(--panel);box-shadow:0 24px 80px rgba(0,0,0,.4)}
+.note-confirm-dialog h3{margin:8px 0;font-size:19px}
+.note-confirm-dialog p{margin:0;color:var(--muted);font-size:13px;line-height:1.65}
+.note-confirm-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px}
+.note-confirm-actions button{min-height:40px;padding:9px 13px}
+.note-confirm-actions .danger{border:1px solid rgba(239,68,68,.35);border-radius:10px;background:#b91c1c;color:#fff;font-weight:850}
+@media(max-width:650px){.note-format-toolbar{gap:5px}.note-format-toolbar button{min-height:36px;padding:7px 9px}.note-confirm-dialog{padding:19px}}
