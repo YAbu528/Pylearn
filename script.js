@@ -980,14 +980,14 @@ function updateNoteStatus(){
   if(hint) hint.textContent=noteSaveState==="offline"?"Your changes are safe on this device until you're online.":noteSaveState==="error"?"Your changes remain on this device. PyLearn will retry syncing.":"Notes are saved automatically to your PyLearn account.";
 }
 function noteEditorText(box){
-  return String(box?.innerText||box?.textContent||"").replace(/\\u00a0/g," ").trim();
+  return String(box?.innerText||box?.textContent||"").replace(/\u00a0/g," ").trim();
 }
 function sanitizeNoteHTML(value){
   const raw=String(value||"");
   if(!raw.trim()) return "";
-  if(!/<\\/?(p|br|strong|b|em|i|u|s|strike|ul|ol|li|h[1-6]|blockquote|pre|code|a|hr|table|thead|tbody|tr|td|th|input)\\b/i.test(raw)){
+  if(!/<\/?(p|br|strong|b|em|i|u|s|strike|ul|ol|li|h[1-6]|blockquote|pre|code|a|hr|table|thead|tbody|tr|td|th|input)\b/i.test(raw)){
     const escaped=raw.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-    return "<p>"+escaped.replace(/\\r?\\n/g,"<br>")+"</p>";
+    return "<p>"+escaped.replace(/\r?\n/g,"<br>")+"</p>";
   }
   const parsed=new DOMParser().parseFromString("<body>"+raw+"</body>","text/html");
   const allowed=new Set(["P","BR","STRONG","B","EM","I","U","S","STRIKE","UL","OL","LI","H1","H2","H3","H4","H5","H6","BLOCKQUOTE","PRE","CODE","A","HR","TABLE","THEAD","TBODY","TR","TD","TH","INPUT"]);
@@ -1001,7 +1001,7 @@ function sanitizeNoteHTML(value){
       [...child.attributes].forEach(attr=>{
         const name=attr.name.toLowerCase(), value=attr.value;
         const keep=(child.tagName==="A"&&name==="href"&&/^(https?:|mailto:)/i.test(value))
-          ||(["TD","TH"].includes(child.tagName)&&["colspan","rowspan"].includes(name)&&/^\\d{1,2}$/.test(value))
+          ||(["TD","TH"].includes(child.tagName)&&["colspan","rowspan"].includes(name)&&/^\d{1,2}$/.test(value))
           ||(child.tagName==="INPUT"&&name==="type"&&value==="checkbox")
           ||(child.tagName==="INPUT"&&name==="checked");
         if(!keep) child.removeAttribute(attr.name);
@@ -1016,7 +1016,7 @@ function sanitizeNoteHTML(value){
 function notePlainText(value){
   const temp=document.createElement("div");
   temp.innerHTML=sanitizeNoteHTML(value);
-  return String(temp.innerText||temp.textContent||"").replace(/\\s+/g," ").trim();
+  return String(temp.innerText||temp.textContent||"").replace(/\s+/g," ").trim();
 }
 function updateNoteCharacterCount(){
   const box=$("lessonNotes"), count=$("noteCharCount");
@@ -1119,7 +1119,7 @@ function formatLessonNote(kind,value){
     document.execCommand("insertHTML",false,"<code>"+safe+"</code>");
   }else if(kind==="link"){
     const url=prompt("Enter a web address (https://…) or email link:");
-    if(url&&/^(https?:\\/\\/|mailto:)/i.test(url.trim())) document.execCommand("createLink",false,url.trim());
+    if(url&&/^(https?:\/\/|mailto:)/i.test(url.trim())) document.execCommand("createLink",false,url.trim());
     else if(url) toast("Please use a valid https:// or mailto: link.","warning");
   }else if(kind==="table"){
     const rows=Math.max(1,Math.min(8,Number(prompt("How many rows? (1–8)","3"))||3));
@@ -1148,7 +1148,7 @@ function renderSavedNotesList(){
   if(count) count.textContent=entries.length+" note"+(entries.length===1?"":"s");
   const filtered=entries.filter(entry=>{
     const lesson=lessons[entry.id];
-    return !search || (lesson.title+" "+lesson.short+" "+entry.value).toLowerCase().includes(search);
+    return !search || (lesson.title+" "+lesson.short+" "+notePlainText(entry.value)).toLowerCase().includes(search);
   });
   list.replaceChildren();
   if(!filtered.length){
@@ -1168,7 +1168,7 @@ function renderSavedNotesList(){
     heading.textContent=String(entry.id+1).padStart(2,"0")+" · "+lesson.title;
     const preview=document.createElement("span");
     preview.className="saved-note-preview";
-    preview.textContent=entry.value.replace(/\s+/g," ").trim();
+    preview.textContent=notePlainText(entry.value);
     button.append(heading,preview);
     list.appendChild(button);
   });
