@@ -850,12 +850,12 @@ button:disabled {
 .note-toolbar-shell{display:grid;gap:7px;padding:10px;border:1px solid var(--line);border-radius:13px 13px 0 0;background:var(--card2)}
 .note-toolbar-row{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
 .note-toolbar-row+.note-toolbar-row{padding-top:7px;border-top:1px solid var(--line)}
-.note-toolbar-row select{min-height:34px;max-width:150px;padding:6px 9px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--text);font:600 11px inherit}
+.note-toolbar-row select{min-height:34px;max-width:150px;padding:6px 9px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--text);font:inherit;font-size:11px;font-weight:600}
 .note-tool-button{min-width:34px;min-height:34px;padding:6px 9px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--text);font-size:11px;font-weight:750;cursor:pointer}
 .note-tool-button:hover,.note-tool-button:focus-visible{border-color:var(--purple2);background:var(--panel);outline:none}
 .note-color-tool{display:flex;align-items:center;gap:5px;min-height:32px;padding:3px 6px;border:1px solid var(--line);border-radius:8px;background:var(--card);font-size:11px;font-weight:800}
 .note-color-tool input{width:22px;height:22px;padding:0;border:0;background:transparent}
-.note-rich-editor{width:100%;box-sizing:border-box;min-height:300px;max-height:65vh;overflow:auto;resize:vertical;padding:17px;border:1px solid var(--line);border-top:0;border-radius:0 0 12px 12px;background:var(--card);color:var(--text);font:14px/1.7 inherit;outline:0;overflow-wrap:anywhere}
+.note-rich-editor{width:100%;box-sizing:border-box;min-height:300px;max-height:65vh;overflow:auto;resize:vertical;padding:17px;border:1px solid var(--line);border-top:0;border-radius:0 0 12px 12px;background:var(--card);color:var(--text);font-family:inherit;font-size:14px;line-height:1.7;outline:0;overflow-wrap:anywhere}
 .note-rich-editor:focus{border-color:var(--purple2);box-shadow:0 0 0 2px color-mix(in srgb,var(--purple2) 15%,transparent)}
 .note-rich-editor:empty:before{content:attr(data-placeholder);color:var(--muted);pointer-events:none}
 .note-rich-editor h2,.note-rich-editor h3,.note-rich-editor h4{margin:14px 0 7px;line-height:1.3}
