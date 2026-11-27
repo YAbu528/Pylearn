@@ -1032,7 +1032,20 @@ function saveCurrentNote(show=true){
 }
 function clearCurrentNote(){
   if(!currentCloudUser){toast("Sign in to manage saved notes.");return}
-  if(!window.confirm("Clear the note for this lesson? This change will sync to your account.")) return;
+  const dialog=$("noteClearDialog");
+  if(!dialog){toast("The confirmation window is unavailable. Your note was not cleared.","error");return}
+  dialog.hidden=false;
+  $("noteClearTitle").textContent="Clear this lesson note?";
+  $("noteClearMessage").textContent="This removes the note for "+(lessons[current]?.short||"this lesson")+" from your notebook and syncs the change to your account.";
+  $("noteClearDialog").querySelector("button.ghost")?.focus();
+}
+function closeNoteClearConfirm(){
+  const dialog=$("noteClearDialog");
+  if(dialog) dialog.hidden=true;
+}
+function confirmClearCurrentNote(){
+  if(!currentCloudUser){closeNoteClearConfirm();toast("Sign in to manage saved notes.");return}
+  closeNoteClearConfirm();
   clearTimeout(noteSaveTimer);
   noteSaveTimer=null;
   noteSaveLessonId=null;
@@ -1050,10 +1063,35 @@ function clearCurrentNote(){
   queueCloudSync();
   toast("Note cleared. Syncing the change.","success");
 }
+function formatLessonNote(kind){
+  const box=$("lessonNotes");
+  if(!box||box.disabled) return;
+  const start=box.selectionStart,end=box.selectionEnd;
+  const selected=box.value.slice(start,end);
+  let before="",after="",replacement=selected;
+  if(kind==="bold"){before="**";after="**"}
+  else if(kind==="italic"){before="_";after="_"}
+  else if(kind==="code"){before=String.fromCharCode(96);after=String.fromCharCode(96)}
+  else if(["heading","bullet","number","check"].includes(kind)){
+    const prefixes={heading:"## ",bullet:"- ",number:"1. ",check:"- [ ] "};
+    const prefix=prefixes[kind];
+    if(start===end) box.setRangeText(prefix,start,end,"end");
+    else box.setRangeText(selected.split("\n").map(line=>prefix+line).join("\n"),start,end,"select");
+    box.focus();
+    box.dispatchEvent(new Event("input",{bubbles:true}));
+    return;
+  }
+  box.setRangeText(before+replacement+after,start,end,"select");
+  if(start===end) box.setSelectionRange(start+before.length,start+before.length);
+  box.focus();
+  box.dispatchEvent(new Event("input",{bubbles:true}));
+}
 function renderSavedNotesList(){
   const list=$("savedNotesList"), count=$("savedNoteCount"), search=($("noteLibrarySearch")?.value||"").trim().toLowerCase();
   if(!list) return;
-  const entries=Object.entries(notes||{}).filter(([id,value])=>String(value||"").trim() && lessons[Number(id)])
+  const localNotes=readLocalJSON("pylearn_notes",{});
+  notes={...localNotes,...(notes||{})};
+  const entries=Object.entries(notes).filter(([id,value])=>String(value||"").trim() && lessons[Number(id)])
     .map(([id,value])=>({id:Number(id),value:String(value),updatedAt:Number(readMap(NOTE_META_KEY)[id]?.updatedAt||0)}))
     .sort((a,b)=>b.updatedAt-a.updatedAt);
   if(count) count.textContent=entries.length+" note"+(entries.length===1?"":"s");
@@ -1568,7 +1606,7 @@ function renderBadges(){
 
 function selectLesson(i){
   if(!isUnlocked(i)){toast("Complete the previous lesson to unlock this one.");return}
-  current=i; save(); renderLesson(); renderLessons(); renderLessonReview();
+  current=i; save(); renderLesson(); renderLessons(); renderLessonReview(); renderStudyTools();
   document.querySelector(".lesson-panel")?.scrollIntoView({behavior:"smooth",block:"start"});
 }
 
