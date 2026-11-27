@@ -450,18 +450,40 @@ print("2 + 3 =", 2 + 3)</textarea>
         <span id="noteStatus" class="note-status" data-state="idle" role="status" aria-live="polite">No note yet</span>
       </div>
       <p class="notes-help" id="notesHelp">Your notes save automatically and sync to your account.</p>
-      <div class="notes-library">
-        <div class="notes-library-head"><b>All lesson notes</b><span id="savedNoteCount">0 notes</span></div>
-        <input id="noteLibrarySearch" type="search" placeholder="Find a note by lesson…" aria-label="Search saved notes" oninput="renderSavedNotesList()">
-        <div id="savedNotesList" class="saved-notes-list"><div class="study-empty">Your saved lesson notes will appear here.</div></div>
+      <details class="notes-library" open>
+        <summary class="notes-library-head"><b>Notebook</b><span id="savedNoteCount">0 notes</span></summary>
+        <div class="notes-library-content">
+          <input id="noteLibrarySearch" type="search" placeholder="Search your notes…" aria-label="Search saved notes" oninput="renderSavedNotesList()">
+          <div id="savedNotesList" class="saved-notes-list"><div class="study-empty">Your saved lesson notes will appear here.</div></div>
+        </div>
+      </details>
+      <label class="notes-editor-label" for="lessonNotes">NOTE FOR THIS LESSON</label>
+      <div class="note-format-toolbar" role="toolbar" aria-label="Note formatting">
+        <button type="button" onclick="formatLessonNote('bold')" title="Bold">B</button>
+        <button type="button" onclick="formatLessonNote('italic')" title="Italic"><i>I</i></button>
+        <button type="button" onclick="formatLessonNote('heading')" title="Heading">H</button>
+        <button type="button" onclick="formatLessonNote('bullet')" title="Bullet list">• List</button>
+        <button type="button" onclick="formatLessonNote('number')" title="Numbered list">1. List</button>
+        <button type="button" onclick="formatLessonNote('check')" title="Checklist">☐ Task</button>
+        <button type="button" onclick="formatLessonNote('code')" title="Code">&lt;/&gt;</button>
       </div>
-      <label class="notes-editor-label" for="lessonNotes">CURRENT LESSON NOTE</label>
       <textarea id="lessonNotes" placeholder="Write something you want to remember…" oninput="handleNoteInput()" aria-describedby="noteEditorMeta"></textarea>
       <div class="note-editor-meta" id="noteEditorMeta"><span id="noteCharCount">0 characters</span><span id="noteSyncHint">Changes save automatically</span></div>
       <div class="notes-actions"><button class="ghost" onclick="clearCurrentNote()">Clear note</button><button class="primary" onclick="saveCurrentNote()">Save now</button></div>
     </article>
   </div>
 </section>
+<div id="noteClearDialog" class="note-confirm-backdrop" hidden>
+  <section class="note-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="noteClearTitle" aria-describedby="noteClearMessage">
+    <span class="eyebrow">CONFIRM ACTION</span>
+    <h3 id="noteClearTitle">Clear this lesson note?</h3>
+    <p id="noteClearMessage">This removes the note for this lesson from your notebook and syncs the change to your account.</p>
+    <div class="note-confirm-actions">
+      <button type="button" class="ghost" onclick="closeNoteClearConfirm()">Keep note</button>
+      <button type="button" class="danger" onclick="confirmClearCurrentNote()">Clear note</button>
+    </div>
+  </section>
+</div>
 <section class="section roadmap" id="roadmap">
 <div class="heading"><div><span class="eyebrow">YOUR ROADMAP</span><h2>Where Python takes you</h2><p>Every stage builds on the previous one.</p></div></div>
 <div class="learning-map-intro">
