@@ -1090,7 +1090,7 @@ function renderSavedNotesList(){
   const list=$("savedNotesList"), count=$("savedNoteCount"), search=($("noteLibrarySearch")?.value||"").trim().toLowerCase();
   if(!list) return;
   const localNotes=readLocalJSON("pylearn_notes",{});
-  notes={...localNotes,...(notes||{})};
+  notes={...(notes||{}),...localNotes};
   const entries=Object.entries(notes).filter(([id,value])=>String(value||"").trim() && lessons[Number(id)])
     .map(([id,value])=>({id:Number(id),value:String(value),updatedAt:Number(readMap(NOTE_META_KEY)[id]?.updatedAt||0)}))
     .sort((a,b)=>b.updatedAt-a.updatedAt);
