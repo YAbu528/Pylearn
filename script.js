@@ -1196,9 +1196,9 @@ function renderStudyTools(){
   const list=$("bookmarkList"), count=$("bookmarkCount"), note=$("lessonNotes");
   if(count) count.textContent=bookmarks.length;
   if(note){
-    note.disabled=!currentCloudUser;
-    note.placeholder=currentCloudUser?"Write a note for this lesson…":"Sign in to sync your lesson notes.";
-    if(document.activeElement!==note) note.value=notes[String(current)]||"";
+    note.setAttribute("contenteditable",currentCloudUser?"true":"false");
+    note.setAttribute("aria-disabled",String(!currentCloudUser));
+    if(document.activeElement!==note) note.innerHTML=sanitizeNoteHTML(notes[String(current)]||"");
   }
   const title=$("noteLessonTitle");
   if(title) title.textContent=lessons[current]?"Notes for "+lessons[current].title:"Your lesson notes";
@@ -1955,11 +1955,9 @@ document.addEventListener("keydown",event=>{
 });
 
 $("lessonSearch")?.addEventListener("input",searchLessons);
-$("lessonNotes")?.addEventListener("input",()=>{
-  clearTimeout(window.__noteTimer);
-  $("noteStatus").textContent="Saving…";
-  window.__noteTimer=setTimeout(()=>saveCurrentNote(false),500);
-});
+$("lessonNotes")?.addEventListener("input",handleNoteInput);
+$("lessonNotes")?.addEventListener("change",event=>{if(event.target.matches("input[type=checkbox]")) handleNoteInput()});
+document.addEventListener("selectionchange",()=>{const box=$("lessonNotes"),sel=window.getSelection();if(box&&sel?.rangeCount&&sel.anchorNode&&box.contains(sel.anchorNode))window.__pylearnNoteRange=sel.getRangeAt(0).cloneRange()});
 $("editor").addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){e.preventDefault();runPython()}});
 
 
