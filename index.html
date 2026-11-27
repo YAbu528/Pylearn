@@ -500,7 +500,7 @@ print("2 + 3 =", 2 + 3)</textarea>
             <button type="button" class="note-tool-button menu-trigger" onclick="toggleNoteMenu('insert')" aria-expanded="false" aria-controls="noteMenuInsert">Insert <span>▾</span></button>
             <div class="note-custom-menu" id="noteMenuInsert" hidden>
               <button type="button" onclick="openNoteLinkDialog()">↗ Add link</button>
-              <button type="button" onclick="toggleNoteMenu('table')">▦ Insert table <span>›</span></button>
+              <div class="note-menu-caption">TABLE SIZE</div><button type="button" onclick="insertNoteTable(2,2);closeNoteMenus()">▦ 2 × 2 table</button><button type="button" onclick="insertNoteTable(3,2);closeNoteMenus()">▦ 2 × 3 table</button><button type="button" onclick="insertNoteTable(3,3);closeNoteMenus()">▦ 3 × 3 table</button><button type="button" onclick="insertNoteTable(4,3);closeNoteMenus()">▦ 3 × 4 table</button>
               <button type="button" onclick="formatLessonNote('rule');closeNoteMenus()">― Divider</button>
               <button type="button" onclick="formatLessonNote('code');closeNoteMenus()">&lt;/&gt; Inline code</button>
             </div>
@@ -538,15 +538,7 @@ print("2 + 3 =", 2 + 3)</textarea>
           </div>
         </div>
         <div class="note-toolbar-hint">Tip: select text first, then choose a formatting tool.</div>
-        <div class="note-table-menu-wrap">
-          <div class="note-custom-menu" id="noteMenuTable" hidden>
-            <div class="note-menu-caption">CHOOSE TABLE SIZE</div>
-            <button type="button" onclick="insertNoteTable(2,2);closeNoteMenus()">2 × 2 table</button>
-            <button type="button" onclick="insertNoteTable(3,2);closeNoteMenus()">2 × 3 table</button>
-            <button type="button" onclick="insertNoteTable(3,3);closeNoteMenus()">3 × 3 table</button>
-            <button type="button" onclick="insertNoteTable(4,3);closeNoteMenus()">3 × 4 table</button>
-          </div>
-        </div>
+div>
       </div>
       <div id="lessonNotes" class="note-rich-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Lesson note editor" data-placeholder="Start writing your lesson notes here…" aria-describedby="noteEditorMeta"></div>
       <div class="note-editor-meta" id="noteEditorMeta"><span id="noteCharCount">0 characters</span><span id="noteSyncHint">Changes save automatically</span></div>
